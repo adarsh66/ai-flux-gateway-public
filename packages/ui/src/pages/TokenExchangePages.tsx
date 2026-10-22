@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from "react";
+import { useState, type FormEvent, type ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { ApiError } from "../client";
 import { useSession } from "../session";
@@ -23,6 +23,66 @@ import {
   fmtInt,
   useAsync,
 } from "../components/ui";
+
+function VendorLogo({ vendor, size = 20 }: { vendor: string; size?: number }): ReactNode {
+  const v = vendor.toLowerCase();
+  if (v.includes("openai")) {
+    return (
+      <svg aria-hidden="true" width={size} height={size} viewBox="0 0 16 16" fill="#10a37f">
+        <path d="M14.949 6.547a3.94 3.94 0 0 0-.348-3.273 4.11 4.11 0 0 0-4.4-1.934A4.1 4.1 0 0 0 8.423.2 4.15 4.15 0 0 0 6.305.086a4.1 4.1 0 0 0-1.891.948 4.04 4.04 0 0 0-1.158 1.753 4.1 4.1 0 0 0-1.563.679A4 4 0 0 0 .554 4.72a3.99 3.99 0 0 0 .502 4.731 3.94 3.94 0 0 0 .346 3.274 4.11 4.11 0 0 0 4.402 1.933c.382.425.852.764 1.377.995.526.231 1.095.35 1.67.346 1.78.002 3.358-1.132 3.901-2.804a4.1 4.1 0 0 0 1.563-.68 4 4 0 0 0 1.14-1.253 3.99 3.99 0 0 0-.506-4.716m-6.097 8.406a3.05 3.05 0 0 1-1.945-.694l.096-.054 3.23-1.838a.53.53 0 0 0 .265-.455v-4.49l1.366.778q.02.011.025.035v3.722c-.003 1.653-1.361 2.992-3.037 2.996m-6.53-2.75a2.95 2.95 0 0 1-.36-2.01l.095.057L5.29 12.09a.53.53 0 0 0 .527 0l3.949-2.246v1.555a.05.05 0 0 1-.022.041L6.473 13.3c-1.454.826-3.311.335-4.15-1.098m-.85-6.94A3.02 3.02 0 0 1 3.07 3.949v3.785a.51.51 0 0 0 .262.451l3.93 2.237-1.366.779a.05.05 0 0 1-.048 0L2.585 9.342a2.98 2.98 0 0 1-1.113-4.094zm11.216 2.571L8.747 5.576l1.362-.776a.05.05 0 0 1 .048 0l3.265 1.86a3 3 0 0 1 1.173 1.207 2.96 2.96 0 0 1-.27 3.2 3.05 3.05 0 0 1-1.36.997V8.279a.52.52 0 0 0-.276-.445m1.36-2.015-.097-.057-3.226-1.855a.53.53 0 0 0-.53 0L6.249 6.153V4.598a.04.04 0 0 1 .019-.04L9.533 2.7a3.07 3.07 0 0 1 3.257.139c.474.325.843.778 1.066 1.303.223.526.289 1.103.191 1.664zM5.503 8.575 4.139 7.8a.05.05 0 0 1-.026-.037V4.049c0-.57.166-1.127.476-1.607s.752-.864 1.275-1.105a3.08 3.08 0 0 1 3.234.41l-.096.054-3.23 1.838a.53.53 0 0 0-.265.455zm.742-1.577 1.758-1 1.762 1v2l-1.755 1-1.762-1z" />
+      </svg>
+    );
+  }
+  if (v.includes("anthropic") || v.includes("claude")) {
+    return (
+      <svg aria-hidden="true" width={size} height={size} viewBox="0 0 16 16" fill="#D97757">
+        <path d="m3.127 10.604 3.135-1.76.053-.153-.053-.085H6.11l-.525-.032-1.791-.048-1.554-.065-1.505-.08-.38-.081L0 7.832l.036-.234.32-.214.455.04 1.009.069 1.513.105 1.097.064 1.626.17h.259l.036-.105-.089-.065-.068-.064-1.566-1.062-1.695-1.121-.887-.646-.48-.327-.243-.306-.104-.67.435-.48.585.04.15.04.593.456 1.267.981 1.654 1.218.242.202.097-.068.012-.049-.109-.181-.9-1.626-.96-1.655-.428-.686-.113-.411a2 2 0 0 1-.068-.484l.496-.674L4.446 0l.662.089.279.242.411.94.666 1.48 1.033 2.014.302.597.162.553.06.17h.105v-.097l.085-1.134.157-1.392.154-1.792.052-.504.25-.605.497-.327.387.186.319.456-.045.294-.19 1.23-.37 1.93-.243 1.29h.142l.161-.16.654-.868 1.097-1.372.484-.545.565-.601.363-.287h.686l.505.751-.226.775-.707.895-.585.759-.839 1.13-.524.904.048.072.125-.012 1.897-.403 1.024-.186 1.223-.21.553.258.06.263-.218.536-1.307.323-1.533.307-2.284.54-.028.02.032.04 1.029.098.44.024h1.077l2.005.15.525.346.315.424-.053.323-.807.411-3.631-.863-.872-.218h-.12v.073l.726.71 1.331 1.202 1.667 1.55.084.383-.214.302-.226-.032-1.464-1.101-.565-.497-1.28-1.077h-.084v.113l.295.432 1.557 2.34.08.718-.112.234-.404.141-.444-.08-.911-1.28-.94-1.44-.759-1.291-.093.053-.448 4.821-.21.246-.484.186-.403-.307-.214-.496.214-.98.258-1.28.21-1.016.19-1.263.112-.42-.008-.028-.092.012-.953 1.307-1.448 1.957-1.146 1.227-.274.109-.477-.247.045-.44.266-.39 1.586-2.018.956-1.25.617-.723-.004-.105h-.036l-4.212 2.736-.75.096-.324-.302.04-.496.154-.162 1.267-.871z" />
+      </svg>
+    );
+  }
+  if (v.includes("microsoft") || v.includes("foundry")) {
+    return (
+      <svg aria-hidden="true" width={size} height={size} viewBox="0 0 16 16">
+        <path d="M7.462 0H0v7.19h7.462z" fill="#F25022" />
+        <path d="M16 0H8.538v7.19H16z" fill="#7FBA00" />
+        <path d="M7.462 8.211H0V16h7.462z" fill="#00A4EF" />
+        <path d="M16 8.211H8.538V16H16z" fill="#FFB900" />
+      </svg>
+    );
+  }
+  if (v.includes("deepseek")) {
+    return (
+      <svg aria-hidden="true" width={size} height={size} viewBox="0 0 24 24" fill="#4D6BFE">
+        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm3.6 13.8c-1.1.9-2.6 1.3-4.2 1.1-2.5-.3-4.4-2.3-4.6-4.8-.3-3 2-5.6 5-5.6 1.8 0 3.4.9 4.3 2.4.3.5.1 1.1-.4 1.4-.5.3-1.1.1-1.4-.4-.6-.9-1.6-1.4-2.7-1.4-1.9 0-3.3 1.7-3 3.6.2 1.4 1.4 2.6 2.8 2.8 1.1.1 2.1-.2 2.9-.8.4-.4 1.1-.3 1.4.1.4.5.3 1.2-.1 1.6z" />
+      </svg>
+    );
+  }
+  if (v.includes("google") || v.includes("gemini")) {
+    return (
+      <svg aria-hidden="true" width={size} height={size} viewBox="0 0 24 24" fill="#4285F4">
+        <path d="M12 2C12.8 7.2 16.8 11.2 22 12c-5.2.8-9.2 4.8-10 10-.8-5.2-4.8-9.2-10-10 5.2-.8 9.2-4.8 10-10z" />
+      </svg>
+    );
+  }
+  return (
+    <svg aria-hidden="true" width={size} height={size} viewBox="0 0 24 24" fill="#e11d48">
+      <circle cx="12" cy="12" r="9" />
+      <path d="M8 12h8M12 8v8" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function ShareBar({ pct }: { pct: number }) {
+  const clamped = Math.max(2, Math.min(100, pct));
+  return (
+    <div className="share-cell">
+      <div className="share-bar-track" aria-hidden="true">
+        <div className="share-bar-fill" style={{ width: `${clamped}%` }} />
+      </div>
+      <span className="share-pct-label">{pct}%</span>
+    </div>
+  );
+}
 
 export function ModelGardenPage() {
   const { api } = useSession();
@@ -141,11 +201,16 @@ export function ModelGardenPage() {
                 {visible.map((m) => (
                   <li className="card" key={m.id}>
                     <div className="card-head">
-                      <div>
-                        <h2>{m.display_name}</h2>
-                        <p className="muted">
-                          <code>{m.id}</code> · {m.vendor} · {m.region}
-                        </p>
+                      <div className="vendor-header">
+                        <div className="vendor-mark">
+                          <VendorLogo vendor={m.vendor} size={22} />
+                        </div>
+                        <div>
+                          <h2>{m.display_name}</h2>
+                          <p className="muted">
+                            <code>{m.id}</code> · {m.vendor} · {m.region}
+                          </p>
+                        </div>
                       </div>
                       {m.coming_soon ? (
                         <Badge tone="warn">Coming soon</Badge>
@@ -156,20 +221,20 @@ export function ModelGardenPage() {
                       )}
                     </div>
                     <p>{m.description}</p>
-                    <dl className="stats">
-                      <div>
+                    <dl className="pricing-strip">
+                      <div className="pricing-cell">
                         <dt>Input / 1M tokens</dt>
                         <dd>
                           {m.currency} {m.input_per_million}
                         </dd>
                       </div>
-                      <div>
+                      <div className="pricing-cell">
                         <dt>Output / 1M tokens</dt>
                         <dd>
                           {m.currency} {m.output_per_million}
                         </dd>
                       </div>
-                      <div>
+                      <div className="pricing-cell">
                         <dt>Cached input / 1M</dt>
                         <dd>
                           {m.cached_input_per_million
@@ -177,13 +242,13 @@ export function ModelGardenPage() {
                             : "N/A"}
                         </dd>
                       </div>
-                      <div>
-                        <dt>Context / Max output</dt>
-                        <dd>
-                          {fmtInt(m.context_window)} / {fmtInt(m.max_completion_tokens)}
-                        </dd>
-                      </div>
                     </dl>
+                    <div className="card-meta-row">
+                      <span>Context / Max output</span>
+                      <strong>
+                        {fmtInt(m.context_window)} / {fmtInt(m.max_completion_tokens)}
+                      </strong>
+                    </div>
                     <div className="badges">
                       {m.content_safety_enabled && (
                         <Badge tone="ok">Foundry Content Safety</Badge>
@@ -195,9 +260,9 @@ export function ModelGardenPage() {
                       ))}
                     </div>
                     {!m.coming_soon && m.enabled && (
-                      <div className="actions" style={{ marginTop: "0.75rem" }}>
-                        <Link className="btn primary" to={`/playground?model=${encodeURIComponent(m.id)}`}>
-                          Try in Playground
+                      <div className="actions" style={{ marginTop: "auto", paddingTop: "0.4rem" }}>
+                        <Link className="btn primary" style={{ width: "100%" }} to={`/playground?model=${encodeURIComponent(m.id)}`}>
+                          Try in Playground →
                         </Link>
                       </div>
                     )}
@@ -220,7 +285,7 @@ export function CustomerCreditsPage() {
   return (
     <>
       <PageHeader
-        title="Credits & Hitakari FinOps report"
+        title="Credits & FinOps analytics"
         subtitle="Real-time token credit balance, low-credit threshold alerts, and usage breakdown by model, product subscription, and channel."
       />
       <div className="filters">
@@ -244,41 +309,77 @@ export function CustomerCreditsPage() {
                 {summary.alert_threshold_pct}%).
               </p>
             )}
-            <dl className="stats" aria-label="Credit balance summary">
-              <div>
-                <dt>Total credit allocation</dt>
-                <dd>
+            <dl className="bento-grid" aria-label="Credit balance summary">
+              <div className="bento-card">
+                <div className="bento-top">
+                  <dt className="bento-label">Total credit allocation</dt>
+                  <span className="bento-icon" aria-hidden="true">💳</span>
+                </div>
+                <dd className="bento-value" style={{ margin: 0 }}>
                   {summary.currency} {summary.total_credits}
                 </dd>
+                <span className="bento-sub">Monthly OpCo credit cap</span>
               </div>
-              <div>
-                <dt>Credits used ({days}d)</dt>
-                <dd>
+              <div className="bento-card">
+                <div className="bento-top">
+                  <dt className="bento-label">Credits used ({days}d)</dt>
+                  <span className="bento-icon" aria-hidden="true">⚡</span>
+                </div>
+                <dd className="bento-value" style={{ margin: 0 }}>
                   {summary.currency} {summary.used_credits}
                 </dd>
+                <span className="bento-sub">{summary.utilization_pct}% of allocation</span>
               </div>
-              <div>
-                <dt>Remaining credits</dt>
-                <dd>
+              <div className="bento-card">
+                <div className="bento-top">
+                  <dt className="bento-label">Remaining credits</dt>
+                  <span className="bento-icon" aria-hidden="true">🛡</span>
+                </div>
+                <dd className="bento-value" style={{ margin: 0 }}>
                   {summary.currency} {summary.remaining_credits}
                 </dd>
-              </div>
-              <div>
-                <dt>Utilization</dt>
-                <dd>
-                  {summary.utilization_pct}%{" "}
+                <span className="bento-sub">
                   <Badge tone={summary.low_credit_alert ? "bad" : "ok"}>
                     {summary.low_credit_alert ? "Low credit warning" : "Healthy"}
                   </Badge>
-                </dd>
+                </span>
               </div>
-              <div>
-                <dt>Total requests / tokens</dt>
-                <dd>
-                  {fmtInt(summary.total_requests)} reqs · {fmtInt(summary.total_tokens)} tokens
+              <div className="bento-card">
+                <div className="bento-top">
+                  <dt className="bento-label">Total requests / tokens</dt>
+                  <span className="bento-icon" aria-hidden="true">📊</span>
+                </div>
+                <dd className="bento-value" style={{ margin: 0 }}>
+                  {fmtInt(summary.total_tokens)}
                 </dd>
+                <span className="bento-sub">
+                  {fmtInt(summary.total_requests)} reqs · {fmtInt(summary.total_tokens)} tokens
+                </span>
               </div>
             </dl>
+
+            <section className="credit-meter-card" aria-label="Credit utilization meter">
+              <div className="credit-meter-head">
+                <span>Credit Utilization vs. Low-Credit Alert Threshold ({summary.alert_threshold_pct}%)</span>
+                <span>{summary.utilization_pct}% consumed</span>
+              </div>
+              <div className="credit-track">
+                <div
+                  className={summary.low_credit_alert ? "credit-fill danger" : "credit-fill"}
+                  style={{ width: `${Math.max(1.5, Math.min(100, summary.utilization_pct))}%` }}
+                />
+                <div
+                  className="credit-marker"
+                  style={{ left: `${summary.alert_threshold_pct}%` }}
+                  title={`Alert threshold: ${summary.alert_threshold_pct}%`}
+                />
+              </div>
+              <div className="credit-meter-foot">
+                <span>{summary.currency} 0.00</span>
+                <span>Alert @ {summary.alert_threshold_pct}%</span>
+                <span>Cap: {summary.currency} {summary.total_credits}</span>
+              </div>
+            </section>
 
             <section className="panel" aria-labelledby="by-model-heading">
               <h2 id="by-model-heading">Usage breakdown by model</h2>
@@ -300,14 +401,21 @@ export function CustomerCreditsPage() {
                 >
                   {summary.by_model.map((m) => (
                     <tr key={m.model}>
-                      <td><code>{m.model}</code></td>
+                      <td>
+                        <div className="vendor-header">
+                          <div className="vendor-mark sm">
+                            <VendorLogo vendor={m.vendor} size={15} />
+                          </div>
+                          <code>{m.model}</code>
+                        </div>
+                      </td>
                       <td>{m.vendor}</td>
                       <td>{fmtInt(m.requests)}</td>
                       <td>{fmtInt(m.input_tokens)}</td>
                       <td>{fmtInt(m.output_tokens)}</td>
                       <td>{fmtInt(m.total_tokens)}</td>
                       <td>{summary.currency} {m.cost_usd}</td>
-                      <td>{m.share_pct}%</td>
+                      <td><ShareBar pct={m.share_pct} /></td>
                     </tr>
                   ))}
                 </Table>
@@ -332,12 +440,12 @@ export function CustomerCreditsPage() {
                 >
                   {summary.by_product.map((p) => (
                     <tr key={p.subscription_id}>
-                      <td>{p.product_name}</td>
+                      <td><strong>{p.product_name}</strong></td>
                       <td>{p.team}</td>
                       <td>{fmtInt(p.requests)}</td>
                       <td>{fmtInt(p.total_tokens)}</td>
                       <td>{summary.currency} {p.cost_usd}</td>
-                      <td>{p.share_pct}%</td>
+                      <td><ShareBar pct={p.share_pct} /></td>
                     </tr>
                   ))}
                 </Table>
@@ -359,7 +467,7 @@ export function CustomerCreditsPage() {
                       <td>{fmtInt(c.requests)}</td>
                       <td>{fmtInt(c.total_tokens)}</td>
                       <td>{summary.currency} {c.cost_usd}</td>
-                      <td>{c.share_pct}%</td>
+                      <td><ShareBar pct={c.share_pct} /></td>
                     </tr>
                   ))}
                 </Table>

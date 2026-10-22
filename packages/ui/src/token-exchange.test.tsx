@@ -131,7 +131,7 @@ describe("Token Exchange Customer & Admin Portal Pages", () => {
     expect(await screen.findByText(/Selected model: DeepSeek V3.2 Speciale/)).toBeInTheDocument();
   });
 
-  it("renders Hitakari-style CustomerCreditsPage with low-credit alert and 3-way breakdown", async () => {
+  it("renders CustomerCreditsPage with low-credit alert and 3-way breakdown", async () => {
     const { mount } = setup(() => ({
       organization_id: "org-1",
       organization_name: "Acme OpCo",
