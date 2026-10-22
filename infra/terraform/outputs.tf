@@ -86,3 +86,20 @@ output "private_data_endpoints" {
     zone    = azurerm_private_dns_zone.data[name].name
   } }
 }
+
+output "database_engine" {
+  description = "Active relational database engine (`mssql` or `postgresql`)."
+  value       = var.database_engine
+}
+
+output "turnstile_platform_resources" {
+  description = "Turnstile platform resources when turnstile_platform_enabled is true."
+  value = local.turnstile_stage ? {
+    ledger_table_name      = azapi_resource.turnstile_ledger[0].name
+    model_routes_table     = azapi_resource.model_routes[0].name
+    eventhub_namespace     = azurerm_eventhub_namespace.main[0].name
+    eventhub_name          = azurerm_eventhub.token_usage[0].name
+    apim_logger_name       = azurerm_api_management_logger.eventhub[0].name
+    control_plane_function = local.platform_stage ? azurerm_linux_function_app.control_plane[0].name : null
+  } : null
+}

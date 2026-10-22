@@ -86,4 +86,36 @@ resource "azurerm_role_assignment" "function_storage" {
   role_definition_name = each.key
   principal_id         = azurerm_user_assigned_identity.identity["ingestion"].principal_id
 }
+
+resource "azurerm_role_assignment" "control_plane_storage" {
+  for_each = local.turnstile_stage ? toset([
+    "Storage Blob Data Owner",
+    "Storage Queue Data Contributor",
+    "Storage Table Data Contributor",
+  ]) : toset([])
+  scope                = azapi_resource.function_storage[0].id
+  role_definition_name = each.key
+  principal_id         = azurerm_user_assigned_identity.identity["control-plane"].principal_id
+}
+
+resource "azurerm_role_assignment" "ledger_table_access" {
+  for_each             = local.turnstile_stage ? toset(["gateway", "api"]) : toset([])
+  scope                = azapi_resource.function_storage[0].id
+  role_definition_name = "Storage Table Data Contributor"
+  principal_id         = azurerm_user_assigned_identity.identity[each.key].principal_id
+}
+
+resource "azurerm_role_assignment" "eventhub_sender" {
+  count                = local.turnstile_stage ? 1 : 0
+  scope                = azurerm_eventhub.token_usage[0].id
+  role_definition_name = "Azure Event Hubs Data Sender"
+  principal_id         = azurerm_user_assigned_identity.identity["gateway"].principal_id
+}
+
+resource "azurerm_role_assignment" "eventhub_receiver" {
+  count                = local.turnstile_stage ? 1 : 0
+  scope                = azurerm_eventhub.token_usage[0].id
+  role_definition_name = "Azure Event Hubs Data Receiver"
+  principal_id         = azurerm_user_assigned_identity.identity["ingestion"].principal_id
+}
 */

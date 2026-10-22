@@ -14,9 +14,12 @@ apim_capacity       = 1
 log_retention_days  = 30
 
 # User-selected platform sizes; region/quota/cost still require live review.
-app_service_sku = "P1v3"
-sql_sku         = "S0"
-sql_enabled     = true
+app_service_sku            = "P1v3"
+database_engine            = "postgresql"
+postgres_sku               = "B_Standard_B1ms"
+turnstile_platform_enabled = true
+sql_sku                    = "S0"
+sql_enabled                = true
 hybrid_private_data_enabled                    = true
 sql_public_network_access_enabled              = false
 key_vault_public_network_access_enabled        = false
