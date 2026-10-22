@@ -1,7 +1,8 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
+import { AuthGate } from "./auth";
 import { ControlApi } from "./client";
 import { SessionProvider } from "./session";
 import {
@@ -299,5 +300,37 @@ describe("Token Exchange Customer & Admin Portal Pages", () => {
     expect(await screen.findByText("/providers/microsoft/v1/systemone")).toBeInTheDocument();
     expect(await screen.findByText("Singtel RE:AI Sovereign 70B")).toBeInTheDocument();
     expect(await screen.findByText(/<llm-content-safety \/>/)).toBeInTheDocument();
+  });
+
+  it("supports PostgreSQL local email/password login in AuthGate when VITE_AUTH_MODE=local", async () => {
+    const fetchSpy = vi.spyOn(globalThis, "fetch").mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          access_token: "local-jwt-token",
+          token_type: "bearer",
+          email: "customer@opco.local",
+          display_name: "OpCo Developer",
+          user: customerMe,
+        }),
+        { status: 200 },
+      ),
+    );
+    try {
+      render(
+        <AuthGate
+          portalName="Customer portal"
+          allowedRoles={["customer", "ids_admin"]}
+          env={{ VITE_AUTH_MODE: "local", VITE_CONTROL_API_URL: "/api", VITE_GATEWAY_URL: "http://localhost:8000/v1" }}
+        >
+          <p>PORTAL READY VIA POSTGRESQL</p>
+        </AuthGate>,
+      );
+      expect(screen.getByRole("heading", { name: /Sign in to Token Exchange/i })).toBeInTheDocument();
+      await userEvent.type(screen.getByLabelText("Password"), "turnstile-customer");
+      await userEvent.click(screen.getByRole("button", { name: "Sign in" }));
+      expect(await screen.findByText("PORTAL READY VIA POSTGRESQL")).toBeInTheDocument();
+    } finally {
+      fetchSpy.mockRestore();
+    }
   });
 });

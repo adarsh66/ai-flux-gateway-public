@@ -230,3 +230,18 @@ class ModelRouterConfig(Base):
     rules_json: Mapped[str] = mapped_column(Text, default="[]")
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
 
+
+class LocalUser(Base):
+    __tablename__ = "local_users"
+    __table_args__ = (CheckConstraint("role IN ('customer', 'ids_admin')"),)
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=new_id)
+    email: Mapped[str] = mapped_column(String(255), unique=True, index=True)
+    password_hash: Mapped[str] = mapped_column(String(255))
+    display_name: Mapped[str] = mapped_column(String(120))
+    organization_id: Mapped[str] = mapped_column(ForeignKey("organizations.id"), index=True)
+    object_id: Mapped[str] = mapped_column(String(36), index=True)
+    role: Mapped[str] = mapped_column(String(20), default="customer")
+    enabled: Mapped[bool] = mapped_column(Boolean, default=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+
+

@@ -1,5 +1,8 @@
+import hashlib
+import hmac
+import secrets
 from dataclasses import dataclass
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from typing import Any
 from uuid import UUID
 
@@ -13,12 +16,53 @@ from sqlalchemy.orm import Session
 
 from aiflux.config import Settings
 from aiflux.db import get_db
-from aiflux.models import Member, Organization
+from aiflux.models import LocalUser, Member, Organization
 
 bearer = HTTPBearer(auto_error=False)
 
 MISE_VERSION = "2.4.1"
 MISE_SKU = "MISE_Python"
+LOCAL_ISSUER = "turnstile-local-db"
+PBKDF2_ITERATIONS = 260_000
+
+
+def hash_password(password: str) -> str:
+    salt = secrets.token_hex(16)
+    digest = hashlib.pbkdf2_hmac("sha256", password.encode("utf-8"), salt.encode("utf-8"), PBKDF2_ITERATIONS)
+    return f"pbkdf2_sha256${PBKDF2_ITERATIONS}${salt}${digest.hex()}"
+
+
+def verify_password(password: str, stored_hash: str) -> bool:
+    parts = stored_hash.split("$")
+    if len(parts) != 4 or parts[0] != "pbkdf2_sha256":
+        return False
+    try:
+        iterations = int(parts[1])
+    except ValueError:
+        return False
+    salt = parts[2]
+    expected_hex = parts[3]
+    digest = hashlib.pbkdf2_hmac("sha256", password.encode("utf-8"), salt.encode("utf-8"), iterations)
+    return hmac.compare_digest(digest.hex(), expected_hex)
+
+
+def issue_local_jwt(settings: Settings, user: LocalUser, org: Organization) -> str:
+    now = datetime.now(UTC)
+    payload = {
+        "sub": user.id,
+        "email": user.email,
+        "name": user.display_name,
+        "tid": org.tenant_id,
+        "oid": user.object_id,
+        "role": user.role,
+        "scp": settings.required_scope,
+        "iss": LOCAL_ISSUER,
+        "aud": settings.entra_audience or "local://turnstile-postgres-auth",
+        "iat": int(now.timestamp()),
+        "nbf": int(now.timestamp()),
+        "exp": int((now + timedelta(hours=12)).timestamp()),
+    }
+    return jwt.encode(payload, settings.local_jwt_secret, algorithm="HS256")
 
 
 @dataclass(frozen=True)
@@ -136,12 +180,50 @@ def get_principal(
     if credentials is None:
         raise HTTPException(401, "Access token required", headers={"WWW-Authenticate": "Bearer"})
     token = credentials.credentials
+    settings: Settings = request.app.state.settings
     try:
         hints = jwt.decode(token, options={"verify_signature": False})
         tenant_id = str(UUID(hints["tid"]))
         object_id = str(UUID(hints["oid"]))
     except (jwt.PyJWTError, ValueError, KeyError, TypeError) as exc:
         raise HTTPException(401, "Invalid access token") from exc
+
+    if settings.local_auth_enabled and hints.get("iss") == LOCAL_ISSUER:
+        try:
+            claims = jwt.decode(
+                token,
+                settings.local_jwt_secret,
+                algorithms=["HS256"],
+                audience=settings.entra_audience or "local://turnstile-postgres-auth",
+                issuer=LOCAL_ISSUER,
+                options={"require": ["exp", "iat", "nbf", "iss", "aud", "tid", "oid", "sub"]},
+            )
+        except jwt.PyJWTError as exc:
+            raise HTTPException(401, "Invalid access token") from exc
+        local_user = db.get(LocalUser, str(claims.get("sub", "")))
+        if local_user is None or not local_user.enabled:
+            raise HTTPException(403, "User is not approved")
+        org = db.scalar(
+            select(Organization).where(
+                Organization.id == local_user.organization_id,
+                Organization.enabled == true(),
+            )
+        )
+        if org is None:
+            raise HTTPException(403, "Tenant is not approved")
+        member = db.scalar(
+            select(Member).where(
+                Member.organization_id == org.id,
+                Member.object_id == local_user.object_id,
+                Member.enabled == true(),
+            )
+        )
+        if member is None:
+            raise HTTPException(403, "User is not approved")
+        if member.role == "ids_admin" and org.tenant_id != settings.home_tenant_id:
+            raise HTTPException(403, "IDS administrators must belong to the home tenant")
+        return Principal(org.id, org.name, org.tenant_id, local_user.object_id, member.role)
+
     org = db.scalar(
         select(Organization).where(
             Organization.tenant_id == tenant_id,
@@ -158,7 +240,6 @@ def get_principal(
         raise HTTPException(401, "Invalid access token") from exc
     if claims.get("tid") != tenant_id or claims.get("oid") != object_id:
         raise HTTPException(401, "Invalid access token identity")
-    settings: Settings = request.app.state.settings
     if settings.required_scope not in str(claims.get("scp", "")).split():
         raise HTTPException(403, "Required delegated API scope is missing")
     member = db.scalar(

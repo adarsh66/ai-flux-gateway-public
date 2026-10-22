@@ -419,3 +419,24 @@ export interface TurnstilePolicyPreview {
   decision_endpoint: string;
   policy_xml: string;
 }
+
+export interface LocalUserItem {
+  id: string;
+  email: string;
+  display_name: string;
+  organization_id: string;
+  organization_name: string;
+  object_id: string;
+  role: Role;
+  enabled: boolean;
+  created_at: string;
+}
+
+export interface LocalUserCreateInput {
+  email: string;
+  password: string;
+  display_name: string;
+  organization_id: string;
+  role: Role;
+}
+

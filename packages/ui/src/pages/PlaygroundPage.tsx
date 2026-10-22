@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { ApiError } from "../client";
 import { buildChatCompletionBody, chatCompletion, chatCompletionUrl, textChatRequest, type ChatMessage, type ChatRequest, type ChatResult } from "../chat";
 import { useSession } from "../session";
@@ -65,7 +66,9 @@ interface ChatProps {
 }
 
 function Chat({ models, subs, gatewayUrl, keys, setKey, reveal }: ChatProps) {
-  const [modelId, setModelId] = useState(models[0]!.id);
+  const [searchParams] = useSearchParams();
+  const initialModelId = models.find((m) => m.id === searchParams.get("model"))?.id ?? models[0]!.id;
+  const [modelId, setModelId] = useState(initialModelId);
   const [subId, setSubId] = useState(subs[0]!.id);
   const [pasted, setPasted] = useState("");
   const [system, setSystem] = useState("");
@@ -173,7 +176,19 @@ function Chat({ models, subs, gatewayUrl, keys, setKey, reveal }: ChatProps) {
     setFormError(undefined);
     const text = input.trim();
     if (!text) return setFormError("Enter a message.");
-    if (!key) return setFormError("A subscription key is required. Reveal one or paste it below.");
+    let activeKey = key;
+    if (!activeKey) {
+      try {
+        const fetched = await reveal(subId, "primary");
+        if (fetched) {
+          setKey(subId, "primary", fetched);
+          activeKey = fetched;
+        }
+      } catch {
+        /* ignore auto-reveal failure and show standard error below */
+      }
+    }
+    if (!activeKey) return setFormError("A subscription key is required. Reveal one or paste it below.");
     if (useTools && toolsOk) {
       if (!toolsCheck?.ok) return setFormError(toolsCheck?.error ?? "Tools are invalid.");
       const choice = buildToolChoice(choiceMode, choiceFn, toolsCheck.value);
@@ -190,7 +205,7 @@ function Chat({ models, subs, gatewayUrl, keys, setKey, reveal }: ChatProps) {
     setLive({ outcome: "streaming", content: "", toolCalls: [], finishReason: null, usage: null, sawDone: false });
     const result = await chatCompletion({
       gatewayUrl,
-      key,
+      key: activeKey,
       stream: stream && streamOk,
       signal: ctrl.signal,
       request: requestFor(messages),

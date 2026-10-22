@@ -1,6 +1,6 @@
 import type {
   AdminSubscription,
-  CatalogModel, CreditBudget, CreditBudgetUpdateInput, CreditSummary, GatewayConfigurationUnion, GatewayRevision, GatewayScope, GatewaySettings, GatewayTarget, ModelGardenItem, ModelRouterConfig, PlaygroundChatInput, PlaygroundChatResult, RouterDecision, RouterStrategy, SafetyConfiguration,
+  CatalogModel, CreditBudget, CreditBudgetUpdateInput, CreditSummary, GatewayConfigurationUnion, GatewayRevision, GatewayScope, GatewaySettings, GatewayTarget, LocalUserCreateInput, LocalUserItem, ModelGardenItem, ModelRouterConfig, PlaygroundChatInput, PlaygroundChatResult, RouterDecision, RouterStrategy, SafetyConfiguration,
   KeyName, Me, Member, ModelTokenSeries, Organization, Paged, Price, PriceInput, SafetyEvent,
   Subscription, SubscriptionState, TurnstilePolicyPreview, UsageFilters, UsagePage, UsageQuery, UsageSeries, UsageSeriesQuery,
 } from "./types";
@@ -173,4 +173,11 @@ export class ControlApi {
     this.json<PlaygroundChatResult>("/playground/chat", { method: "POST", json: input });
   turnstilePolicyPreview = () =>
     this.json<TurnstilePolicyPreview>("/admin/turnstile/policy-preview");
+
+  localUsers = (organizationId?: string) =>
+    this.json<Paged<LocalUserItem>>(`/admin/local-users${qs({ organization_id: organizationId })}`);
+  createLocalUser = (input: LocalUserCreateInput) =>
+    this.json<LocalUserItem>("/admin/local-users", { method: "POST", json: input });
+  updateLocalUser = (id: string, input: { enabled: boolean; password?: string }) =>
+    this.json<LocalUserItem>(`/admin/local-users/${encodeURIComponent(id)}`, { method: "PUT", json: input });
 }

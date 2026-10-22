@@ -176,3 +176,44 @@ def test_decision_router_auto_mode_and_playground_execution(env):
     assert "<llm-content-safety" in preview.json()["policy_xml"]
     assert "TurnstileLedger" in preview.json()["policy_xml"]
     assert "ModelRoutes" in preview.json()["policy_xml"]
+
+
+def test_local_postgres_user_authentication_and_admin_user_management(env):
+    env.settings.local_auth_enabled = True
+    login_res = env.client.post(
+        "/api/auth/login",
+        json={"email": "admin@turnstile.local", "password": "turnstile-admin"},
+    )
+    assert login_res.status_code == 200, login_res.text
+    admin_token = login_res.json()["access_token"]
+    admin_headers = {"Authorization": f"Bearer {admin_token}"}
+
+    me_res = env.client.get("/api/me", headers=admin_headers)
+    assert me_res.status_code == 200
+    assert me_res.json()["role"] == "ids_admin"
+
+    new_user = env.client.post(
+        "/api/admin/local-users",
+        headers=admin_headers,
+        json={
+            "email": "smb-owner@acme.local",
+            "password": "smb-secret-password",
+            "display_name": "Acme SMB Owner",
+            "organization_id": env.orgs["customer"],
+            "role": "customer",
+        },
+    )
+    assert new_user.status_code == 201, new_user.text
+    assert new_user.json()["email"] == "smb-owner@acme.local"
+
+    smb_login = env.client.post(
+        "/api/auth/login",
+        json={"email": "smb-owner@acme.local", "password": "smb-secret-password"},
+    )
+    assert smb_login.status_code == 200
+    smb_headers = {"Authorization": f"Bearer {smb_login.json()['access_token']}"}
+    smb_me = env.client.get("/api/me", headers=smb_headers)
+    assert smb_me.status_code == 200
+    assert smb_me.json()["organization_id"] == env.orgs["customer"]
+    assert smb_me.json()["role"] == "customer"
+

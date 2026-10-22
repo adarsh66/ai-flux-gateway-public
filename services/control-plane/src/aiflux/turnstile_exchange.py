@@ -2,25 +2,32 @@
 
 import json
 import re
+import time
 from datetime import UTC, datetime, timedelta
 from decimal import Decimal
 from typing import Any, Literal
 from uuid import uuid4
 
+import httpx
 from fastapi import HTTPException
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
-from aiflux.auth import Principal
+from aiflux.auth import Principal, hash_password, issue_local_jwt, verify_password
 from aiflux.config import Settings
 from aiflux.finops import aware
 from aiflux.models import (
+    Base,
     CreditBudget,
+    IngestionState,
+    LocalUser,
     ManagedModelEndpoint,
+    Member,
     ModelPrice,
     ModelRouterConfig,
     Organization,
     SafetyEvent,
+    Team,
     TeamSubscription,
     UsageRecord,
 )
@@ -29,6 +36,13 @@ from aiflux.schemas import (
     CreditBudgetOutput,
     CreditBudgetUpdate,
     CreditSummaryOutput,
+    IdentityOutput,
+    LocalLoginRequest,
+    LocalLoginResponse,
+    LocalRegisterRequest,
+    LocalUserCreate,
+    LocalUserOutput,
+    LocalUserUpdate,
     ModelGardenItemOutput,
     ModelGardenUpsert,
     ModelRouterConfigOutput,
@@ -273,6 +287,7 @@ DEFAULT_ROUTER_RULES: list[dict[str, Any]] = [
 
 
 def ensure_model_garden_seeded(db: Session) -> None:
+    Base.metadata.create_all(db.get_bind(), checkfirst=True)
     existing_count = db.scalar(select(func.count()).select_from(ManagedModelEndpoint)) or 0
     if existing_count > 0:
         return
@@ -928,25 +943,80 @@ def run_playground_chat(
         )
 
     input_tokens = max(12, sum(max(1, len(m.content) // 4) for m in payload.messages))
-    if routing_decision is not None:
-        reply_text = (
-            f"[{endpoint.display_name} · routed via Microsoft Decision-1 ({routing_decision.category})] "
-            f"Processed your request ({input_tokens} prompt tokens) with Azure AI Content Safety verified. "
-            f"Routing reason: {routing_decision.reason}"
+    output_tokens = min(payload.max_completion_tokens, 64)
+    latency_ms = 320 if "mini" in endpoint.id or "haiku" in endpoint.id else 680
+    reply_text = ""
+
+    if (
+        settings.upstream_apim_url
+        and settings.upstream_apim_key
+        and settings.environment != "testing"
+    ):
+        live_deployments = {"gpt-5.4-mini", "gpt-5.4", "DeepSeek-V3.2-Speciale"}
+        target_dep = endpoint.id if endpoint.id in live_deployments else (
+            "gpt-5.4" if "sonnet" in endpoint.id else "gpt-5.4-mini"
         )
-    else:
-        reply_text = (
-            f"[{endpoint.display_name} ({endpoint.vendor})] "
-            f"Completed response via Turnstile Token Exchange Gateway ({endpoint.region}) "
-            "with Foundry Content Safety active."
-        )
-    output_tokens = min(payload.max_completion_tokens, max(24, len(reply_text) // 4))
+        base_apim = settings.upstream_apim_url.rstrip("/")
+        apim_url = f"{base_apim}/openai/deployments/{target_dep}/chat/completions?api-version=2024-10-21"
+        req_body: dict[str, Any] = {
+            "messages": [{"role": m.role, "content": m.content} for m in payload.messages],
+        }
+        if target_dep == "DeepSeek-V3.2-Speciale":
+            req_body["max_tokens"] = max(512, payload.max_completion_tokens)
+        else:
+            req_body["max_completion_tokens"] = max(64, payload.max_completion_tokens)
+        t0 = time.monotonic()
+        try:
+            resp = httpx.post(
+                apim_url,
+                headers={
+                    "Content-Type": "application/json",
+                    "api-key": settings.upstream_apim_key,
+                    "Ocp-Apim-Subscription-Key": settings.upstream_apim_key,
+                },
+                json=req_body,
+                timeout=30.0,
+            )
+            if resp.status_code == 200:
+                data = resp.json()
+                latency_ms = max(50, int((time.monotonic() - t0) * 1000))
+                msg_obj = (data.get("choices") or [{}])[0].get("message") or {}
+                raw_content = str(msg_obj.get("content") or "")
+                if "</think>" in raw_content:
+                    raw_content = raw_content.split("</think>", 1)[1].strip()
+                prefix = (
+                    f"[{endpoint.display_name} · routed via Microsoft Decision-1 "
+                    f"({routing_decision.category})]\n"
+                    if routing_decision is not None
+                    else ""
+                )
+                reply_text = f"{prefix}{raw_content}".strip()
+                usage_obj = data.get("usage") or {}
+                input_tokens = int(usage_obj.get("prompt_tokens") or input_tokens)
+                output_tokens = int(usage_obj.get("completion_tokens") or output_tokens)
+        except httpx.HTTPError:
+            reply_text = ""
+
+    if not reply_text:
+        if routing_decision is not None:
+            reply_text = (
+                f"[{endpoint.display_name} · routed via Microsoft Decision-1 ({routing_decision.category})] "
+                f"Processed your request ({input_tokens} prompt tokens) with Azure AI Content Safety "
+                f"verified. Routing reason: {routing_decision.reason}"
+            )
+        else:
+            reply_text = (
+                f"[{endpoint.display_name} ({endpoint.vendor})] "
+                f"Completed response via Turnstile Token Exchange Gateway ({endpoint.region}) "
+                "with Foundry Content Safety active."
+            )
+        output_tokens = min(payload.max_completion_tokens, max(24, len(reply_text) // 4))
+
     cost = (
         Decimal(input_tokens) * Decimal(endpoint.input_per_million)
         + Decimal(output_tokens) * Decimal(endpoint.output_per_million)
     ) / Decimal(1_000_000)
     cost = cost.quantize(Decimal("0.00000001"))
-    latency_ms = 320 if "mini" in endpoint.id or "haiku" in endpoint.id else 680
 
     usage_id = str(uuid4())
     db.add(
@@ -1105,3 +1175,277 @@ def render_turnstile_exchange_policy(db: Session, settings: Settings) -> Turnsti
         decision_endpoint=router.decision_endpoint,
         policy_xml=xml,
     )
+
+
+def ensure_local_users_seeded(db: Session, settings: Settings) -> None:
+    Base.metadata.create_all(db.get_bind(), checkfirst=True)
+    count = db.scalar(select(func.count()).select_from(LocalUser)) or 0
+    if count > 0:
+        return
+    home_tid = settings.home_tenant_id or "00000000-0000-0000-0000-000000000001"
+    home_org = db.scalar(select(Organization).where(Organization.tenant_id == home_tid))
+    if home_org is None:
+        home_org = Organization(
+            name=settings.home_organization_name or "Singtel IDS",
+            tenant_id=home_tid,
+            enabled=True,
+        )
+        db.add(home_org)
+        db.flush()
+
+    cust_tid = "00000000-0000-0000-0000-000000000002"
+    cust_org = db.scalar(select(Organization).where(Organization.tenant_id == cust_tid))
+    if cust_org is None:
+        cust_org = Organization(name="Enterprise OpCo Alpha", tenant_id=cust_tid, enabled=True)
+        db.add(cust_org)
+        db.flush()
+
+    admin_oid = "00000000-0000-0000-0000-000000000101"
+    if db.scalar(
+        select(Member).where(Member.organization_id == home_org.id, Member.object_id == admin_oid)
+    ) is None:
+        db.add(Member(organization_id=home_org.id, object_id=admin_oid, role="ids_admin", enabled=True))
+
+    cust_oid = "00000000-0000-0000-0000-000000000202"
+    if db.scalar(
+        select(Member).where(Member.organization_id == cust_org.id, Member.object_id == cust_oid)
+    ) is None:
+        db.add(Member(organization_id=cust_org.id, object_id=cust_oid, role="customer", enabled=True))
+
+    db.add(
+        LocalUser(
+            email="admin@turnstile.local",
+            password_hash=hash_password("turnstile-admin"),
+            display_name="Platform Admin",
+            organization_id=home_org.id,
+            object_id=admin_oid,
+            role="ids_admin",
+            enabled=True,
+        )
+    )
+    db.add(
+        LocalUser(
+            email="customer@opco.local",
+            password_hash=hash_password("turnstile-customer"),
+            display_name="OpCo Developer",
+            organization_id=cust_org.id,
+            object_id=cust_oid,
+            role="customer",
+            enabled=True,
+        )
+    )
+    ensure_model_garden_seeded(db)
+    ensure_organization_budget(db, cust_org.id)
+    ensure_organization_budget(db, home_org.id)
+    sub_id = "00000000-0000-0000-0000-000000000301"
+    team_id = "00000000-0000-0000-0000-000000000401"
+    if db.get(Team, team_id) is None:
+        db.add(Team(id=team_id, organization_id=cust_org.id, name="Digital Products"))
+        db.flush()
+    if db.get(TeamSubscription, sub_id) is None:
+        db.add(
+            TeamSubscription(
+                id=sub_id,
+                organization_id=cust_org.id,
+                name="OpCo Alpha Production Key",
+                team="Digital Products",
+                team_id=team_id,
+                state="active",
+                desired_state="active",
+                idempotency_key=sub_id,
+            )
+        )
+        db.flush()
+    now = datetime.now(UTC)
+    if db.get(IngestionState, "native-llm") is None:
+        db.add(IngestionState(id="native-llm", watermark=now, last_success_at=now))
+    sample_usage = [
+        ("gpt-5.4-mini", "azure_openai", 42000, 18000, Decimal("0.03420000"), 280, "complete"),
+        ("claude-sonnet-4-5", "anthropic", 65000, 24000, Decimal("0.55500000"), 640, "auto_routed"),
+        ("DeepSeek-V3.2-Speciale", "deepseek", 88000, 35000, Decimal("0.06226000"), 490, "playground"),
+    ]
+    for idx, (m_id, prov, inp, out, cost_val, lat, comp) in enumerate(sample_usage):
+        u_id = f"seed-usage-{idx + 1}"
+        if db.get(UsageRecord, u_id) is None:
+            db.add(
+                UsageRecord(
+                    id=u_id,
+                    organization_id=cust_org.id,
+                    subscription_id=sub_id,
+                    model=m_id,
+                    provider=prov,
+                    region="eastus2",
+                    occurred_at=now - timedelta(minutes=(idx + 1) * 15),
+                    input_tokens=inp,
+                    output_tokens=out,
+                    cached_input_tokens=0,
+                    cache_write_tokens=0,
+                    cost=cost_val,
+                    currency="USD",
+                    status_code=200,
+                    e2e_ms=lat,
+                    ttft_ms=lat // 3,
+                    completeness=comp,
+                    ingested_at=now,
+                )
+            )
+    db.commit()
+
+
+def authenticate_local_user(
+    db: Session, settings: Settings, payload: LocalLoginRequest
+) -> LocalLoginResponse:
+    if not settings.local_auth_enabled:
+        raise HTTPException(403, "Local PostgreSQL authentication is disabled")
+    ensure_local_users_seeded(db, settings)
+    email = payload.email.strip().lower()
+    user = db.scalar(select(LocalUser).where(func.lower(LocalUser.email) == email))
+    if user is None or not user.enabled or not verify_password(payload.password, user.password_hash):
+        raise HTTPException(401, "Invalid email or password")
+    org = db.get(Organization, user.organization_id)
+    if org is None or not org.enabled:
+        raise HTTPException(403, "Organization is disabled")
+    token = issue_local_jwt(settings, user, org)
+    return LocalLoginResponse(
+        access_token=token,
+        token_type="bearer",
+        user=IdentityOutput(
+            organization_id=org.id,
+            organization_name=org.name,
+            tenant_id=org.tenant_id,
+            object_id=user.object_id,
+            role=user.role,  # type: ignore[arg-type]
+        ),
+        email=user.email,
+        display_name=user.display_name,
+    )
+
+
+def register_local_user(
+    db: Session, settings: Settings, payload: LocalRegisterRequest
+) -> LocalLoginResponse:
+    if not settings.local_auth_enabled:
+        raise HTTPException(403, "Local PostgreSQL authentication is disabled")
+    ensure_local_users_seeded(db, settings)
+    email = payload.email.strip().lower()
+    existing = db.scalar(select(LocalUser).where(func.lower(LocalUser.email) == email))
+    if existing is not None:
+        raise HTTPException(409, "An account with that email already exists")
+    org = db.scalar(
+        select(Organization).where(func.lower(Organization.name) == payload.organization_name.strip().lower())
+    )
+    if org is None:
+        org = Organization(
+            name=payload.organization_name.strip(),
+            tenant_id=str(uuid4()),
+            enabled=True,
+        )
+        db.add(org)
+        db.flush()
+        ensure_organization_budget(db, org.id)
+    oid = str(uuid4())
+    db.add(Member(organization_id=org.id, object_id=oid, role="customer", enabled=True))
+    user = LocalUser(
+        email=email,
+        password_hash=hash_password(payload.password),
+        display_name=payload.display_name.strip(),
+        organization_id=org.id,
+        object_id=oid,
+        role="customer",
+        enabled=True,
+    )
+    db.add(user)
+    db.commit()
+    token = issue_local_jwt(settings, user, org)
+    return LocalLoginResponse(
+        access_token=token,
+        token_type="bearer",
+        user=IdentityOutput(
+            organization_id=org.id,
+            organization_name=org.name,
+            tenant_id=org.tenant_id,
+            object_id=user.object_id,
+            role="customer",
+        ),
+        email=user.email,
+        display_name=user.display_name,
+    )
+
+
+def _local_user_output(db: Session, user: LocalUser) -> LocalUserOutput:
+    org = db.get(Organization, user.organization_id)
+    return LocalUserOutput(
+        id=user.id,
+        email=user.email,
+        display_name=user.display_name,
+        organization_id=user.organization_id,
+        organization_name=org.name if org else user.organization_id,
+        object_id=user.object_id,
+        role=user.role,  # type: ignore[arg-type]
+        enabled=user.enabled,
+        created_at=aware(user.created_at),
+    )
+
+
+def list_local_users(
+    db: Session, settings: Settings, organization_id: str | None = None
+) -> list[LocalUserOutput]:
+    if settings.local_auth_enabled:
+        ensure_local_users_seeded(db, settings)
+    query = select(LocalUser).order_by(LocalUser.email.asc())
+    if organization_id is not None:
+        query = query.where(LocalUser.organization_id == organization_id)
+    return [_local_user_output(db, row) for row in db.scalars(query).all()]
+
+
+def create_local_user(
+    db: Session, settings: Settings, principal: Principal, payload: LocalUserCreate
+) -> LocalUserOutput:
+    org = db.get(Organization, str(payload.organization_id))
+    if org is None:
+        raise HTTPException(404, "Organization not found")
+    if payload.role == "ids_admin" and org.tenant_id != settings.home_tenant_id:
+        raise HTTPException(422, "IDS admin role can only be granted in the home organization")
+    email = payload.email.strip().lower()
+    existing = db.scalar(select(LocalUser).where(func.lower(LocalUser.email) == email))
+    if existing is not None:
+        raise HTTPException(409, "A user with that email already exists")
+    oid = str(uuid4())
+    db.add(Member(organization_id=org.id, object_id=oid, role=payload.role, enabled=True))
+    user = LocalUser(
+        email=email,
+        password_hash=hash_password(payload.password),
+        display_name=payload.display_name,
+        organization_id=org.id,
+        object_id=oid,
+        role=payload.role,
+        enabled=True,
+    )
+    db.add(user)
+    db.flush()
+    audit(db, principal, "local_user.created", user.id, org.id)
+    db.commit()
+    return _local_user_output(db, user)
+
+
+def update_local_user(
+    db: Session, principal: Principal, user_id: str, payload: LocalUserUpdate
+) -> LocalUserOutput:
+    user = db.get(LocalUser, user_id)
+    if user is None:
+        raise HTTPException(404, "User not found")
+    user.enabled = payload.enabled
+    if payload.password:
+        user.password_hash = hash_password(payload.password)
+    member = db.scalar(
+        select(Member).where(
+            Member.organization_id == user.organization_id,
+            Member.object_id == user.object_id,
+        )
+    )
+    if member is not None:
+        member.enabled = payload.enabled
+    audit(db, principal, "local_user.updated", user.id, user.organization_id)
+    db.commit()
+    return _local_user_output(db, user)
+

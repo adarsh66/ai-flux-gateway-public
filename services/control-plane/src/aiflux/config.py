@@ -55,6 +55,10 @@ class Settings(BaseSettings):
     decision_router_enabled: bool = True
     decision_router_endpoint: str = "/providers/microsoft/v1/systemone"
     decision_router_default_model: str = "gpt-5.4-mini"
+    local_auth_enabled: bool = False
+    local_jwt_secret: str = "turnstile-local-postgres-jwt-signing-secret-key-2026"
+    upstream_apim_url: str = ""
+    upstream_apim_key: str = ""
 
     @model_validator(mode="after")
     def populate_turnstile_env_fallbacks(self) -> "Settings":
@@ -66,6 +70,18 @@ class Settings(BaseSettings):
             self.eventhub_namespace = os.environ["EVENTHUB_NAMESPACE"]
         if os.environ.get("EVENTHUB_NAME"):
             self.eventhub_name = os.environ["EVENTHUB_NAME"]
+        if not self.upstream_apim_url and os.environ.get("APIM_GATEWAY_URL"):
+            self.upstream_apim_url = os.environ["APIM_GATEWAY_URL"]
+        if not self.upstream_apim_key and os.environ.get("APIM_PROBE_SUBSCRIPTION_KEY"):
+            self.upstream_apim_key = os.environ["APIM_PROBE_SUBSCRIPTION_KEY"]
+        is_pg = self.database_url.startswith(("postgresql://", "postgresql+psycopg://"))
+        if is_pg and self.environment != "production":
+            self.local_auth_enabled = True
+        if self.local_auth_enabled and self.database_url:
+            if not self.home_tenant_id:
+                self.home_tenant_id = "00000000-0000-0000-0000-000000000001"
+            if not self.entra_audience:
+                self.entra_audience = "local://turnstile-postgres-auth"
         return self
 
     def identity_errors(self) -> list[str]:

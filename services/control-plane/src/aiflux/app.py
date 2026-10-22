@@ -65,6 +65,12 @@ from aiflux.schemas import (
     GatewayTarget,
     IdentityOutput,
     KeyRequest,
+    LocalLoginRequest,
+    LocalLoginResponse,
+    LocalRegisterRequest,
+    LocalUserCreate,
+    LocalUserOutput,
+    LocalUserUpdate,
     MemberCreate,
     MemberOutput,
     ModelGardenItemOutput,
@@ -77,6 +83,7 @@ from aiflux.schemas import (
     Page,
     PlaygroundChatRequest,
     PlaygroundChatResponse,
+    PlaygroundMessage,
     PriceCreate,
     PriceEnd,
     PriceOutput,
@@ -101,13 +108,18 @@ from aiflux.subscriptions import (
     subscription_dict,
 )
 from aiflux.turnstile_exchange import (
+    authenticate_local_user,
+    create_local_user,
     credit_summary_response,
     decide_model_route,
     get_router_config_output,
     list_budgets,
+    list_local_users,
     list_model_garden,
+    register_local_user,
     render_turnstile_exchange_policy,
     run_playground_chat,
+    update_local_user,
     update_router_config,
     upsert_budget,
     upsert_model_garden_item,
@@ -139,8 +151,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.add_middleware(
         CORSMiddleware,
         allow_origins=settings.cors_origins,
-        allow_methods=["GET", "POST", "PUT"],
-        allow_headers=["Authorization", "Content-Type", "Idempotency-Key"],
+        allow_methods=["GET", "POST", "PUT", "OPTIONS"],
+        allow_headers=["Authorization", "Content-Type", "Idempotency-Key", "Ocp-Apim-Subscription-Key"],
     )
 
     @app.middleware("http")
@@ -277,8 +289,22 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         return {"items": [revision_output(row) for row in rows], "total": total}
 
     @app.get("/api/models", response_model=Page[CatalogOutput])
-    def models(principal: User) -> dict:
+    def models(principal: User, db: Db) -> dict:
         if not settings.catalog_configured:
+            if settings.local_auth_enabled:
+                garden = list_model_garden(db, include_disabled=False)
+                items = [
+                    {
+                        "id": m.id,
+                        "provider": m.vendor,
+                        "capabilities": m.capabilities,
+                        "enabled": m.enabled and not m.coming_soon,
+                        "placeholder": m.coming_soon,
+                        "max_completion_tokens": m.max_completion_tokens,
+                    }
+                    for m in garden
+                ]
+                return {"items": items, "total": len(items)}
             raise HTTPException(503, "Model catalog has not passed gateway capability validation")
         try:
             catalog = Catalog.load(settings.catalog_path)
@@ -892,6 +918,84 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     @app.get("/api/admin/turnstile/policy-preview", response_model=TurnstilePolicyPreviewOutput)
     def admin_turnstile_policy_preview(principal: Admin, db: Db) -> TurnstilePolicyPreviewOutput:
         return render_turnstile_exchange_policy(db, settings)
+
+    @app.post("/api/auth/login", response_model=LocalLoginResponse)
+    def local_auth_login(payload: LocalLoginRequest, db: Db) -> LocalLoginResponse:
+        return authenticate_local_user(db, settings, payload)
+
+    @app.post("/api/auth/register", status_code=201, response_model=LocalLoginResponse)
+    def local_auth_register(payload: LocalRegisterRequest, db: Db) -> LocalLoginResponse:
+        return register_local_user(db, settings, payload)
+
+    @app.get("/api/admin/local-users", response_model=Page[LocalUserOutput])
+    def admin_get_local_users(
+        principal: Admin, db: Db, organization_id: UUID | None = None
+    ) -> dict:
+        items = list_local_users(db, settings, str(organization_id) if organization_id else None)
+        return {"items": items, "total": len(items)}
+
+    @app.post("/api/admin/local-users", status_code=201, response_model=LocalUserOutput)
+    def admin_add_local_user(
+        payload: LocalUserCreate, principal: Admin, db: Db
+    ) -> LocalUserOutput:
+        return create_local_user(db, settings, principal, payload)
+
+    @app.put("/api/admin/local-users/{user_id}", response_model=LocalUserOutput)
+    def admin_modify_local_user(
+        user_id: UUID, payload: LocalUserUpdate, principal: Admin, db: Db
+    ) -> LocalUserOutput:
+        return update_local_user(db, principal, str(user_id), payload)
+
+    @app.post("/v1/chat/completions")
+    def local_gateway_chat_completions(
+        payload: dict[str, Any],
+        db: Db,
+        subscription_key: str | None = Header(default=None, alias="Ocp-Apim-Subscription-Key"),
+    ) -> dict[str, Any]:
+        if not settings.local_auth_enabled:
+            raise HTTPException(404, "Not found")
+        if not subscription_key or not subscription_key.strip():
+            raise HTTPException(401, "Missing Ocp-Apim-Subscription-Key header")
+        from aiflux.turnstile_exchange import ensure_local_users_seeded
+
+        ensure_local_users_seeded(db, settings)
+        cust_org = db.scalar(
+            select(Organization).where(Organization.tenant_id == "00000000-0000-0000-0000-000000000002")
+        ) or db.scalar(select(Organization))
+        if cust_org is None:
+            raise HTTPException(503, "No organization configured")
+        principal = Principal(
+            cust_org.id, cust_org.name, cust_org.tenant_id, "00000000-0000-0000-0000-000000000202", "customer"
+        )
+        raw_msgs = payload.get("messages") or [{"role": "user", "content": "Hello"}]
+        req = PlaygroundChatRequest(
+            model=str(payload.get("model", "auto")),
+            messages=[
+                PlaygroundMessage(role=m.get("role", "user"), content=str(m.get("content", "")))
+                for m in raw_msgs
+                if isinstance(m, dict) and m.get("content")
+            ],
+            max_completion_tokens=int(payload.get("max_completion_tokens") or 512),
+        )
+        res = run_playground_chat(db, settings, principal, req)
+        return {
+            "id": res.id,
+            "object": "chat.completion",
+            "model": res.selected_model,
+            "choices": [
+                {
+                    "index": 0,
+                    "message": {"role": "assistant", "content": res.reply},
+                    "finish_reason": "content_filter" if res.safety_status == "blocked" else "stop",
+                }
+            ],
+            "usage": {
+                "prompt_tokens": res.input_tokens,
+                "completion_tokens": res.output_tokens,
+                "total_tokens": res.total_tokens,
+            },
+            "routing_decision": res.routing_decision.model_dump() if res.routing_decision else None,
+        }
 
     return app
 

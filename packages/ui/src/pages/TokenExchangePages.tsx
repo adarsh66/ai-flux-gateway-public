@@ -1,10 +1,13 @@
 import { useState, type FormEvent } from "react";
+import { Link } from "react-router-dom";
 import { ApiError } from "../client";
 import { useSession } from "../session";
 import type {
   CreditBudget,
   KeyName,
+  LocalUserItem,
   ModelGardenItem,
+  Role,
   RouterDecision,
   RouterStrategy,
 } from "../types";
@@ -191,6 +194,13 @@ export function ModelGardenPage() {
                         </Badge>
                       ))}
                     </div>
+                    {!m.coming_soon && m.enabled && (
+                      <div className="actions" style={{ marginTop: "0.75rem" }}>
+                        <Link className="btn primary" to={`/playground?model=${encodeURIComponent(m.id)}`}>
+                          Try in Playground
+                        </Link>
+                      </div>
+                    )}
                   </li>
                 ))}
               </ul>
@@ -875,6 +885,133 @@ export function AdminModelRouterPage() {
               <code>{preview.policy_xml}</code>
             </pre>
           </section>
+        )}
+      </AsyncView>
+    </>
+  );
+}
+
+export function AdminLocalUsersPage() {
+  const { api } = useSession();
+  const [version, setVersion] = useState(0);
+  const usersState = useAsync(() => api.localUsers(), [api, version]);
+  const orgsState = useAsync(() => api.organizations(), [api]);
+  const [email, setEmail] = useState("");
+  const [displayName, setDisplayName] = useState("");
+  const [password, setPassword] = useState("");
+  const [organizationId, setOrganizationId] = useState("");
+  const [role, setRole] = useState<Role>("customer");
+  const [busy, setBusy] = useState(false);
+  const [notice, setNotice] = useState<string>();
+  const [error, setError] = useState<string>();
+
+  async function createUser(e: FormEvent) {
+    e.preventDefault();
+    if (!organizationId) return;
+    setBusy(true);
+    setError(undefined);
+    setNotice(undefined);
+    try {
+      const created = await api.createLocalUser({
+        email: email.trim(),
+        password,
+        display_name: displayName.trim(),
+        organization_id: organizationId,
+        role,
+      });
+      setNotice(`Created PostgreSQL user '${created.email}' for ${created.organization_name}.`);
+      setEmail("");
+      setDisplayName("");
+      setPassword("");
+      setVersion((v) => v + 1);
+    } catch (err) {
+      setError(err instanceof ApiError ? err.detail : "Could not create user.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function toggleUser(u: LocalUserItem) {
+    setError(undefined);
+    setNotice(undefined);
+    try {
+      const updated = await api.updateLocalUser(u.id, { enabled: !u.enabled });
+      setNotice(`User '${updated.email}' is now ${updated.enabled ? "enabled" : "disabled"}.`);
+      setVersion((v) => v + 1);
+    } catch (err) {
+      setError(err instanceof ApiError ? err.detail : "Could not update user.");
+    }
+  }
+
+  return (
+    <>
+      <PageHeader
+        title="Local users (PostgreSQL)"
+        subtitle="Manage email & password accounts stored in PostgreSQL (local_users) for OpCo customers and platform administrators."
+      />
+      {error && <ErrorState message={error} />}
+      {notice && <p role="status" className="notice">{notice}</p>}
+      <AsyncView state={orgsState}>
+        {(orgs) => (
+          <section className="panel" aria-labelledby="new-local-user-heading">
+            <h2 id="new-local-user-heading">Create PostgreSQL user account</h2>
+            <form onSubmit={(e) => void createUser(e)} className="form-row">
+              <Field label="Organization (OpCo)">
+                {(id) => (
+                  <select id={id} value={organizationId} onChange={(e) => setOrganizationId(e.target.value)} required>
+                    <option value="">Select organization…</option>
+                    {orgs.items.map((o) => (
+                      <option key={o.id} value={o.id}>{o.name}</option>
+                    ))}
+                  </select>
+                )}
+              </Field>
+              <Field label="Display name">
+                {(id) => <input id={id} value={displayName} onChange={(e) => setDisplayName(e.target.value)} required />}
+              </Field>
+              <Field label="Email">
+                {(id) => <input id={id} type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />}
+              </Field>
+              <Field label="Initial password">
+                {(id) => <input id={id} type="password" minLength={6} value={password} onChange={(e) => setPassword(e.target.value)} required />}
+              </Field>
+              <Field label="Role">
+                {(id) => (
+                  <select id={id} value={role} onChange={(e) => setRole(e.target.value as Role)}>
+                    <option value="customer">customer (OpCo portal)</option>
+                    <option value="ids_admin">ids_admin (Admin portal)</option>
+                  </select>
+                )}
+              </Field>
+              <button className="btn primary" disabled={busy || !organizationId}>
+                {busy ? "Creating…" : "Create PostgreSQL user"}
+              </button>
+            </form>
+          </section>
+        )}
+      </AsyncView>
+      <AsyncView state={usersState}>
+        {(data) => (
+          <Table
+            caption="PostgreSQL local user accounts"
+            head={["Email", "Display name", "Organization", "Role", "Status", "Created", "Action"]}
+          >
+            {data.items.map((u) => (
+              <tr key={u.id}>
+                <td><code>{u.email}</code></td>
+                <td>{u.display_name}</td>
+                <td>{u.organization_name}</td>
+                <td><Badge tone={u.role === "ids_admin" ? "info" : "neutral"}>{u.role}</Badge></td>
+                <td><Badge tone={u.enabled ? "ok" : "bad"}>{u.enabled ? "Enabled" : "Disabled"}</Badge></td>
+                <td>{fmtDate(u.created_at)}</td>
+                <td>
+                  <button className="btn" type="button" onClick={() => void toggleUser(u)}>
+                    {u.enabled ? "Disable" : "Enable"}
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </Table>
         )}
       </AsyncView>
     </>

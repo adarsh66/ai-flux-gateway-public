@@ -1,4 +1,5 @@
 export interface PortalConfig {
+  authMode?: "entra" | "local";
   clientId: string;
   authority: string;
   apiScope: string;
@@ -25,31 +26,35 @@ function isSecureOrLocal(url: URL): boolean {
 /** Validates compile-time public configuration. Anything missing or invalid denies access. */
 export function loadConfig(env: Env): ConfigResult {
   const problems: string[] = [];
+  const authModeRaw = str(env.VITE_AUTH_MODE).toLowerCase();
+  const isLocalAuth = authModeRaw === "local" || authModeRaw === "postgres";
   const clientId = str(env.VITE_ENTRA_CLIENT_ID);
   const authority = str(env.VITE_ENTRA_AUTHORITY) || "https://login.microsoftonline.com/organizations";
   const apiScope = str(env.VITE_API_SCOPE);
   const controlApiUrl = str(env.VITE_CONTROL_API_URL) || "/api";
-  const gatewayUrl = str(env.VITE_GATEWAY_URL);
+  const gatewayUrl = str(env.VITE_GATEWAY_URL) || (isLocalAuth ? "http://localhost:8000/v1" : "");
 
-  if (!GUID.test(clientId)) problems.push("VITE_ENTRA_CLIENT_ID must be an application (client) ID GUID.");
-  let authorityUrl: URL | undefined;
-  try {
-    authorityUrl = new URL(authority);
-  } catch {
-    problems.push("VITE_ENTRA_AUTHORITY must use organizations or a tenant GUID on login.microsoftonline.com.");
+  if (!isLocalAuth) {
+    if (!GUID.test(clientId)) problems.push("VITE_ENTRA_CLIENT_ID must be an application (client) ID GUID.");
+    let authorityUrl: URL | undefined;
+    try {
+      authorityUrl = new URL(authority);
+    } catch {
+      problems.push("VITE_ENTRA_AUTHORITY must use organizations or a tenant GUID on login.microsoftonline.com.");
+    }
+    if (
+      authorityUrl &&
+      (authorityUrl.origin !== "https://login.microsoftonline.com" ||
+        authorityUrl.username ||
+        authorityUrl.password ||
+        !/^\/(?:organizations|[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})\/?$/i.test(authorityUrl.pathname) ||
+        authorityUrl.search ||
+        authorityUrl.hash)
+    ) {
+      problems.push("VITE_ENTRA_AUTHORITY must use organizations or a tenant GUID on login.microsoftonline.com.");
+    }
+    if (!apiScope || /\s/.test(apiScope)) problems.push("VITE_API_SCOPE must be a single API scope, for example api://<app-id>/access_as_user.");
   }
-  if (
-    authorityUrl &&
-    (authorityUrl.origin !== "https://login.microsoftonline.com" ||
-      authorityUrl.username ||
-      authorityUrl.password ||
-      !/^\/(?:organizations|[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})\/?$/i.test(authorityUrl.pathname) ||
-      authorityUrl.search ||
-      authorityUrl.hash)
-  ) {
-    problems.push("VITE_ENTRA_AUTHORITY must use organizations or a tenant GUID on login.microsoftonline.com.");
-  }
-  if (!apiScope || /\s/.test(apiScope)) problems.push("VITE_API_SCOPE must be a single API scope, for example api://<app-id>/access_as_user.");
 
   if (controlApiUrl !== "/api" && !controlApiUrl.startsWith("/")) {
     try {
@@ -71,9 +76,10 @@ export function loadConfig(env: Env): ConfigResult {
   return {
     ok: true,
     config: {
-      clientId,
+      authMode: isLocalAuth ? "local" : "entra",
+      clientId: clientId || "00000000-0000-0000-0000-000000000000",
       authority: authority.replace(/\/+$/, ""),
-      apiScope,
+      apiScope: apiScope || "access_as_user",
       controlApiUrl: controlApiUrl.replace(/\/+$/, ""),
       gatewayUrl: gatewayUrl.replace(/\/+$/, ""),
     },

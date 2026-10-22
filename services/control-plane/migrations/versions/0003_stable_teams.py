@@ -2,7 +2,7 @@
 from uuid import NAMESPACE_URL, uuid5
 
 import sqlalchemy as sa
-from aiflux.models import CreditBudget, ManagedModelEndpoint, ModelRouterConfig, Team
+from aiflux.models import CreditBudget, LocalUser, ManagedModelEndpoint, ModelRouterConfig, Team
 from alembic import op
 
 revision = "0003"
@@ -17,6 +17,7 @@ def upgrade() -> None:
     CreditBudget.__table__.create(connection, checkfirst=True)
     ManagedModelEndpoint.__table__.create(connection, checkfirst=True)
     ModelRouterConfig.__table__.create(connection, checkfirst=True)
+    LocalUser.__table__.create(connection, checkfirst=True)
     columns = {column["name"] for column in sa.inspect(connection).get_columns("team_subscriptions")}
     if "team_id" not in columns:
         with op.batch_alter_table("team_subscriptions") as batch:
@@ -56,6 +57,7 @@ def downgrade() -> None:
                     foreign_key["name"] or "fk_team_subscriptions_team_id_teams", type_="foreignkey",
                 )
         batch.drop_column("team_id")
+    LocalUser.__table__.drop(connection, checkfirst=True)
     ModelRouterConfig.__table__.drop(connection, checkfirst=True)
     ManagedModelEndpoint.__table__.drop(connection, checkfirst=True)
     CreditBudget.__table__.drop(connection, checkfirst=True)

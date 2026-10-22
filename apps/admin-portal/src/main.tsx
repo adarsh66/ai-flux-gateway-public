@@ -3,6 +3,7 @@ import { createRoot } from "react-dom/client";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import {
   AdminBudgetsAndFinOpsPage,
+  AdminLocalUsersPage,
   AdminModelRouterPage,
   AuthGate,
   ContentSafetySettingsPage,
@@ -20,6 +21,7 @@ import {
 const nav: NavItem[] = [
   { to: "/budgets", label: "OpCo budgets & FinOps" },
   { to: "/model-router", label: "Model router & garden" },
+  { to: "/local-users", label: "Local users (DB)" },
   { to: "/usage", label: "Showback" },
   { to: "/safety", label: "Safety events" },
   { to: "/content-safety", label: "Content safety" },
@@ -39,6 +41,7 @@ createRoot(document.getElementById("root")!).render(
             <Route index element={<Navigate to="/budgets" replace />} />
             <Route path="/budgets" element={<AdminBudgetsAndFinOpsPage />} />
             <Route path="/model-router" element={<AdminModelRouterPage />} />
+            <Route path="/local-users" element={<AdminLocalUsersPage />} />
             <Route path="/usage" element={<UsagePage admin />} />
             <Route path="/safety" element={<SafetyPage />} />
             <Route path="/content-safety" element={<ContentSafetySettingsPage />} />

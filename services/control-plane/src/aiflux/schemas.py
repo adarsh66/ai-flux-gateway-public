@@ -580,3 +580,49 @@ class TurnstilePolicyPreviewOutput(BaseModel):
     decision_endpoint: str
     policy_xml: str
 
+
+class LocalLoginRequest(Input):
+    email: str = Field(min_length=3, max_length=255)
+    password: str = Field(min_length=4, max_length=128)
+
+
+class LocalRegisterRequest(Input):
+    email: str = Field(min_length=3, max_length=255)
+    password: str = Field(min_length=6, max_length=128)
+    display_name: str = Field(min_length=1, max_length=120)
+    organization_name: str = Field(default="Enterprise OpCo Alpha", min_length=2, max_length=100)
+
+
+class LocalLoginResponse(BaseModel):
+    access_token: str
+    token_type: Literal["bearer"] = "bearer"
+    user: IdentityOutput
+    email: str
+    display_name: str
+
+
+class LocalUserCreate(Input):
+    email: str = Field(min_length=3, max_length=255)
+    password: str = Field(min_length=6, max_length=128)
+    display_name: str = Field(min_length=1, max_length=120)
+    organization_id: UUID
+    role: Literal["customer", "ids_admin"] = "customer"
+
+
+class LocalUserUpdate(Input):
+    enabled: bool = True
+    password: str | None = Field(default=None, min_length=6, max_length=128)
+
+
+class LocalUserOutput(BaseModel):
+    id: str
+    email: str
+    display_name: str
+    organization_id: str
+    organization_name: str
+    object_id: str
+    role: Literal["customer", "ids_admin"]
+    enabled: bool
+    created_at: datetime
+
+

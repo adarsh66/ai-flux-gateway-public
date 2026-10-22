@@ -21,6 +21,7 @@ export {
   CustomerKeysPage,
   AdminBudgetsAndFinOpsPage,
   AdminModelRouterPage,
+  AdminLocalUsersPage,
 } from "./pages/TokenExchangePages";
 import "./styles.css";
 
