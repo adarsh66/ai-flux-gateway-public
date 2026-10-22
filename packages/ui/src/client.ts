@@ -1,8 +1,8 @@
 import type {
   AdminSubscription,
-  CatalogModel, GatewayConfigurationUnion, GatewayRevision, GatewayScope, GatewaySettings, GatewayTarget, SafetyConfiguration,
+  CatalogModel, CreditBudget, CreditBudgetUpdateInput, CreditSummary, GatewayConfigurationUnion, GatewayRevision, GatewayScope, GatewaySettings, GatewayTarget, ModelGardenItem, ModelRouterConfig, PlaygroundChatInput, PlaygroundChatResult, RouterDecision, RouterStrategy, SafetyConfiguration,
   KeyName, Me, Member, ModelTokenSeries, Organization, Paged, Price, PriceInput, SafetyEvent,
-  Subscription, SubscriptionState, UsageFilters, UsagePage, UsageQuery, UsageSeries, UsageSeriesQuery,
+  Subscription, SubscriptionState, TurnstilePolicyPreview, UsageFilters, UsagePage, UsageQuery, UsageSeries, UsageSeriesQuery,
 } from "./types";
 
 export class ApiError extends Error {
@@ -145,4 +145,32 @@ export class ControlApi {
   endPrice = (id: string, effectiveTo: string) =>
     this.json<Price>(`/admin/prices/${encodeURIComponent(id)}/end`, { method: "PUT", json: { effective_to: effectiveTo } });
   createPrice = (input: PriceInput) => this.json<Price>("/admin/prices", { method: "POST", json: input });
+
+  modelGarden = () => this.json<Paged<ModelGardenItem>>("/model-garden");
+  adminModelGarden = () => this.json<Paged<ModelGardenItem>>("/admin/model-garden");
+  saveModelGardenItem = (input: Omit<ModelGardenItem, "priority"> & { priority?: number }) =>
+    this.json<ModelGardenItem>(`/admin/model-garden/${encodeURIComponent(input.id)}`, { method: "PUT", json: { priority: 100, ...input } });
+
+  creditSummary = (days = 30, subscriptionId?: string) =>
+    this.json<CreditSummary>(`/credits/summary${qs({ days, subscription_id: subscriptionId })}`);
+  adminFinopsSummary = (days = 30, organizationId?: string, subscriptionId?: string) =>
+    this.json<CreditSummary>(`/admin/finops/summary${qs({ days, organization_id: organizationId, subscription_id: subscriptionId })}`);
+  adminBudgets = (organizationId?: string) =>
+    this.json<Paged<CreditBudget>>(`/admin/budgets${qs({ organization_id: organizationId })}`);
+  saveAdminBudget = (organizationId: string, input: CreditBudgetUpdateInput) =>
+    this.json<CreditBudget>(`/admin/budgets/${encodeURIComponent(organizationId)}`, { method: "PUT", json: input });
+
+  customerRotateKey = (id: string, key: KeyName) =>
+    this.json<{ state: SubscriptionState; rotated_key: KeyName }>(`/subscriptions/${encodeURIComponent(id)}/customer-rotate`, { method: "POST", json: { key } });
+
+  modelRouter = () => this.json<ModelRouterConfig>("/model-router");
+  adminModelRouter = () => this.json<ModelRouterConfig>("/admin/model-router");
+  saveAdminModelRouter = (input: Omit<ModelRouterConfig, "updated_at">) =>
+    this.json<ModelRouterConfig>("/admin/model-router", { method: "PUT", json: input });
+  decideModelRoute = (prompt: string, strategy?: RouterStrategy) =>
+    this.json<RouterDecision>("/model-router/decide", { method: "POST", json: { prompt, strategy } });
+  playgroundChat = (input: PlaygroundChatInput) =>
+    this.json<PlaygroundChatResult>("/playground/chat", { method: "POST", json: input });
+  turnstilePolicyPreview = () =>
+    this.json<TurnstilePolicyPreview>("/admin/turnstile/policy-preview");
 }

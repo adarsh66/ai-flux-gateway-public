@@ -1,9 +1,25 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
-import { AuthGate, ContentSafetySettingsPage, GatewaySettingsPage, MembersPage, OrganizationsPage, PricesPage, SafetyPage, Shell, SubscriptionsPage, UsagePage, type NavItem } from "@aiflux/ui";
+import {
+  AdminBudgetsAndFinOpsPage,
+  AdminModelRouterPage,
+  AuthGate,
+  ContentSafetySettingsPage,
+  GatewaySettingsPage,
+  MembersPage,
+  OrganizationsPage,
+  PricesPage,
+  SafetyPage,
+  Shell,
+  SubscriptionsPage,
+  UsagePage,
+  type NavItem,
+} from "@aiflux/ui";
 
 const nav: NavItem[] = [
+  { to: "/budgets", label: "OpCo budgets & FinOps" },
+  { to: "/model-router", label: "Model router & garden" },
   { to: "/usage", label: "Showback" },
   { to: "/safety", label: "Safety events" },
   { to: "/content-safety", label: "Content safety" },
@@ -20,7 +36,9 @@ createRoot(document.getElementById("root")!).render(
       <BrowserRouter basename="/admin">
         <Routes>
           <Route element={<Shell portalName="IDS admin portal" nav={nav} />}>
-            <Route index element={<Navigate to="/usage" replace />} />
+            <Route index element={<Navigate to="/budgets" replace />} />
+            <Route path="/budgets" element={<AdminBudgetsAndFinOpsPage />} />
+            <Route path="/model-router" element={<AdminModelRouterPage />} />
             <Route path="/usage" element={<UsagePage admin />} />
             <Route path="/safety" element={<SafetyPage />} />
             <Route path="/content-safety" element={<ContentSafetySettingsPage />} />
@@ -29,7 +47,7 @@ createRoot(document.getElementById("root")!).render(
             <Route path="/organizations" element={<OrganizationsPage />} />
             <Route path="/members" element={<MembersPage />} />
             <Route path="/prices" element={<PricesPage />} />
-            <Route path="*" element={<Navigate to="/usage" replace />} />
+            <Route path="*" element={<Navigate to="/budgets" replace />} />
           </Route>
         </Routes>
       </BrowserRouter>

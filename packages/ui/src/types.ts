@@ -247,3 +247,175 @@ export interface GatewaySettings {
   desired: GatewayRevision | null;
   capabilities?: GatewayCapabilities;
 }
+
+export interface ModelGardenItem {
+  id: string;
+  display_name: string;
+  provider: string;
+  vendor: string;
+  region: string;
+  backend_model: string;
+  endpoint_url: string;
+  context_window: number;
+  max_completion_tokens: number;
+  input_per_million: string;
+  output_per_million: string;
+  cached_input_per_million: string | null;
+  currency: string;
+  capabilities: string[];
+  description: string;
+  enabled: boolean;
+  coming_soon: boolean;
+  content_safety_enabled: boolean;
+  priority: number;
+}
+
+export interface CreditBudget {
+  id: string;
+  organization_id: string;
+  organization_name: string;
+  subscription_id: string | null;
+  subscription_name: string | null;
+  monthly_budget_usd: string;
+  credit_allocation: string;
+  used_credits: string;
+  remaining_credits: string;
+  utilization_pct: number;
+  low_credit_alert: boolean;
+  alert_threshold_pct: number;
+  allowed_models: string[];
+  product_name: string;
+  channel: string;
+  hard_stop_enabled: boolean;
+  ledger_row_key: string;
+  updated_at: string;
+}
+
+export interface CreditBudgetUpdateInput {
+  subscription_id?: string | null;
+  monthly_budget_usd: string;
+  credit_allocation: string;
+  alert_threshold_pct: number;
+  allowed_models: string[];
+  product_name: string;
+  channel: string;
+  hard_stop_enabled: boolean;
+}
+
+export interface ModelUsageBreakdownItem {
+  model: string;
+  provider: string;
+  vendor: string;
+  requests: number;
+  input_tokens: number;
+  output_tokens: number;
+  total_tokens: number;
+  cost_usd: string;
+  share_pct: number;
+}
+
+export interface ProductUsageBreakdownItem {
+  subscription_id: string;
+  subscription_name: string;
+  team: string;
+  product_name: string;
+  requests: number;
+  total_tokens: number;
+  cost_usd: string;
+  share_pct: number;
+}
+
+export interface ChannelUsageBreakdownItem {
+  channel: string;
+  requests: number;
+  total_tokens: number;
+  cost_usd: string;
+  share_pct: number;
+}
+
+export interface CreditSummary {
+  organization_id: string;
+  organization_name: string;
+  currency: string;
+  total_credits: string;
+  used_credits: string;
+  remaining_credits: string;
+  utilization_pct: number;
+  alert_threshold_pct: number;
+  low_credit_alert: boolean;
+  hard_stop_enabled: boolean;
+  total_requests: number;
+  total_tokens: number;
+  by_model: ModelUsageBreakdownItem[];
+  by_product: ProductUsageBreakdownItem[];
+  by_channel: ChannelUsageBreakdownItem[];
+}
+
+export type RouterStrategy = "microsoft-decision-1" | "cost-optimized" | "latency-optimized" | "quality-first";
+
+export interface RouterRuleItem {
+  category: string;
+  description: string;
+  keywords: string[];
+  preferred_model: string;
+  fallback_model: string;
+}
+
+export interface ModelRouterConfig {
+  enabled: boolean;
+  strategy: RouterStrategy;
+  decision_endpoint: string;
+  default_model: string;
+  candidate_models: string[];
+  rules: RouterRuleItem[];
+  updated_at: string;
+}
+
+export interface RouterDecision {
+  requested_model: string;
+  selected_model: string;
+  display_name: string;
+  provider: string;
+  vendor: string;
+  category: string;
+  strategy: string;
+  decision_endpoint: string;
+  confidence: number;
+  reason: string;
+  estimated_input_per_million: string;
+  estimated_output_per_million: string;
+}
+
+export interface PlaygroundChatInput {
+  model: string;
+  messages: { role: "system" | "user" | "assistant"; content: string }[];
+  max_completion_tokens?: number;
+  temperature?: number;
+  subscription_id?: string;
+}
+
+export interface PlaygroundChatResult {
+  id: string;
+  requested_model: string;
+  selected_model: string;
+  provider: string;
+  vendor: string;
+  reply: string;
+  routing_decision: RouterDecision | null;
+  safety_status: "passed" | "blocked";
+  safety_categories: Record<string, number>;
+  input_tokens: number;
+  output_tokens: number;
+  total_tokens: number;
+  estimated_cost_usd: string;
+  latency_ms: number;
+}
+
+export interface TurnstilePolicyPreview {
+  ledger_storage_account: string;
+  ledger_table_name: string;
+  model_routes_table_name: string;
+  decision_router_enabled: boolean;
+  decision_endpoint: string;
+  policy_xml: string;
+}
