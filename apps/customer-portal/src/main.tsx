@@ -13,11 +13,11 @@ import {
 } from "@aiflux/ui";
 
 const nav: NavItem[] = [
-  { to: "/overview", label: "Overview & Credits" },
-  { to: "/models", label: "Model Catalog" },
-  { to: "/playground", label: "Playground" },
-  { to: "/keys", label: "API Keys & Access" },
-  { to: "/usage", label: "Usage & Telemetry" },
+  { to: "/overview", label: "Overview & Credits", section: "FinOps & Catalog" },
+  { to: "/models", label: "Model Catalog", section: "FinOps & Catalog" },
+  { to: "/playground", label: "Playground", section: "Developer Workspace" },
+  { to: "/keys", label: "API Keys & Access", section: "Developer Workspace" },
+  { to: "/usage", label: "Usage & Telemetry", section: "Developer Workspace" },
 ];
 
 createRoot(document.getElementById("root")!).render(

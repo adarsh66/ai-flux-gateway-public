@@ -819,15 +819,18 @@ tbody tr:last-child > * { border-bottom: 0; }
 tbody tr:hover { background: var(--navy-800); }
 td.num { text-align: right; font-variant-numeric: tabular-nums; font-family: var(--font-mono); white-space: nowrap; }
 
-.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(185px, 1fr)); gap: .75rem; margin: 0 0 1.1rem; }
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: .75rem; margin: 0 0 1.1rem; }
 .stats > div, .stat {
   background: var(--navy-950);
   border: 1px solid var(--line);
   border-radius: 10px;
   padding: .75rem .95rem;
+  min-width: 0;
+  overflow: hidden;
 }
 .stats dt, .stat dt { color: var(--ink-dim); font-size: .72rem; font-weight: 650; text-transform: uppercase; letter-spacing: 0.04em; }
-.stats dd, .stat dd { margin: .2rem 0 0; font-size: 1.15rem; font-weight: 700; font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+.stats dd, .stat dd { margin: .25rem 0 0; font-size: 1.05rem; font-weight: 700; font-family: var(--font-mono); font-variant-numeric: tabular-nums; overflow: hidden; text-overflow: ellipsis; }
+.stats dd code { display: inline-block; max-width: 100%; overflow: hidden; text-overflow: ellipsis; vertical-align: bottom; }
 .stat small { color: var(--ink-dim); }
 .stat.warn { border-color: var(--warn); }
 .stat.bad { border-color: var(--bad); }
@@ -856,9 +859,9 @@ input[type="checkbox"] { width: auto; min-height: 0; }
 fieldset { border: 1px solid var(--line); border-radius: 8px; margin: .75rem 0; padding: .6rem .9rem; }
 legend { padding: 0 .4rem; color: var(--teal-500); font-weight: 650; font-size: 0.82rem; }
 .check, .checkbox { display: flex; gap: .5rem; align-items: center; margin: .4rem 0; font-size: 0.84rem; }
-.form-row { display: flex; gap: .75rem; align-items: flex-end; flex-wrap: wrap; }
-.form-row .field { flex: 1 1 200px; }
-.form-row .btn { margin-bottom: .6rem; }
+.form-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: .85rem; align-items: end; }
+.form-row .field { margin-bottom: 0; }
+.form-row .btn { height: 38px; justify-self: start; }
 .grid-form { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 0 .9rem; }
 .form-actions { grid-column: 1 / -1; }
 .gateway-form { display: grid; gap: 1rem; }

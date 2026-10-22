@@ -1186,10 +1186,19 @@ export function AdminModelRouterPage() {
             >
               {garden.items.map((m) => (
                 <tr key={m.id}>
-                  <td><code>{m.id}</code></td>
-                  <td>{m.display_name}</td>
+                  <td>
+                    <div className="vendor-header">
+                      <div className="vendor-mark sm">
+                        <VendorLogo vendor={m.vendor} size={15} />
+                      </div>
+                      <code>{m.id}</code>
+                    </div>
+                  </td>
+                  <td><strong>{m.display_name}</strong></td>
                   <td>{m.vendor}</td>
-                  <td>${m.input_per_million} / ${m.output_per_million}</td>
+                  <td style={{ fontFamily: "var(--font-mono)", whiteSpace: "nowrap" }}>
+                    ${m.input_per_million} / ${m.output_per_million}
+                  </td>
                   <td>
                     <input
                       aria-label={`Endpoint URL for ${m.id}`}
@@ -1211,11 +1220,13 @@ export function AdminModelRouterPage() {
                   </td>
                   <td>
                     <button
-                      className="btn"
+                      className={m.coming_soon || !m.enabled ? "btn primary" : "btn"}
+                      style={{ whiteSpace: "nowrap" }}
                       type="button"
+                      aria-label={m.coming_soon || !m.enabled ? `Activate ${m.id}` : `Disable ${m.id}`}
                       onClick={() => void toggleModelEndpoint(m)}
                     >
-                      {m.coming_soon || !m.enabled ? `Activate ${m.id}` : `Disable ${m.id}`}
+                      {m.coming_soon || !m.enabled ? "Activate" : "Disable"}
                     </button>
                   </td>
                 </tr>

@@ -19,17 +19,17 @@ import {
 } from "@aiflux/ui";
 
 const nav: NavItem[] = [
-  { to: "/budgets", label: "OpCo budgets & FinOps" },
-  { to: "/model-router", label: "Model router & garden" },
-  { to: "/local-users", label: "Local users (DB)" },
-  { to: "/usage", label: "Showback" },
-  { to: "/safety", label: "Safety events" },
-  { to: "/content-safety", label: "Content safety" },
-  { to: "/settings", label: "Gateway settings" },
-  { to: "/subscriptions", label: "Subscriptions" },
-  { to: "/organizations", label: "Organizations" },
-  { to: "/members", label: "Members" },
-  { to: "/prices", label: "Prices" },
+  { to: "/budgets", label: "OpCo budgets & FinOps", section: "FinOps & Routing" },
+  { to: "/model-router", label: "Model router & catalog", section: "FinOps & Routing" },
+  { to: "/prices", label: "Rate card & pricing", section: "FinOps & Routing" },
+  { to: "/usage", label: "Showback", section: "FinOps & Routing" },
+  { to: "/content-safety", label: "Content safety", section: "Guardrails & Traffic" },
+  { to: "/settings", label: "Gateway settings", section: "Guardrails & Traffic" },
+  { to: "/safety", label: "Safety events", section: "Guardrails & Traffic" },
+  { to: "/subscriptions", label: "Subscriptions", section: "Tenants & Access" },
+  { to: "/organizations", label: "Organizations", section: "Tenants & Access" },
+  { to: "/local-users", label: "Portal users (DB)", section: "Tenants & Access" },
+  { to: "/members", label: "Entra directory", section: "Tenants & Access" },
 ];
 
 createRoot(document.getElementById("root")!).render(
