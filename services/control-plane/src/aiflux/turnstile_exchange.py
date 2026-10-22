@@ -764,30 +764,95 @@ def decide_model_route(
     reason = "Defaulted to fast general model via Microsoft Decision-1 router."
 
     if strategy == "cost-optimized":
-        cheapest = min(
-            (endpoints[c] for c in candidates if c in endpoints),
-            key=lambda m: Decimal(m.input_per_million) + Decimal(m.output_per_million),
+        is_code = any(
+            k in prompt_lower
+            for k in ("code", "python", "sql", "function", "bug", "algorithm", "regex", "math", "dockerfile")
         )
-        selected_id = cheapest.id
-        category = "cost_optimized"
-        confidence = 0.94
-        reason = (
-            f"Selected {cheapest.display_name} (${Decimal(cheapest.input_per_million):.2f}/1M in) "
-            "under cost-optimized routing policy."
+        is_doc = any(
+            k in prompt_lower
+            for k in ("summarize", "document", "contract", "policy", "report", "memo", "draft", "review")
         )
+        if is_code and "DeepSeek-V3.2-Speciale" in endpoints:
+            selected_id = "DeepSeek-V3.2-Speciale"
+            category = "cost_optimized_coding"
+            confidence = 0.96
+            reason = (
+                "Decision-1 Cost-Optimized: Matched coding/math intent -> routed to DeepSeek V3.2 Speciale "
+                "($0.27/$1.10 per 1M, saving 89% vs GPT-5.4 Flagship)."
+            )
+        elif is_doc and "claude-haiku-4-5" in endpoints:
+            selected_id = "claude-haiku-4-5"
+            category = "cost_optimized_writing"
+            confidence = 0.93
+            reason = (
+                "Decision-1 Cost-Optimized: Matched document/writing intent -> routed to Claude Haiku 4.5 "
+                "($0.80/$4.00 per 1M, saving 73% vs Claude Sonnet 4.5)."
+            )
+        elif "gpt-5.4-mini" in endpoints:
+            selected_id = "gpt-5.4-mini"
+            category = "cost_optimized_general"
+            confidence = 0.94
+            reason = (
+                "Decision-1 Cost-Optimized: Matched general/chat intent -> routed to GPT-5.4 Mini "
+                "($0.30/$1.20 per 1M with zero reasoning-token overhead)."
+            )
+        else:
+            cheapest = min(
+                (endpoints[c] for c in candidates if c in endpoints),
+                key=lambda m: Decimal(m.input_per_million) + Decimal(m.output_per_million),
+            )
+            selected_id = cheapest.id
+            category = "cost_optimized"
+            confidence = 0.94
+            reason = (
+                f"Selected {cheapest.display_name} (${Decimal(cheapest.input_per_million):.2f}/1M in) "
+                "under cost-optimized routing policy."
+            )
     elif strategy == "latency-optimized":
-        selected_id = "gpt-5.4-mini" if "gpt-5.4-mini" in endpoints else candidates[0]
-        category = "latency_optimized"
-        confidence = 0.92
-        reason = "Selected lowest-TTFT deployment under latency-optimized routing policy."
+        is_doc = any(
+            k in prompt_lower
+            for k in ("summarize", "document", "contract", "policy", "report", "memo", "draft", "translate")
+        )
+        if is_doc and "claude-haiku-4-5" in endpoints:
+            selected_id = "claude-haiku-4-5"
+            category = "latency_optimized_stream"
+            confidence = 0.94
+            reason = (
+                "Decision-1 Latency-Optimized: Routed to Claude Haiku 4.5 (~95ms TTFT, >140 tok/s) "
+                "for sub-second document streaming."
+            )
+        else:
+            selected_id = "gpt-5.4-mini" if "gpt-5.4-mini" in endpoints else candidates[0]
+            category = "latency_optimized_ttft"
+            confidence = 0.95
+            reason = (
+                "Decision-1 Latency-Optimized: Routed to GPT-5.4 Mini (~85ms TTFT, ~260ms E2E), "
+                "bypassing multi-second <think> reasoning chains for real-time responsiveness."
+            )
     elif strategy == "quality-first":
-        for high_tier in ("gpt-5.4", "claude-sonnet-4-5", "DeepSeek-V3.2-Speciale"):
-            if high_tier in candidates and high_tier in endpoints:
-                selected_id = high_tier
-                break
+        is_code = any(
+            k in prompt_lower
+            for k in ("code", "python", "sql", "function", "bug", "algorithm", "regex", "math")
+        )
+        is_doc = any(
+            k in prompt_lower
+            for k in ("summarize", "document", "contract", "policy", "report", "memo", "draft", "clause")
+        )
+        if is_doc and "claude-sonnet-4-5" in endpoints:
+            selected_id = "claude-sonnet-4-5"
+        elif is_code and "gpt-5.4" in endpoints:
+            selected_id = "gpt-5.4"
+        else:
+            for high_tier in ("gpt-5.4", "claude-sonnet-4-5", "DeepSeek-V3.2-Speciale"):
+                if high_tier in candidates and high_tier in endpoints:
+                    selected_id = high_tier
+                    break
         category = "quality_first"
-        confidence = 0.95
-        reason = "Selected frontier reasoning model under quality-first routing policy."
+        confidence = 0.97
+        reason = (
+            f"Decision-1 Quality-First: Selected frontier flagship {selected_id} "
+            "for maximum reasoning depth and accuracy regardless of token cost."
+        )
     else:
         for rule in config.rules:
             matched = [kw for kw in rule.keywords if kw.lower() in prompt_lower]

@@ -1,13 +1,15 @@
 import logging
+import os
 import re
 from dataclasses import asdict
 from datetime import UTC, datetime, timedelta
+from pathlib import Path
 from typing import Annotated, Any
 from uuid import UUID
 
 from fastapi import Depends, FastAPI, Header, HTTPException, Query, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import PlainTextResponse
+from fastapi.responses import FileResponse, PlainTextResponse
 from pydantic import ValidationError
 from sqlalchemy import func, literal, select, text, true
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
@@ -996,6 +998,32 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             },
             "routing_decision": res.routing_decision.model_dump() if res.routing_decision else None,
         }
+
+    portals_dir = os.environ.get("AIFLUX_SERVE_PORTALS_DIR", "").strip()
+    if portals_dir and Path(portals_dir).is_dir():
+        root_dir = Path(portals_dir).resolve()
+        admin_dist = (root_dir / "admin").resolve()
+        customer_dist = (root_dir / "customer").resolve()
+
+        @app.get("/admin", include_in_schema=False)
+        @app.get("/admin/{subpath:path}", include_in_schema=False)
+        def serve_admin_spa(subpath: str = "") -> FileResponse:
+            if subpath:
+                candidate = (admin_dist / subpath).resolve()
+                if candidate.is_relative_to(admin_dist) and candidate.is_file():
+                    return FileResponse(candidate)
+            return FileResponse(admin_dist / "index.html")
+
+        @app.get("/", include_in_schema=False)
+        @app.get("/{subpath:path}", include_in_schema=False)
+        def serve_customer_spa(subpath: str = "") -> FileResponse:
+            if subpath.startswith(("api/", "v1/", "health", "ready", ".well-known/", "_edge-denied/")):
+                raise HTTPException(404, "Not found")
+            if subpath:
+                candidate = (customer_dist / subpath).resolve()
+                if candidate.is_relative_to(customer_dist) and candidate.is_file():
+                    return FileResponse(candidate)
+            return FileResponse(customer_dist / "index.html")
 
     return app
 

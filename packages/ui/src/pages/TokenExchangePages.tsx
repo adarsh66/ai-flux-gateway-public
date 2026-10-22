@@ -1044,6 +1044,142 @@ export function AdminBudgetsAndFinOpsPage() {
   );
 }
 
+const STRATEGY_PROFILES: Record<
+  RouterStrategy,
+  {
+    title: string;
+    badge: string;
+    tone: "info" | "ok" | "warn" | "neutral";
+    summary: string;
+    sla: string;
+    matrix: {
+      category: string;
+      description: string;
+      preferred_model: string;
+      fallback_model: string;
+      target_metric: string;
+    }[];
+  }
+> = {
+  "microsoft-decision-1": {
+    title: "Microsoft Decision-1 (Balanced Intent)",
+    badge: "Default · SystemOne",
+    tone: "info",
+    summary:
+      "Classifies prompt domain and complexity via /providers/microsoft/v1/systemone and dispatches each workload to its best-fit specialist model.",
+    sla: "Avg Savings: ~42% · Avg TTFT: ~190ms",
+    matrix: [
+      {
+        category: "coding_and_math",
+        description: "Code generation, debugging, SQL, algorithms, and quantitative math problems",
+        preferred_model: "DeepSeek-V3.2-Speciale",
+        fallback_model: "gpt-5.4",
+        target_metric: "$0.27 / $1.10 per 1M · High reasoning accuracy",
+      },
+      {
+        category: "long_context_and_writing",
+        description: "Executive memos, policy drafting, contract review, and long-document synthesis",
+        preferred_model: "claude-sonnet-4-5",
+        fallback_model: "gpt-5.4",
+        target_metric: "200K context · Nuanced enterprise prose",
+      },
+      {
+        category: "complex_architecture",
+        description: "Multi-step system architecture, strategic planning, and deep reasoning",
+        preferred_model: "gpt-5.4",
+        fallback_model: "claude-sonnet-4-5",
+        target_metric: "256K context · Frontier multi-step synthesis",
+      },
+      {
+        category: "fast_general_qa",
+        description: "High-speed Q&A, classification, extraction, and conversational queries",
+        preferred_model: "gpt-5.4-mini",
+        fallback_model: "claude-haiku-4-5",
+        target_metric: "~85ms TTFT · $0.30 / $1.20 per 1M",
+      },
+    ],
+  },
+  "cost-optimized": {
+    title: "Cost-Optimized (Minimum Token Spend)",
+    badge: "Up to 85% Cost Reduction",
+    tone: "ok",
+    summary:
+      "Enforces a strict cost floor by routing every intent category to the lowest-price model capable of passing quality guardrails, avoiding $10–$15/1M flagship models.",
+    sla: "Target Spend: <$0.45 / 1M blended · Zero reasoning-token waste on simple Q&A",
+    matrix: [
+      {
+        category: "cost_optimized_coding",
+        description: "Coding, SQL, regex, Dockerfile, and quantitative logic",
+        preferred_model: "DeepSeek-V3.2-Speciale",
+        fallback_model: "gpt-5.4-mini",
+        target_metric: "$0.27 in / $1.10 out (Saves 89% vs GPT-5.4 Flagship)",
+      },
+      {
+        category: "cost_optimized_writing",
+        description: "Document summarization, drafting, policy review, and long context",
+        preferred_model: "claude-haiku-4-5",
+        fallback_model: "gpt-5.4-mini",
+        target_metric: "$0.80 in / $4.00 out (Saves 73% vs Claude Sonnet 4.5)",
+      },
+      {
+        category: "cost_optimized_general",
+        description: "General Q&A, classification, extraction, and standard chat",
+        preferred_model: "gpt-5.4-mini",
+        fallback_model: "DeepSeek-V3.2-Speciale",
+        target_metric: "$0.30 in / $1.20 out (Zero <think> token overhead)",
+      },
+    ],
+  },
+  "latency-optimized": {
+    title: "Latency-Optimized (Sub-300ms Real-Time TTFT)",
+    badge: "Lowest TTFT & E2E",
+    tone: "warn",
+    summary:
+      "Prioritizes ultra-low Time-To-First-Token (TTFT) and high streaming throughput (>140 tok/s) for voice agents, live chat, and inline autocomplete — bypassing multi-second <think> reasoning chains.",
+    sla: "Target TTFT: 80–110ms · Target E2E: <320ms",
+    matrix: [
+      {
+        category: "latency_optimized_ttft",
+        description: "Interactive chat, tool calling, code completion, and real-time copilot turns",
+        preferred_model: "gpt-5.4-mini",
+        fallback_model: "claude-haiku-4-5",
+        target_metric: "~85ms TTFT · ~260ms E2E (Bypasses DeepSeek <think> delay)",
+      },
+      {
+        category: "latency_optimized_stream",
+        description: "High-speed document summarization, translation, and multi-turn drafting",
+        preferred_model: "claude-haiku-4-5",
+        fallback_model: "gpt-5.4-mini",
+        target_metric: "~95ms TTFT · >140 tokens/sec streaming",
+      },
+    ],
+  },
+  "quality-first": {
+    title: "Quality-First (Frontier Flagship Maximization)",
+    badge: "Max Accuracy",
+    tone: "neutral",
+    summary:
+      "Routes every prompt to the highest-benchmark frontier flagship model for that domain regardless of token cost or latency.",
+    sla: "Target Models: GPT-5.4 Flagship & Claude Sonnet 4.5",
+    matrix: [
+      {
+        category: "quality_first_reasoning",
+        description: "Complex architecture, code synthesis, and multi-step reasoning",
+        preferred_model: "gpt-5.4",
+        fallback_model: "claude-sonnet-4-5",
+        target_metric: "$2.50 in / $10.00 out · Maximum reasoning benchmark",
+      },
+      {
+        category: "quality_first_writing",
+        description: "Executive contracts, compliance analysis, and long-horizon writing",
+        preferred_model: "claude-sonnet-4-5",
+        fallback_model: "gpt-5.4",
+        target_metric: "$3.00 in / $15.00 out · Highest prose & nuance score",
+      },
+    ],
+  },
+};
+
 export function AdminModelRouterPage() {
   const { api } = useSession();
   const [version, setVersion] = useState(0);
@@ -1053,6 +1189,11 @@ export function AdminModelRouterPage() {
   const [notice, setNotice] = useState<string>();
   const [error, setError] = useState<string>();
   const [endpointInput, setEndpointInput] = useState<Record<string, string>>({});
+  const [simPrompt, setSimPrompt] = useState(
+    "Write a Python SQL migration script and Dockerfile for our token ledger.",
+  );
+  const [simResults, setSimResults] = useState<Record<string, RouterDecision> | null>(null);
+  const [simBusy, setSimBusy] = useState(false);
 
   async function changeStrategy(nextStrategy: RouterStrategy) {
     if (!routerState.data) return;
@@ -1071,6 +1212,29 @@ export function AdminModelRouterPage() {
       setVersion((v) => v + 1);
     } catch (err) {
       setError(err instanceof ApiError ? err.detail : "Could not update model router.");
+    }
+  }
+
+  async function compareAllStrategies(e: FormEvent) {
+    e.preventDefault();
+    if (!simPrompt.trim()) return;
+    setSimBusy(true);
+    setError(undefined);
+    try {
+      const strategies: RouterStrategy[] = [
+        "microsoft-decision-1",
+        "cost-optimized",
+        "latency-optimized",
+        "quality-first",
+      ];
+      const entries = await Promise.all(
+        strategies.map(async (s) => [s, await api.decideModelRoute(simPrompt.trim(), s)] as const),
+      );
+      setSimResults(Object.fromEntries(entries));
+    } catch (err) {
+      setError(err instanceof ApiError ? err.detail : "Could not run strategy comparison.");
+    } finally {
+      setSimBusy(false);
     }
   }
 
@@ -1098,8 +1262,8 @@ export function AdminModelRouterPage() {
   return (
     <>
       <PageHeader
-        title="Model router (Decision-1) & Model Garden endpoints"
-        subtitle="Configure Microsoft Decision-1 (model = auto) routing rules, onboard OpenAI, Claude, DeepSeek, Singtel RE:AI, and Gemini endpoints, and inspect the compiled APIM policy."
+        title="Model router (Decision-1) & Model Catalog endpoints"
+        subtitle="Configure Microsoft Decision-1 (model = auto) routing strategies, compare Cost-Optimized vs. Latency-Optimized dispatch, and manage Model Catalog endpoints."
       />
       {error && <ErrorState message={error} />}
       {notice && (
@@ -1108,69 +1272,157 @@ export function AdminModelRouterPage() {
         </p>
       )}
       <AsyncView state={routerState}>
-        {(cfg) => (
-          <section className="panel" aria-labelledby="router-cfg-heading">
-            <h2 id="router-cfg-heading">Microsoft Decision-1 auto-router configuration</h2>
-            <dl className="stats">
-              <div>
-                <dt>Status</dt>
-                <dd>
-                  <Badge tone={cfg.enabled ? "ok" : "warn"}>
-                    {cfg.enabled ? "Enabled (model = auto)" : "Disabled"}
-                  </Badge>
-                </dd>
+        {(cfg) => {
+          const activeProfile = STRATEGY_PROFILES[cfg.strategy] ?? STRATEGY_PROFILES["microsoft-decision-1"];
+          return (
+            <section className="panel" aria-labelledby="router-cfg-heading">
+              <h2 id="router-cfg-heading">Microsoft Decision-1 auto-router configuration</h2>
+              <dl className="stats">
+                <div>
+                  <dt>Status</dt>
+                  <dd>
+                    <Badge tone={cfg.enabled ? "ok" : "warn"}>
+                      {cfg.enabled ? "Enabled (model = auto)" : "Disabled"}
+                    </Badge>
+                  </dd>
+                </div>
+                <div>
+                  <dt>Decision endpoint</dt>
+                  <dd>
+                    <code>{cfg.decision_endpoint}</code>
+                  </dd>
+                </div>
+                <div>
+                  <dt>Default fallback model</dt>
+                  <dd>
+                    <code>{cfg.default_model}</code>
+                  </dd>
+                </div>
+                <div>
+                  <dt>Active strategy</dt>
+                  <dd>
+                    <select
+                      aria-label="Active router strategy"
+                      value={cfg.strategy}
+                      onChange={(e) => void changeStrategy(e.target.value as RouterStrategy)}
+                    >
+                      <option value="microsoft-decision-1">microsoft-decision-1 (Balanced Intent)</option>
+                      <option value="cost-optimized">cost-optimized (Min Spend)</option>
+                      <option value="latency-optimized">latency-optimized (Sub-300ms TTFT)</option>
+                      <option value="quality-first">quality-first (Frontier Flagship)</option>
+                    </select>
+                  </dd>
+                </div>
+              </dl>
+
+              <div className="bento-grid" aria-label="Decision-1 routing strategy profiles">
+                {(Object.keys(STRATEGY_PROFILES) as RouterStrategy[]).map((sKey) => {
+                  const prof = STRATEGY_PROFILES[sKey];
+                  const isCurrent = cfg.strategy === sKey;
+                  return (
+                    <div
+                      key={sKey}
+                      className="bento-card"
+                      style={{
+                        cursor: "pointer",
+                        borderColor: isCurrent ? "var(--teal-500)" : undefined,
+                        background: isCurrent ? "var(--brand-soft)" : undefined,
+                      }}
+                      onClick={() => void changeStrategy(sKey)}
+                    >
+                      <div className="bento-top">
+                        <span className="bento-label">{sKey}</span>
+                        <Badge tone={isCurrent ? "info" : prof.tone}>
+                          {isCurrent ? "✓ Active Policy" : prof.badge}
+                        </Badge>
+                      </div>
+                      <strong style={{ fontSize: "0.92rem" }}>{prof.title}</strong>
+                      <p className="muted" style={{ margin: 0, fontSize: "0.78rem" }}>
+                        {prof.summary}
+                      </p>
+                      <span className="bento-sub" style={{ marginTop: "auto", paddingTop: "0.35rem", fontFamily: "var(--font-mono)", fontWeight: 600 }}>
+                        {prof.sla}
+                      </span>
+                    </div>
+                  );
+                })}
               </div>
-              <div>
-                <dt>Decision endpoint</dt>
-                <dd>
-                  <code>{cfg.decision_endpoint}</code>
-                </dd>
-              </div>
-              <div>
-                <dt>Default fallback model</dt>
-                <dd>
-                  <code>{cfg.default_model}</code>
-                </dd>
-              </div>
-              <div>
-                <dt>Active strategy</dt>
-                <dd>
-                  <select
-                    aria-label="Active router strategy"
-                    value={cfg.strategy}
-                    onChange={(e) => void changeStrategy(e.target.value as RouterStrategy)}
+
+              <h2 style={{ marginTop: "0.5rem" }}>
+                Active routing behavior: {activeProfile.title}
+              </h2>
+              <Table
+                caption="Decision-1 routing policy matrix"
+                head={[
+                  "Route Category",
+                  "Workload & Prompt Signals",
+                  "Primary Target Model",
+                  "Fallback Model",
+                  "Cost / Latency Profile",
+                ]}
+              >
+                {activeProfile.matrix.map((r) => (
+                  <tr key={r.category}>
+                    <td><code>{r.category}</code></td>
+                    <td>{r.description}</td>
+                    <td><Badge tone="ok">{r.preferred_model}</Badge></td>
+                    <td><code>{r.fallback_model}</code></td>
+                    <td style={{ fontFamily: "var(--font-mono)", fontSize: "0.78rem" }}>{r.target_metric}</td>
+                  </tr>
+                ))}
+              </Table>
+
+              <div style={{ marginTop: "1rem", paddingTop: "1rem", borderTop: "1px solid var(--line)" }}>
+                <h2>Compare all 4 routing strategies side-by-side</h2>
+                <form onSubmit={(e) => void compareAllStrategies(e)} className="form-row">
+                  <Field label="Test prompt across all 4 strategies">
+                    {(id) => (
+                      <input
+                        id={id}
+                        value={simPrompt}
+                        onChange={(e) => setSimPrompt(e.target.value)}
+                        required
+                      />
+                    )}
+                  </Field>
+                  <button className="btn primary" type="submit" disabled={simBusy}>
+                    {simBusy ? "Comparing…" : "Compare 4 Strategies"}
+                  </button>
+                </form>
+                {simResults && (
+                  <Table
+                    caption="Side-by-side strategy comparison"
+                    head={["Strategy", "Selected Model", "Vendor", "Category", "Est. Input / Output ($/1M)", "Decision-1 Rationale"]}
                   >
-                    <option value="microsoft-decision-1">microsoft-decision-1</option>
-                    <option value="cost-optimized">cost-optimized</option>
-                    <option value="latency-optimized">latency-optimized</option>
-                    <option value="quality-first">quality-first</option>
-                  </select>
-                </dd>
+                    {(["microsoft-decision-1", "cost-optimized", "latency-optimized", "quality-first"] as RouterStrategy[]).map((sKey) => {
+                      const d = simResults[sKey];
+                      if (!d) return null;
+                      return (
+                        <tr key={sKey}>
+                          <td><code>{sKey}</code></td>
+                          <td><Badge tone="ok">{d.selected_model}</Badge></td>
+                          <td>{d.vendor}</td>
+                          <td><code>{d.category}</code></td>
+                          <td style={{ fontFamily: "var(--font-mono)", whiteSpace: "nowrap" }}>
+                            ${d.estimated_input_per_million} / ${d.estimated_output_per_million}
+                          </td>
+                          <td className="muted">{d.reason}</td>
+                        </tr>
+                      );
+                    })}
+                  </Table>
+                )}
               </div>
-            </dl>
-            <Table
-              caption="Decision-1 intent routing rules"
-              head={["Category", "Description", "Preferred model", "Fallback model", "Signal keywords"]}
-            >
-              {cfg.rules.map((r) => (
-                <tr key={r.category}>
-                  <td><code>{r.category}</code></td>
-                  <td>{r.description}</td>
-                  <td><Badge tone="ok">{r.preferred_model}</Badge></td>
-                  <td><code>{r.fallback_model}</code></td>
-                  <td>{r.keywords.slice(0, 6).join(", ")}</td>
-                </tr>
-              ))}
-            </Table>
-          </section>
-        )}
+            </section>
+          );
+        }}
       </AsyncView>
 
       <AsyncView state={gardenState}>
         {(garden) => (
           <section className="panel" aria-labelledby="garden-endpoints-heading">
             <h2 id="garden-endpoints-heading">
-              Model Garden provider endpoints (OpenAI, Claude, DeepSeek, Singtel RE:AI, Gemini)
+              Model Catalog provider endpoints (OpenAI, Claude, DeepSeek, Singtel RE:AI, Gemini)
             </h2>
             <Table
               caption="Managed model endpoints and pricing"

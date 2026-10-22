@@ -32,7 +32,14 @@ export function loadConfig(env: Env): ConfigResult {
   const authority = str(env.VITE_ENTRA_AUTHORITY) || "https://login.microsoftonline.com/organizations";
   const apiScope = str(env.VITE_API_SCOPE);
   const controlApiUrl = str(env.VITE_CONTROL_API_URL) || "/api";
-  const gatewayUrl = str(env.VITE_GATEWAY_URL) || (isLocalAuth ? "http://localhost:8000/v1" : "");
+  const rawGateway = str(env.VITE_GATEWAY_URL);
+  const origin =
+    typeof window !== "undefined" && window.location?.origin && window.location.origin !== "null"
+      ? window.location.origin
+      : "http://localhost:8000";
+  const gatewayUrl = rawGateway.startsWith("/")
+    ? `${origin}${rawGateway}`
+    : rawGateway || (isLocalAuth ? `${origin}/v1` : "");
 
   if (!isLocalAuth) {
     if (!GUID.test(clientId)) problems.push("VITE_ENTRA_CLIENT_ID must be an application (client) ID GUID.");
