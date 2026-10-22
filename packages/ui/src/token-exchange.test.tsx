@@ -182,7 +182,7 @@ describe("Token Exchange Customer & Admin Portal Pages", () => {
     }));
     mount(<CustomerCreditsPage />);
     expect(await screen.findByRole("alert")).toHaveTextContent(/Low credit alert/i);
-    expect(screen.getByText("claude-sonnet-4-5")).toBeInTheDocument();
+    expect(screen.getAllByText("claude-sonnet-4-5").length).toBeGreaterThanOrEqual(1);
     expect(screen.getByText("Retail · Copilot Studio")).toBeInTheDocument();
     expect(screen.getByText("auto-router")).toBeInTheDocument();
   });

@@ -57,6 +57,11 @@ class Settings(BaseSettings):
     decision_router_default_model: str = "gpt-5.4-mini"
     local_auth_enabled: bool = False
     local_jwt_secret: str = "turnstile-local-postgres-jwt-signing-secret-key-2026"
+    bootstrap_admin_email: str = "admin@tokenx-ids.com"
+    bootstrap_admin_password: str = "tokenx-admin"
+    bootstrap_customer_email: str = "developer@caldova.com"
+    bootstrap_customer_password: str = "caldova-pass"
+    bootstrap_customer_org: str = "Caldova"
     upstream_apim_url: str = ""
     upstream_apim_key: str = ""
 

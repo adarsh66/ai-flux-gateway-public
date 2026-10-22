@@ -82,6 +82,14 @@ function navIconFor(path: string): ReactNode {
 export function Shell({ portalName, nav }: { portalName: string; nav: NavItem[] }) {
   const { me, signOut } = useSession();
   const [open, setOpen] = useState(false);
+  const [collapsed, setCollapsed] = useState<boolean>(() => {
+    try {
+      return typeof localStorage !== "undefined" && localStorage.getItem("aiflux_sidebar_collapsed") === "1";
+    } catch {
+      return false;
+    }
+  });
+  const [themeMenuOpen, setThemeMenuOpen] = useState(false);
   const [theme, setTheme] = useState<ThemeId>(() => {
     try {
       const saved = typeof localStorage !== "undefined" ? localStorage.getItem("aiflux_theme") : null;
@@ -105,7 +113,22 @@ export function Shell({ portalName, nav }: { portalName: string; nav: NavItem[] 
     }
   }, [theme]);
 
-  const initials = (me.organization_name || "OP")
+  function toggleSidebar() {
+    setCollapsed((prev) => {
+      const next = !prev;
+      try {
+        if (typeof localStorage !== "undefined") {
+          localStorage.setItem("aiflux_sidebar_collapsed", next ? "1" : "0");
+        }
+      } catch {
+        /* ignore */
+      }
+      return next;
+    });
+  }
+
+  const activeTheme = THEMES.find((t) => t.id === theme) ?? THEMES[0]!;
+  const initials = (me.organization_name || "CA")
     .split(/\s+/)
     .slice(0, 2)
     .map((w) => w[0]?.toUpperCase() ?? "")
@@ -115,6 +138,18 @@ export function Shell({ portalName, nav }: { portalName: string; nav: NavItem[] 
     <div className="shell">
       <a className="skip" href="#main">Skip to content</a>
       <header className="topbar">
+        <button
+          type="button"
+          className="sidebar-toggle-btn"
+          aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+          title={collapsed ? "Expand navigation sidebar" : "Collapse navigation sidebar"}
+          onClick={toggleSidebar}
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <rect x="3" y="3" width="18" height="18" rx="2" />
+            <line x1="9" y1="3" x2="9" y2="21" />
+          </svg>
+        </button>
         <BrandMark />
         <span className="portal-name">{portalName}</span>
         <span className="live-pill">
@@ -123,18 +158,42 @@ export function Shell({ portalName, nav }: { portalName: string; nav: NavItem[] 
         </span>
         <button className="btn menu-btn" aria-expanded={open} aria-controls="sidenav" onClick={() => setOpen(!open)}>Menu</button>
         <div className="who">
-          <div className="theme-switcher" role="group" aria-label="Color theme preset">
-            {THEMES.map((t) => (
-              <button
-                key={t.id}
-                type="button"
-                className={theme === t.id ? "theme-chip active" : "theme-chip"}
-                onClick={() => setTheme(t.id)}
-              >
-                <span className="theme-swatch" style={{ background: t.color }} aria-hidden="true" />
-                {t.label}
-              </button>
-            ))}
+          <div className="theme-dropdown-wrap">
+            <button
+              type="button"
+              className="theme-dropdown-trigger"
+              aria-haspopup="listbox"
+              aria-expanded={themeMenuOpen}
+              aria-label="Color theme"
+              onClick={() => setThemeMenuOpen((o) => !o)}
+            >
+              <span className="theme-swatch" style={{ background: activeTheme.color }} aria-hidden="true" />
+              <span>Theme: {activeTheme.label}</span>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <polyline points="6 9 12 15 18 9" />
+              </svg>
+            </button>
+            {themeMenuOpen && (
+              <div className="theme-dropdown-menu" role="listbox" aria-label="Select color theme">
+                {THEMES.map((t) => (
+                  <button
+                    key={t.id}
+                    type="button"
+                    role="option"
+                    aria-selected={theme === t.id}
+                    className={theme === t.id ? "theme-dropdown-item active" : "theme-dropdown-item"}
+                    onClick={() => {
+                      setTheme(t.id);
+                      setThemeMenuOpen(false);
+                    }}
+                  >
+                    <span className="theme-swatch" style={{ background: t.color }} aria-hidden="true" />
+                    <span>{t.label}</span>
+                    {theme === t.id && <span className="theme-check" aria-hidden="true">✓</span>}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
           <div className="who-profile">
             <div className="who-avatar" aria-hidden="true">{initials}</div>
@@ -147,12 +206,16 @@ export function Shell({ portalName, nav }: { portalName: string; nav: NavItem[] 
         </div>
       </header>
       <div className="body">
-        <nav id="sidenav" className={open ? "side open" : "side"} aria-label="Primary">
-          <span className="side-section-label">Workspace Navigation</span>
+        <nav
+          id="sidenav"
+          className={`${open ? "side open" : "side"}${collapsed ? " collapsed" : ""}`}
+          aria-label="Primary"
+        >
+          {!collapsed && <span className="side-section-label">Workspace</span>}
           {nav.map((n) => (
-            <NavLink key={n.to} to={n.to} onClick={() => setOpen(false)}>
+            <NavLink key={n.to} to={n.to} title={n.label} onClick={() => setOpen(false)}>
               {navIconFor(n.to)}
-              <span>{n.label}</span>
+              {!collapsed && <span>{n.label}</span>}
             </NavLink>
           ))}
         </nav>

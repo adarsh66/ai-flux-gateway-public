@@ -71,10 +71,10 @@ function LocalPostgresGate({ config, portalName, allowedRoles, children }: { con
   );
   const [mode, setMode] = useState<"login" | "register">("login");
   const isAdminOnly = allowedRoles.includes("ids_admin") && !allowedRoles.includes("customer");
-  const [email, setEmail] = useState(isAdminOnly ? "admin@turnstile.local" : "customer@opco.local");
+  const [email, setEmail] = useState(isAdminOnly ? "admin@tokenx-ids.com" : "developer@caldova.com");
   const [password, setPassword] = useState("");
   const [displayName, setDisplayName] = useState("");
-  const [orgName, setOrgName] = useState("Enterprise OpCo Alpha");
+  const [orgName, setOrgName] = useState("Caldova");
   const tokenRef = useRef<string | null>(initialSession?.access_token ?? null);
 
   const getToken = useCallback(async (): Promise<string> => {
@@ -91,7 +91,7 @@ function LocalPostgresGate({ config, portalName, allowedRoles, children }: { con
       const endpoint = mode === "register" ? `${config.controlApiUrl}/auth/register` : `${config.controlApiUrl}/auth/login`;
       const payload =
         mode === "register"
-          ? { email: email.trim(), password, display_name: displayName.trim() || email.trim(), organization_name: orgName.trim() || "Enterprise OpCo Alpha" }
+          ? { email: email.trim(), password, display_name: displayName.trim() || email.trim(), organization_name: orgName.trim() || "Caldova" }
           : { email: email.trim(), password };
       const res = await fetch(endpoint, {
         method: "POST",

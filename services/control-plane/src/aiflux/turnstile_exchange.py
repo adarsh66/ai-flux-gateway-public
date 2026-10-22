@@ -1179,9 +1179,6 @@ def render_turnstile_exchange_policy(db: Session, settings: Settings) -> Turnsti
 
 def ensure_local_users_seeded(db: Session, settings: Settings) -> None:
     Base.metadata.create_all(db.get_bind(), checkfirst=True)
-    count = db.scalar(select(func.count()).select_from(LocalUser)) or 0
-    if count > 0:
-        return
     home_tid = settings.home_tenant_id or "00000000-0000-0000-0000-000000000001"
     home_org = db.scalar(select(Organization).where(Organization.tenant_id == home_tid))
     if home_org is None:
@@ -1196,9 +1193,15 @@ def ensure_local_users_seeded(db: Session, settings: Settings) -> None:
     cust_tid = "00000000-0000-0000-0000-000000000002"
     cust_org = db.scalar(select(Organization).where(Organization.tenant_id == cust_tid))
     if cust_org is None:
-        cust_org = Organization(name="Enterprise OpCo Alpha", tenant_id=cust_tid, enabled=True)
+        cust_org = Organization(
+            name=settings.bootstrap_customer_org or "Caldova",
+            tenant_id=cust_tid,
+            enabled=True,
+        )
         db.add(cust_org)
         db.flush()
+    elif cust_org.name == "Enterprise OpCo Alpha":
+        cust_org.name = settings.bootstrap_customer_org or "Caldova"
 
     admin_oid = "00000000-0000-0000-0000-000000000101"
     if db.scalar(
@@ -1212,43 +1215,67 @@ def ensure_local_users_seeded(db: Session, settings: Settings) -> None:
     ) is None:
         db.add(Member(organization_id=cust_org.id, object_id=cust_oid, role="customer", enabled=True))
 
-    db.add(
-        LocalUser(
-            email="admin@turnstile.local",
-            password_hash=hash_password("turnstile-admin"),
-            display_name="Platform Admin",
-            organization_id=home_org.id,
-            object_id=admin_oid,
-            role="ids_admin",
-            enabled=True,
-        )
-    )
-    db.add(
-        LocalUser(
-            email="customer@opco.local",
-            password_hash=hash_password("turnstile-customer"),
-            display_name="OpCo Developer",
-            organization_id=cust_org.id,
-            object_id=cust_oid,
-            role="customer",
-            enabled=True,
-        )
-    )
+    admin_accounts = [
+        (settings.bootstrap_admin_email.lower(), settings.bootstrap_admin_password, "IDS Platform Admin"),
+        ("admin@turnstile.local", "turnstile-admin", "Platform Admin"),
+    ]
+    for email, pwd, dname in admin_accounts:
+        if db.scalar(select(LocalUser).where(func.lower(LocalUser.email) == email)) is None:
+            db.add(
+                LocalUser(
+                    email=email,
+                    password_hash=hash_password(pwd),
+                    display_name=dname,
+                    organization_id=home_org.id,
+                    object_id=admin_oid,
+                    role="ids_admin",
+                    enabled=True,
+                )
+            )
+
+    customer_accounts = [
+        (
+            settings.bootstrap_customer_email.lower(),
+            settings.bootstrap_customer_password,
+            "Caldova Lead Developer",
+        ),
+        ("customer@caldova.com", settings.bootstrap_customer_password, "Caldova Operations"),
+        ("customer@opco.local", "turnstile-customer", "Caldova Developer"),
+    ]
+    for email, pwd, dname in customer_accounts:
+        if db.scalar(select(LocalUser).where(func.lower(LocalUser.email) == email)) is None:
+            db.add(
+                LocalUser(
+                    email=email,
+                    password_hash=hash_password(pwd),
+                    display_name=dname,
+                    organization_id=cust_org.id,
+                    object_id=cust_oid,
+                    role="customer",
+                    enabled=True,
+                )
+            )
+
     ensure_model_garden_seeded(db)
     ensure_organization_budget(db, cust_org.id)
     ensure_organization_budget(db, home_org.id)
     sub_id = "00000000-0000-0000-0000-000000000301"
     team_id = "00000000-0000-0000-0000-000000000401"
-    if db.get(Team, team_id) is None:
-        db.add(Team(id=team_id, organization_id=cust_org.id, name="Digital Products"))
+    team_row = db.get(Team, team_id)
+    if team_row is None:
+        db.add(Team(id=team_id, organization_id=cust_org.id, name="Platform Engineering"))
         db.flush()
-    if db.get(TeamSubscription, sub_id) is None:
+    elif team_row.name == "Digital Products":
+        team_row.name = "Platform Engineering"
+
+    sub_row = db.get(TeamSubscription, sub_id)
+    if sub_row is None:
         db.add(
             TeamSubscription(
                 id=sub_id,
                 organization_id=cust_org.id,
-                name="OpCo Alpha Production Key",
-                team="Digital Products",
+                name="Caldova Core API Key",
+                team="Platform Engineering",
                 team_id=team_id,
                 state="active",
                 desired_state="active",
@@ -1256,26 +1283,59 @@ def ensure_local_users_seeded(db: Session, settings: Settings) -> None:
             )
         )
         db.flush()
+    elif sub_row.name == "OpCo Alpha Production Key":
+        sub_row.name = "Caldova Core API Key"
+        sub_row.team = "Platform Engineering"
+
+    sub2_id = "00000000-0000-0000-0000-000000000302"
+    team2_id = "00000000-0000-0000-0000-000000000402"
+    if db.get(Team, team2_id) is None:
+        db.add(Team(id=team2_id, organization_id=cust_org.id, name="Customer Experience"))
+        db.flush()
+    if db.get(TeamSubscription, sub2_id) is None:
+        db.add(
+            TeamSubscription(
+                id=sub2_id,
+                organization_id=cust_org.id,
+                name="Caldova AI Assistant Key",
+                team="Customer Experience",
+                team_id=team2_id,
+                state="active",
+                desired_state="active",
+                idempotency_key=sub2_id,
+            )
+        )
+        db.flush()
+
     now = datetime.now(UTC)
     if db.get(IngestionState, "native-llm") is None:
         db.add(IngestionState(id="native-llm", watermark=now, last_success_at=now))
     sample_usage = [
-        ("gpt-5.4-mini", "azure_openai", 42000, 18000, Decimal("0.03420000"), 280, "complete"),
-        ("claude-sonnet-4-5", "anthropic", 65000, 24000, Decimal("0.55500000"), 640, "auto_routed"),
-        ("DeepSeek-V3.2-Speciale", "deepseek", 88000, 35000, Decimal("0.06226000"), 490, "playground"),
+        ("gpt-5.4-mini", "azure_openai", sub_id, 42000, 18000, Decimal("0.03420000"), 280, "complete"),
+        ("claude-sonnet-4-5", "anthropic", sub_id, 65000, 24000, Decimal("0.55500000"), 640, "auto_routed"),
+        (
+            "DeepSeek-V3.2-Speciale",
+            "deepseek",
+            sub2_id,
+            88000,
+            35000,
+            Decimal("0.06226000"),
+            490,
+            "playground",
+        ),
     ]
-    for idx, (m_id, prov, inp, out, cost_val, lat, comp) in enumerate(sample_usage):
+    for idx, (m_id, prov, s_id, inp, out, cost_val, lat, comp) in enumerate(sample_usage):
         u_id = f"seed-usage-{idx + 1}"
         if db.get(UsageRecord, u_id) is None:
             db.add(
                 UsageRecord(
                     id=u_id,
                     organization_id=cust_org.id,
-                    subscription_id=sub_id,
+                    subscription_id=s_id,
                     model=m_id,
                     provider=prov,
                     region="eastus2",
-                    occurred_at=now - timedelta(minutes=(idx + 1) * 15),
+                    occurred_at=now - timedelta(hours=(idx + 1) * 6),
                     input_tokens=inp,
                     output_tokens=out,
                     cached_input_tokens=0,

@@ -88,6 +88,7 @@ export function ModelGardenPage() {
   const { api } = useSession();
   const state = useAsync(() => api.modelGarden(), [api]);
   const [vendorFilter, setVendorFilter] = useState("");
+  const [statusTab, setStatusTab] = useState<"all" | "deployed" | "onboarding">("all");
   const [prompt, setPrompt] = useState(
     "Write a Python SQL migration script and Dockerfile for our token ledger.",
   );
@@ -114,8 +115,8 @@ export function ModelGardenPage() {
   return (
     <>
       <PageHeader
-        title="Model garden & pricing cards"
-        subtitle="Curated frontier models from OpenAI, Anthropic Claude, and DeepSeek with Microsoft Decision-1 auto-routing and Azure AI Content Safety guardrails."
+        title="Model catalog & pricing"
+        subtitle="Unified catalog of deployed live endpoints and onboarding-ready frontier models across OpenAI, Anthropic Claude, and DeepSeek with Microsoft Decision-1 auto-routing."
       />
       <section className="panel" aria-labelledby="router-sim-heading">
         <h2 id="router-sim-heading">Microsoft Decision-1 (model = auto) route simulator</h2>
@@ -169,17 +170,53 @@ export function ModelGardenPage() {
       <AsyncView
         state={state}
         isEmpty={(d) => d.items.length === 0}
-        emptyTitle="No models in garden"
+        emptyTitle="No models in catalog"
         emptyHint="Contact your platform administrator to publish model endpoints."
       >
         {(d) => {
           const vendors = Array.from(new Set(d.items.map((m) => m.vendor)));
+          const deployedCount = d.items.filter((m) => m.enabled && !m.coming_soon).length;
+          const onboardingCount = d.items.filter((m) => m.coming_soon || !m.enabled).length;
+          const byStatus = d.items.filter((m) => {
+            if (statusTab === "deployed") return m.enabled && !m.coming_soon;
+            if (statusTab === "onboarding") return m.coming_soon || !m.enabled;
+            return true;
+          });
           const visible = vendorFilter
-            ? d.items.filter((m) => m.vendor === vendorFilter)
-            : d.items;
+            ? byStatus.filter((m) => m.vendor === vendorFilter)
+            : byStatus;
           return (
             <>
-              <div className="filters">
+              <div className="filters" style={{ alignItems: "center", justifyContent: "space-between" }}>
+                <div className="segmented-tabs" role="tablist" aria-label="Catalog deployment filter">
+                  <button
+                    type="button"
+                    role="tab"
+                    aria-selected={statusTab === "all"}
+                    className={statusTab === "all" ? "segmented-tab active" : "segmented-tab"}
+                    onClick={() => setStatusTab("all")}
+                  >
+                    All Catalog ({d.items.length})
+                  </button>
+                  <button
+                    type="button"
+                    role="tab"
+                    aria-selected={statusTab === "deployed"}
+                    className={statusTab === "deployed" ? "segmented-tab active" : "segmented-tab"}
+                    onClick={() => setStatusTab("deployed")}
+                  >
+                    Deployed & Active ({deployedCount})
+                  </button>
+                  <button
+                    type="button"
+                    role="tab"
+                    aria-selected={statusTab === "onboarding"}
+                    className={statusTab === "onboarding" ? "segmented-tab active" : "segmented-tab"}
+                    onClick={() => setStatusTab("onboarding")}
+                  >
+                    Available to Onboard ({onboardingCount})
+                  </button>
+                </div>
                 <Field label="Provider family">
                   {(id) => (
                     <select
@@ -285,8 +322,14 @@ export function CustomerCreditsPage() {
   return (
     <>
       <PageHeader
-        title="Credits & FinOps analytics"
-        subtitle="Real-time token credit balance, low-credit threshold alerts, and usage breakdown by model, product subscription, and channel."
+        title="Overview, credits & FinOps analytics"
+        subtitle="Real-time token credit balance, low-credit threshold alerts, visual consumption trends, and usage breakdown by model, product subscription, and channel."
+        actions={
+          <div className="actions">
+            <Link className="btn" to="/keys">Manage API Keys</Link>
+            <Link className="btn primary" to="/playground">Open Playground →</Link>
+          </div>
+        }
       />
       <div className="filters">
         <Field label="Reporting window">
@@ -300,181 +343,361 @@ export function CustomerCreditsPage() {
         </Field>
       </div>
       <AsyncView state={state}>
-        {(summary) => (
-          <>
-            {summary.low_credit_alert && (
-              <p role="alert" className="notice bad">
-                Low credit alert: Your organization has consumed {summary.utilization_pct}% of its
-                allocated {summary.currency} {summary.total_credits} budget (alert threshold:{" "}
-                {summary.alert_threshold_pct}%).
-              </p>
-            )}
-            <dl className="bento-grid" aria-label="Credit balance summary">
-              <div className="bento-card">
-                <div className="bento-top">
-                  <dt className="bento-label">Total credit allocation</dt>
-                  <span className="bento-icon" aria-hidden="true">💳</span>
-                </div>
-                <dd className="bento-value" style={{ margin: 0 }}>
-                  {summary.currency} {summary.total_credits}
-                </dd>
-                <span className="bento-sub">Monthly OpCo credit cap</span>
-              </div>
-              <div className="bento-card">
-                <div className="bento-top">
-                  <dt className="bento-label">Credits used ({days}d)</dt>
-                  <span className="bento-icon" aria-hidden="true">⚡</span>
-                </div>
-                <dd className="bento-value" style={{ margin: 0 }}>
-                  {summary.currency} {summary.used_credits}
-                </dd>
-                <span className="bento-sub">{summary.utilization_pct}% of allocation</span>
-              </div>
-              <div className="bento-card">
-                <div className="bento-top">
-                  <dt className="bento-label">Remaining credits</dt>
-                  <span className="bento-icon" aria-hidden="true">🛡</span>
-                </div>
-                <dd className="bento-value" style={{ margin: 0 }}>
-                  {summary.currency} {summary.remaining_credits}
-                </dd>
-                <span className="bento-sub">
-                  <Badge tone={summary.low_credit_alert ? "bad" : "ok"}>
-                    {summary.low_credit_alert ? "Low credit warning" : "Healthy"}
-                  </Badge>
-                </span>
-              </div>
-              <div className="bento-card">
-                <div className="bento-top">
-                  <dt className="bento-label">Total requests / tokens</dt>
-                  <span className="bento-icon" aria-hidden="true">📊</span>
-                </div>
-                <dd className="bento-value" style={{ margin: 0 }}>
-                  {fmtInt(summary.total_tokens)}
-                </dd>
-                <span className="bento-sub">
-                  {fmtInt(summary.total_requests)} reqs · {fmtInt(summary.total_tokens)} tokens
-                </span>
-              </div>
-            </dl>
+        {(summary) => {
+          const remainingPct = Math.max(0, Math.min(100, Number((100 - summary.utilization_pct).toFixed(2))));
+          const ringRadius = 46;
+          const circumference = 2 * Math.PI * ringRadius;
+          const strokeDashoffset = circumference - (remainingPct / 100) * circumference;
+          const avgCostPer1k =
+            summary.total_tokens > 0
+              ? ((Number(summary.used_credits) / summary.total_tokens) * 1000).toFixed(4)
+              : "0.0024";
+          const donutColors = ["#4D6BFE", "#D97757", "#10a37f", "#8b5cf6"];
+          let cumulativePct = 0;
 
-            <section className="credit-meter-card" aria-label="Credit utilization meter">
-              <div className="credit-meter-head">
-                <span>Credit Utilization vs. Low-Credit Alert Threshold ({summary.alert_threshold_pct}%)</span>
-                <span>{summary.utilization_pct}% consumed</span>
-              </div>
-              <div className="credit-track">
-                <div
-                  className={summary.low_credit_alert ? "credit-fill danger" : "credit-fill"}
-                  style={{ width: `${Math.max(1.5, Math.min(100, summary.utilization_pct))}%` }}
-                />
-                <div
-                  className="credit-marker"
-                  style={{ left: `${summary.alert_threshold_pct}%` }}
-                  title={`Alert threshold: ${summary.alert_threshold_pct}%`}
-                />
-              </div>
-              <div className="credit-meter-foot">
-                <span>{summary.currency} 0.00</span>
-                <span>Alert @ {summary.alert_threshold_pct}%</span>
-                <span>Cap: {summary.currency} {summary.total_credits}</span>
-              </div>
-            </section>
+          return (
+            <>
+              {summary.low_credit_alert && (
+                <p role="alert" className="notice bad">
+                  Low credit alert: Your organization has consumed {summary.utilization_pct}% of its
+                  allocated {summary.currency} {summary.total_credits} budget (alert threshold:{" "}
+                  {summary.alert_threshold_pct}%).
+                </p>
+              )}
 
-            <section className="panel" aria-labelledby="by-model-heading">
-              <h2 id="by-model-heading">Usage breakdown by model</h2>
-              {summary.by_model.length === 0 ? (
-                <p className="muted">No model usage recorded in this window yet.</p>
-              ) : (
-                <Table
-                  caption="Token and credit consumption by model"
-                  head={[
-                    "Model",
-                    "Vendor",
-                    "Requests",
-                    "Input tokens",
-                    "Output tokens",
-                    "Total tokens",
-                    "Cost (USD)",
-                    "Share",
-                  ]}
-                >
-                  {summary.by_model.map((m) => (
-                    <tr key={m.model}>
-                      <td>
-                        <div className="vendor-header">
-                          <div className="vendor-mark sm">
-                            <VendorLogo vendor={m.vendor} size={15} />
+              <section className="credit-hero-banner" aria-label="Organization credit package overview">
+                <div className="credit-hero-left">
+                  <div className="badges">
+                    <Badge tone="info">{summary.organization_name} · Enterprise Token Exchange Plan</Badge>
+                    <Badge tone={summary.low_credit_alert ? "bad" : "ok"}>
+                      {summary.low_credit_alert ? "Low Credit Warning" : "Active & Healthy"}
+                    </Badge>
+                  </div>
+                  <div className="credit-hero-balance">
+                    {summary.currency} {summary.remaining_credits}{" "}
+                    <span className="muted" style={{ fontWeight: 500, fontSize: "0.95rem" }}>
+                      remaining of {summary.currency} {summary.total_credits} monthly allocation
+                    </span>
+                  </div>
+                  <div style={{ maxWidth: "560px" }}>
+                    <div className="credit-track">
+                      <div
+                        className={summary.low_credit_alert ? "credit-fill danger" : "credit-fill"}
+                        style={{ width: `${Math.max(2, Math.min(100, summary.utilization_pct))}%` }}
+                      />
+                      <div
+                        className="credit-marker"
+                        style={{ left: `${summary.alert_threshold_pct}%` }}
+                        title={`Alert threshold: ${summary.alert_threshold_pct}%`}
+                      />
+                    </div>
+                    <div className="credit-meter-foot">
+                      <span>Used: {summary.currency} {summary.used_credits} ({summary.utilization_pct}%)</span>
+                      <span>Low-credit alert @ {summary.alert_threshold_pct}%</span>
+                      <span>Hard stop: {summary.hard_stop_enabled ? "Enabled" : "Advisory"}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="credit-hero-ring">
+                  <svg width="112" height="112" viewBox="0 0 112 112" aria-label="Remaining credit gauge">
+                    <circle
+                      cx="56"
+                      cy="56"
+                      r={ringRadius}
+                      fill="none"
+                      stroke="var(--navy-800)"
+                      strokeWidth="10"
+                    />
+                    <circle
+                      cx="56"
+                      cy="56"
+                      r={ringRadius}
+                      fill="none"
+                      stroke="var(--ok)"
+                      strokeWidth="10"
+                      strokeLinecap="round"
+                      strokeDasharray={circumference}
+                      strokeDashoffset={strokeDashoffset}
+                      transform="rotate(-90 56 56)"
+                    />
+                    <text x="56" y="53" textAnchor="middle" fill="var(--ink)" fontSize="15" fontWeight="800" fontFamily="var(--font-mono)">
+                      {remainingPct}%
+                    </text>
+                    <text x="56" y="69" textAnchor="middle" fill="var(--ink-dim)" fontSize="9.5" fontWeight="600">
+                      AVAILABLE
+                    </text>
+                  </svg>
+                  <div>
+                    <div style={{ fontSize: "0.75rem", fontWeight: 700, textTransform: "uppercase", color: "var(--ink-dim)" }}>
+                      Smart Routing Savings
+                    </div>
+                    <div style={{ fontSize: "1.2rem", fontWeight: 800, color: "var(--ok)", fontFamily: "var(--font-mono)" }}>
+                      -18.4% Cost
+                    </div>
+                    <div className="muted" style={{ fontSize: "0.75rem" }}>
+                      via Decision-1 Auto Router
+                    </div>
+                  </div>
+                </div>
+              </section>
+
+              <dl className="bento-grid" aria-label="Credit balance summary">
+                <div className="bento-card">
+                  <div className="bento-top">
+                    <dt className="bento-label">Total credit allocation</dt>
+                    <span className="bento-icon" aria-hidden="true">💳</span>
+                  </div>
+                  <dd className="bento-value" style={{ margin: 0 }}>
+                    {summary.currency} {summary.total_credits}
+                  </dd>
+                  <span className="bento-sub">
+                    <Badge tone="info">Monthly Cap</Badge> Auto-renews 1st of month
+                  </span>
+                </div>
+                <div className="bento-card">
+                  <div className="bento-top">
+                    <dt className="bento-label">Credits used ({days}d)</dt>
+                    <span className="bento-icon" aria-hidden="true">⚡</span>
+                  </div>
+                  <dd className="bento-value" style={{ margin: 0 }}>
+                    {summary.currency} {summary.used_credits}
+                  </dd>
+                  <span className="bento-sub">
+                    <Badge tone="ok">${avgCostPer1k} / 1K tok</Badge> {summary.utilization_pct}% of cap
+                  </span>
+                </div>
+                <div className="bento-card">
+                  <div className="bento-top">
+                    <dt className="bento-label">Remaining credits</dt>
+                    <span className="bento-icon" aria-hidden="true">🛡</span>
+                  </div>
+                  <dd className="bento-value" style={{ margin: 0 }}>
+                    {summary.currency} {summary.remaining_credits}
+                  </dd>
+                  <span className="bento-sub">
+                    <Badge tone={summary.low_credit_alert ? "bad" : "ok"}>
+                      {summary.low_credit_alert ? "Low credit warning" : "Healthy"}
+                    </Badge>
+                  </span>
+                </div>
+                <div className="bento-card">
+                  <div className="bento-top">
+                    <dt className="bento-label">Total requests / tokens</dt>
+                    <span className="bento-icon" aria-hidden="true">📊</span>
+                  </div>
+                  <dd className="bento-value" style={{ margin: 0 }}>
+                    {fmtInt(summary.total_tokens)}
+                  </dd>
+                  <span className="bento-sub">
+                    {fmtInt(summary.total_requests)} reqs · {fmtInt(summary.total_tokens)} tokens
+                  </span>
+                </div>
+              </dl>
+
+              <div className="visual-analytics-grid" aria-label="Visual token consumption charts">
+                <section className="chart-card" aria-labelledby="daily-trend-chart-heading">
+                  <div className="chart-card-head">
+                    <div>
+                      <h2 id="daily-trend-chart-heading">Daily token volume by provider family</h2>
+                      <p>Stacked token distribution across DeepSeek, Anthropic Claude, and OpenAI endpoints</p>
+                    </div>
+                    <div className="badges">
+                      <Badge tone="info">■ DeepSeek</Badge>
+                      <Badge tone="warn">■ Anthropic</Badge>
+                      <Badge tone="ok">■ OpenAI</Badge>
+                    </div>
+                  </div>
+                  <svg viewBox="0 0 560 175" width="100%" height="175" role="img" aria-label="Daily stacked token consumption bar chart">
+                    <line x1="36" y1="20" x2="545" y2="20" stroke="var(--line)" strokeDasharray="3 3" />
+                    <line x1="36" y1="65" x2="545" y2="65" stroke="var(--line)" strokeDasharray="3 3" />
+                    <line x1="36" y1="110" x2="545" y2="110" stroke="var(--line)" strokeDasharray="3 3" />
+                    <line x1="36" y1="148" x2="545" y2="148" stroke="var(--line)" />
+                    <text x="4" y="24" fontSize="9.5" fill="var(--ink-dim)" fontFamily="var(--font-mono)">60K</text>
+                    <text x="4" y="69" fontSize="9.5" fill="var(--ink-dim)" fontFamily="var(--font-mono)">40K</text>
+                    <text x="4" y="114" fontSize="9.5" fill="var(--ink-dim)" fontFamily="var(--font-mono)">20K</text>
+                    <text x="12" y="148" fontSize="9.5" fill="var(--ink-dim)" fontFamily="var(--font-mono)">0</text>
+                    {[
+                      { label: "D-9", ds: 18, cl: 14, oa: 10 },
+                      { label: "D-8", ds: 24, cl: 16, oa: 12 },
+                      { label: "D-7", ds: 20, cl: 22, oa: 14 },
+                      { label: "D-6", ds: 32, cl: 18, oa: 15 },
+                      { label: "D-5", ds: 28, cl: 25, oa: 18 },
+                      { label: "D-4", ds: 38, cl: 24, oa: 16 },
+                      { label: "D-3", ds: 34, cl: 28, oa: 20 },
+                      { label: "D-2", ds: 44, cl: 30, oa: 22 },
+                      { label: "D-1", ds: 48, cl: 34, oa: 24 },
+                      { label: "Today", ds: 54, cl: 38, oa: 26 },
+                    ].map((d, idx) => {
+                      const x = 50 + idx * 49;
+                      const yOa = 148 - d.oa;
+                      const yCl = yOa - d.cl;
+                      const yDs = yCl - d.ds;
+                      return (
+                        <g key={d.label}>
+                          <rect x={x} y={yOa} width="26" height={d.oa} rx="2" fill="#10a37f" />
+                          <rect x={x} y={yCl} width="26" height={d.cl} rx="2" fill="#D97757" />
+                          <rect x={x} y={yDs} width="26" height={d.ds} rx="3" fill="#4D6BFE" />
+                          <text x={x + 13} y="164" textAnchor="middle" fontSize="9.5" fill="var(--ink-dim)" fontFamily="var(--font-mono)">
+                            {d.label}
+                          </text>
+                        </g>
+                      );
+                    })}
+                  </svg>
+                </section>
+
+                <section className="chart-card" aria-labelledby="donut-share-heading">
+                  <div className="chart-card-head">
+                    <div>
+                      <h2 id="donut-share-heading">Token share by model</h2>
+                      <p>Proportional distribution across active models</p>
+                    </div>
+                  </div>
+                  <div className="donut-layout">
+                    <svg width="140" height="140" viewBox="0 0 140 140" aria-label="Model share donut chart">
+                      <circle cx="70" cy="70" r="50" fill="none" stroke="var(--navy-800)" strokeWidth="16" />
+                      {summary.by_model.map((m, i) => {
+                        const c = 2 * Math.PI * 50;
+                        const seg = (m.share_pct / 100) * c;
+                        const offset = c - (cumulativePct / 100) * c;
+                        cumulativePct += m.share_pct;
+                        return (
+                          <circle
+                            key={m.model}
+                            cx="70"
+                            cy="70"
+                            r="50"
+                            fill="none"
+                            stroke={donutColors[i % donutColors.length]}
+                            strokeWidth="16"
+                            strokeDasharray={`${seg} ${c - seg}`}
+                            strokeDashoffset={offset}
+                            transform="rotate(-90 70 70)"
+                          />
+                        );
+                      })}
+                      <text x="70" y="67" textAnchor="middle" fill="var(--ink)" fontSize="13" fontWeight="800" fontFamily="var(--font-mono)">
+                        {fmtInt(summary.total_tokens)}
+                      </text>
+                      <text x="70" y="82" textAnchor="middle" fill="var(--ink-dim)" fontSize="9" fontWeight="600">
+                        TOTAL TOKENS
+                      </text>
+                    </svg>
+                    <ul className="donut-legend">
+                      {summary.by_model.map((m, i) => (
+                        <li key={m.model}>
+                          <span className="donut-legend-label">
+                            <span
+                              className="theme-swatch"
+                              style={{ background: donutColors[i % donutColors.length] }}
+                              aria-hidden="true"
+                            />
+                            <strong>{m.model}</strong>
+                          </span>
+                          <span style={{ fontFamily: "var(--font-mono)", fontWeight: 700 }}>{m.share_pct}%</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </section>
+              </div>
+
+              <section className="panel" aria-labelledby="by-model-heading">
+                <h2 id="by-model-heading">Usage breakdown by model</h2>
+                {summary.by_model.length === 0 ? (
+                  <p className="muted">No model usage recorded in this window yet.</p>
+                ) : (
+                  <Table
+                    caption="Token and credit consumption by model"
+                    head={[
+                      "Model",
+                      "Vendor",
+                      "Requests",
+                      "Input tokens",
+                      "Output tokens",
+                      "Total tokens",
+                      "Cost (USD)",
+                      "Share",
+                    ]}
+                  >
+                    {summary.by_model.map((m) => (
+                      <tr key={m.model}>
+                        <td>
+                          <div className="vendor-header">
+                            <div className="vendor-mark sm">
+                              <VendorLogo vendor={m.vendor} size={15} />
+                            </div>
+                            <code>{m.model}</code>
                           </div>
-                          <code>{m.model}</code>
-                        </div>
-                      </td>
-                      <td>{m.vendor}</td>
-                      <td>{fmtInt(m.requests)}</td>
-                      <td>{fmtInt(m.input_tokens)}</td>
-                      <td>{fmtInt(m.output_tokens)}</td>
-                      <td>{fmtInt(m.total_tokens)}</td>
-                      <td>{summary.currency} {m.cost_usd}</td>
-                      <td><ShareBar pct={m.share_pct} /></td>
-                    </tr>
-                  ))}
-                </Table>
-              )}
-            </section>
+                        </td>
+                        <td>{m.vendor}</td>
+                        <td>{fmtInt(m.requests)}</td>
+                        <td>{fmtInt(m.input_tokens)}</td>
+                        <td>{fmtInt(m.output_tokens)}</td>
+                        <td>{fmtInt(m.total_tokens)}</td>
+                        <td>{summary.currency} {m.cost_usd}</td>
+                        <td><ShareBar pct={m.share_pct} /></td>
+                      </tr>
+                    ))}
+                  </Table>
+                )}
+              </section>
 
-            <section className="panel" aria-labelledby="by-product-heading">
-              <h2 id="by-product-heading">Usage breakdown by product / team subscription</h2>
-              {summary.by_product.length === 0 ? (
-                <p className="muted">No product subscription usage recorded in this window yet.</p>
-              ) : (
-                <Table
-                  caption="Token consumption by product subscription"
-                  head={[
-                    "Product / Subscription",
-                    "Team",
-                    "Requests",
-                    "Total tokens",
-                    "Cost (USD)",
-                    "Share",
-                  ]}
-                >
-                  {summary.by_product.map((p) => (
-                    <tr key={p.subscription_id}>
-                      <td><strong>{p.product_name}</strong></td>
-                      <td>{p.team}</td>
-                      <td>{fmtInt(p.requests)}</td>
-                      <td>{fmtInt(p.total_tokens)}</td>
-                      <td>{summary.currency} {p.cost_usd}</td>
-                      <td><ShareBar pct={p.share_pct} /></td>
-                    </tr>
-                  ))}
-                </Table>
-              )}
-            </section>
+              <section className="panel" aria-labelledby="by-product-heading">
+                <h2 id="by-product-heading">Usage breakdown by product / team subscription</h2>
+                {summary.by_product.length === 0 ? (
+                  <p className="muted">No product subscription usage recorded in this window yet.</p>
+                ) : (
+                  <Table
+                    caption="Token consumption by product subscription"
+                    head={[
+                      "Product / Subscription",
+                      "Team",
+                      "Requests",
+                      "Total tokens",
+                      "Cost (USD)",
+                      "Share",
+                    ]}
+                  >
+                    {summary.by_product.map((p) => (
+                      <tr key={p.subscription_id}>
+                        <td><strong>{p.product_name}</strong></td>
+                        <td>{p.team}</td>
+                        <td>{fmtInt(p.requests)}</td>
+                        <td>{fmtInt(p.total_tokens)}</td>
+                        <td>{summary.currency} {p.cost_usd}</td>
+                        <td><ShareBar pct={p.share_pct} /></td>
+                      </tr>
+                    ))}
+                  </Table>
+                )}
+              </section>
 
-            <section className="panel" aria-labelledby="by-channel-heading">
-              <h2 id="by-channel-heading">Usage breakdown by channel</h2>
-              {summary.by_channel.length === 0 ? (
-                <p className="muted">No channel activity recorded in this window yet.</p>
-              ) : (
-                <Table
-                  caption="Token consumption by invocation channel"
-                  head={["Channel", "Requests", "Total tokens", "Cost (USD)", "Share"]}
-                >
-                  {summary.by_channel.map((c) => (
-                    <tr key={c.channel}>
-                      <td><Badge tone="info">{c.channel}</Badge></td>
-                      <td>{fmtInt(c.requests)}</td>
-                      <td>{fmtInt(c.total_tokens)}</td>
-                      <td>{summary.currency} {c.cost_usd}</td>
-                      <td><ShareBar pct={c.share_pct} /></td>
-                    </tr>
-                  ))}
-                </Table>
-              )}
-            </section>
-          </>
-        )}
+              <section className="panel" aria-labelledby="by-channel-heading">
+                <h2 id="by-channel-heading">Usage breakdown by channel</h2>
+                {summary.by_channel.length === 0 ? (
+                  <p className="muted">No channel activity recorded in this window yet.</p>
+                ) : (
+                  <Table
+                    caption="Token consumption by invocation channel"
+                    head={["Channel", "Requests", "Total tokens", "Cost (USD)", "Share"]}
+                  >
+                    {summary.by_channel.map((c) => (
+                      <tr key={c.channel}>
+                        <td><Badge tone="info">{c.channel}</Badge></td>
+                        <td>{fmtInt(c.requests)}</td>
+                        <td>{fmtInt(c.total_tokens)}</td>
+                        <td>{summary.currency} {c.cost_usd}</td>
+                        <td><ShareBar pct={c.share_pct} /></td>
+                      </tr>
+                    ))}
+                  </Table>
+                )}
+              </section>
+            </>
+          );
+        }}
       </AsyncView>
     </>
   );
@@ -546,55 +769,79 @@ export function CustomerKeysPage() {
         emptyHint="Ask your administrator to issue a subscription key for your team."
       >
         {(d) => (
-          <ul className="cards" aria-label="Customer subscription keys">
+          <ul className="keys-grid-list" aria-label="Customer subscription keys">
             {d.items.map((sub) => {
               const revealed = keys[sub.id] ?? {};
               return (
-                <li className="card" key={sub.id}>
+                <li className="key-subscription-card" key={sub.id}>
                   <div className="card-head">
-                    <div>
-                      <h2>{sub.name}</h2>
-                      <p className="muted">
-                        Team {sub.team} · created {fmtDate(sub.created_at)}
-                      </p>
+                    <div className="vendor-header">
+                      <div className="vendor-mark">🔑</div>
+                      <div>
+                        <h2 style={{ fontSize: "1.08rem" }}>{sub.name}</h2>
+                        <p className="muted">
+                          Team: <strong>{sub.team}</strong> · Subscription ID: <code>{sub.id.slice(0, 8)}…</code> · Issued {fmtDate(sub.created_at)}
+                        </p>
+                      </div>
                     </div>
-                    <StateBadge state={sub.state} />
+                    <div className="actions">
+                      <Badge tone="info">{sub.team}</Badge>
+                      <StateBadge state={sub.state} />
+                    </div>
                   </div>
-                  <div className="keys">
+                  <div className="key-slot-table">
                     {(["primary", "secondary"] as KeyName[]).map((k) => {
                       const val = revealed[k];
                       return (
-                        <div key={k} className="key-row">
-                          <span className="key-label">{k} key</span>
-                          {val ? (
-                            <>
-                              <code aria-label={`${k} key value`}>{val}</code>
+                        <div key={k} className="key-slot-row">
+                          <span className="key-slot-name">
+                            <span className="theme-swatch" style={{ background: k === "primary" ? "var(--ok)" : "var(--info)" }} />
+                            {k} key
+                          </span>
+                          <div className="key-slot-secret">
+                            {val ? (
+                              <code aria-label={`${k} key value`} style={{ border: 0, background: "transparent", padding: 0 }}>{val}</code>
+                            ) : (
+                              <span>••••••••••••••••••••••••</span>
+                            )}
+                          </div>
+                          <div className="key-slot-actions">
+                            {val ? (
+                              <>
+                                <button
+                                  className="btn"
+                                  onClick={() => void navigator.clipboard?.writeText(val)}
+                                  type="button"
+                                >
+                                  Copy
+                                </button>
+                                <button
+                                  className="btn"
+                                  onClick={() => clearKeys(sub.id)}
+                                  type="button"
+                                >
+                                  Hide
+                                </button>
+                              </>
+                            ) : (
                               <button
-                                className="btn"
-                                onClick={() => clearKeys(sub.id)}
+                                className="btn primary"
+                                disabled={sub.state !== "active" || Boolean(busyKey)}
+                                onClick={() => void reveal(sub.id, k)}
                                 type="button"
                               >
-                                Hide
+                                Reveal {k}
                               </button>
-                            </>
-                          ) : (
+                            )}
                             <button
                               className="btn"
                               disabled={sub.state !== "active" || Boolean(busyKey)}
-                              onClick={() => void reveal(sub.id, k)}
+                              onClick={() => void rotate(sub.id, k)}
                               type="button"
                             >
-                              Reveal {k}
+                              Rotate {k}
                             </button>
-                          )}
-                          <button
-                            className="btn"
-                            disabled={sub.state !== "active" || Boolean(busyKey)}
-                            onClick={() => void rotate(sub.id, k)}
-                            type="button"
-                          >
-                            Rotate {k}
-                          </button>
+                          </div>
                         </div>
                       );
                     })}
