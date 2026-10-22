@@ -340,8 +340,60 @@ variable "sql_sku" {
   type    = string
   default = ""
   validation {
-    condition     = !contains(["prerequisites", "platform", "edge-bootstrap", "edge-candidate", "public-edge"], var.deployment_stage) || length(trimspace(var.sql_sku)) > 0
+    condition     = !contains(["prerequisites", "platform", "edge-bootstrap", "edge-candidate", "public-edge"], var.deployment_stage) || var.database_engine == "postgresql" || length(trimspace(var.sql_sku)) > 0
     error_message = "Select and review an Azure SQL SKU before the platform stages."
+  }
+}
+
+variable "database_engine" {
+  description = "Relational database engine for the control plane and FinOps telemetry store (`mssql` or `postgresql` 16 for Turnstile)."
+  type        = string
+  default     = "mssql"
+  validation {
+    condition     = contains(["mssql", "postgresql"], var.database_engine)
+    error_message = "database_engine must be mssql or postgresql."
+  }
+}
+
+variable "postgres_sku" {
+  description = "Azure Database for PostgreSQL Flexible Server SKU when database_engine is postgresql."
+  type        = string
+  default     = "B_Standard_B1ms"
+  validation {
+    condition     = length(trimspace(var.postgres_sku)) > 0
+    error_message = "Select a valid PostgreSQL Flexible Server SKU."
+  }
+}
+
+variable "turnstile_platform_enabled" {
+  description = "Provision Turnstile platform resources (Table Storage budget ledger, ModelRoutes table, Event Hub telemetry stream, and dedicated Control-Plane Function worker)."
+  type        = bool
+  default     = false
+}
+
+variable "ledger_table_name" {
+  description = "Azure Table Storage table name for the atomic budget and model-access ledger."
+  type        = string
+  default     = "TurnstileLedger"
+  validation {
+    condition     = can(regex("^[A-Za-z][A-Za-z0-9]{2,62}$", var.ledger_table_name))
+    error_message = "Table Storage table names must be 3-63 alphanumeric characters starting with a letter."
+  }
+}
+
+variable "control_plane_worker_enabled" {
+  description = "Enable the isolated Turnstile Control-Plane Function worker for asynchronous APIM revision and subscription publishing."
+  type        = bool
+  default     = false
+}
+
+variable "control_plane_container_image" {
+  description = "Immutable Turnstile Control-Plane Function container image."
+  type        = string
+  default     = ""
+  validation {
+    condition     = var.control_plane_container_image == "" || can(regex("^.+@sha256:[0-9a-f]{64}$", var.control_plane_container_image))
+    error_message = "Control-plane Function container must use an immutable sha256 digest."
   }
 }
 

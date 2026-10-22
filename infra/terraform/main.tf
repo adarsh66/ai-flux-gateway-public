@@ -15,6 +15,9 @@ locals {
   platform_stage      = contains(["platform", "edge-bootstrap", "edge-candidate", "public-edge"], var.deployment_stage)
   prerequisites_stage = contains(["prerequisites", "platform", "edge-bootstrap", "edge-candidate", "public-edge"], var.deployment_stage)
   sql_stage           = local.prerequisites_stage && var.sql_enabled
+  mssql_stage         = local.sql_stage && var.database_engine == "mssql"
+  postgres_stage      = local.sql_stage && var.database_engine == "postgresql"
+  turnstile_stage     = local.prerequisites_stage && var.turnstile_platform_enabled
   public_edge_stage   = var.deployment_stage == "public-edge"
   edge_stage          = contains(["edge-bootstrap", "edge-candidate", "public-edge"], var.deployment_stage)
   edge_tls_stage      = contains(["edge-candidate", "public-edge"], var.deployment_stage)
@@ -22,6 +25,7 @@ locals {
   identity_names = toset(concat(
     ["gateway"],
     local.prerequisites_stage ? ["api", "customer", "admin", "ingestion"] : [],
+    local.prerequisites_stage && var.turnstile_platform_enabled ? ["control-plane"] : [],
     local.edge_stage ? ["edge"] : [],
   ))
 }

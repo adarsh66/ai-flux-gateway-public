@@ -55,6 +55,17 @@ mock_provider "azurerm" {
       id = "/subscriptions/4d75ed7f-75ab-4db6-b1f3-263f240d1450/resourceGroups/rg-aiflux-fdpo-dev/providers/Microsoft.Network/virtualNetworks/test/subnets/appgw"
     }
   }
+  mock_resource "azurerm_postgresql_flexible_server" {
+    defaults = {
+      id   = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/rg-aiflux-example-dev/providers/Microsoft.DBforPostgreSQL/flexibleServers/aiflux-test-pg"
+      fqdn = "aiflux-test-pg.postgres.database.azure.com"
+    }
+  }
+  mock_resource "azurerm_eventhub_namespace" {
+    defaults = {
+      id = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/rg-aiflux-example-dev/providers/Microsoft.EventHub/namespaces/aiflux-test-eh"
+    }
+  }
 }
 
 mock_provider "azapi" {}
@@ -718,4 +729,52 @@ run "runtime_requires_verified_manual_rbac" {
     manual_rbac_verified = false
   }
   expect_failures = [terraform_data.approval]
+}
+
+run "turnstile_postgresql_and_ledger_platform" {
+  command = plan
+  variables {
+    deployment_stage                = "platform"
+    public_edge_live_gates_approved = false
+    database_engine                 = "postgresql"
+    postgres_sku                    = "B_Standard_B1ms"
+    turnstile_platform_enabled      = true
+    control_plane_worker_enabled    = false
+  }
+  assert {
+    condition     = length(azurerm_postgresql_flexible_server.main) == 1 && length(azurerm_postgresql_flexible_server_database.main) == 1 && length(azurerm_mssql_server.main) == 0 && azurerm_postgresql_flexible_server.main[0].version == "16"
+    error_message = "PostgreSQL mode must provision a PostgreSQL 16 Flexible Server and turnstile database without Azure SQL."
+  }
+  assert {
+    condition     = azapi_resource.turnstile_ledger[0].name == "TurnstileLedger" && azapi_resource.model_routes[0].name == "ModelRoutes" && azurerm_eventhub.token_usage[0].name == "token-usage" && length(azurerm_api_management_logger.eventhub) == 1 && length(azurerm_linux_function_app.control_plane) == 1
+    error_message = "Turnstile platform mode must provision Ledger/Route tables, Event Hub telemetry stream, APIM logger, and Control-Plane Function."
+  }
+  assert {
+    condition     = azurerm_linux_web_app.main["api"].app_settings["DATA_BACKEND"] == "postgresql" && startswith(azurerm_linux_web_app.main["api"].app_settings["DATABASE_URL"], "postgresql://") && azurerm_linux_web_app.main["api"].app_settings["LEDGER_TABLE_NAME"] == "TurnstileLedger"
+    error_message = "Control-plane API must receive PostgreSQL DATABASE_URL and Turnstile ledger settings."
+  }
+}
+
+run "turnstile_hybrid_private_postgres_endpoint" {
+  command = plan
+  variables {
+    deployment_stage                               = "platform"
+    public_edge_live_gates_approved                = false
+    database_engine                                = "postgresql"
+    turnstile_platform_enabled                     = true
+    hybrid_private_data_enabled                    = true
+    sql_public_network_access_enabled              = false
+    key_vault_public_network_access_enabled        = false
+    function_storage_public_network_access_enabled = false
+    network = {
+      address_space                  = "10.50.0.0/16"
+      app_gateway_subnet             = "10.50.0.0/24"
+      private_endpoint_subnet        = "10.50.2.0/24"
+      app_service_integration_subnet = "10.50.3.0/24"
+    }
+  }
+  assert {
+    condition     = !azurerm_postgresql_flexible_server.main[0].public_network_access_enabled && azurerm_private_dns_zone.data["sql"].name == "privatelink.postgres.database.azure.com" && anytrue([for rule in azurerm_network_security_group.app_service_integration[0].security_rule : rule.access == "Allow" && toset(rule.destination_port_ranges) == toset(["5432", "443"])])
+    error_message = "Hybrid PostgreSQL mode must use privatelink.postgres.database.azure.com and allow outbound port 5432 to the private endpoint subnet."
+  }
 }

@@ -112,6 +112,12 @@ resource "azurerm_subnet_nat_gateway_association" "runner" {
   nat_gateway_id = azurerm_nat_gateway.runner.id
 }
 
+resource "azurerm_subnet_nat_gateway_association" "egress" {
+  for_each       = toset(["apim", "apps"])
+  subnet_id      = azurerm_subnet.main[each.key].id
+  nat_gateway_id = azurerm_nat_gateway.runner.id
+}
+
 resource "azurerm_network_security_group" "runner" {
   name                = "${var.name_prefix}-runner-nsg"
   location            = var.location
