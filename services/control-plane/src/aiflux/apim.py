@@ -23,6 +23,10 @@ class ApimClient:
     def __init__(self, settings: Settings):
         self.settings = settings
         self._credential: DefaultAzureCredential | None = None
+        self._local_keys: dict[tuple[str, str], str] = {}
+
+    def _is_local_sandbox(self) -> bool:
+        return self.settings.local_auth_enabled and not self.settings.apim_resource_id.strip()
 
     def _url(self, subscription_id: str, action: str = "") -> str:
         resource = self.settings.apim_resource_id.rstrip("/")
@@ -130,6 +134,8 @@ class ApimClient:
         raise ApimError(504)
 
     def ensure(self, sid: str, display_name: str, state: str) -> None:
+        if self._is_local_sandbox():
+            return
         self._request(
             "PUT",
             sid,
@@ -144,9 +150,18 @@ class ApimClient:
         )
 
     def set_state(self, sid: str, state: str) -> None:
+        if self._is_local_sandbox():
+            return
         self._request("PATCH", sid, body={"properties": {"state": state}})
 
     def reveal(self, sid: str, key: Literal["primary", "secondary"]) -> str:
+        if self._is_local_sandbox():
+            import secrets
+
+            k = (sid, key)
+            if k not in self._local_keys:
+                self._local_keys[k] = f"ts-{key}-{sid[:8]}-{secrets.token_hex(8)}"
+            return self._local_keys[k]
         result = self._request("POST", sid, "/listSecrets")
         value = result.get(f"{key}Key")
         if not isinstance(value, str) or not value:
@@ -154,5 +169,10 @@ class ApimClient:
         return value
 
     def rotate(self, sid: str, key: Literal["primary", "secondary"]) -> None:
+        if self._is_local_sandbox():
+            import secrets
+
+            self._local_keys[(sid, key)] = f"ts-{key}-{sid[:8]}-{secrets.token_hex(8)}"
+            return
         action = "/regeneratePrimaryKey" if key == "primary" else "/regenerateSecondaryKey"
         self._request("POST", sid, action)

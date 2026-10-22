@@ -28,8 +28,11 @@ def configure_bootstrap(settings: Settings, engine: Engine) -> None:
             db.add(Member(organization_id=org.id, object_id=object_id, role="ids_admin", enabled=True))
         elif member.role != "ids_admin" or not member.enabled:
             raise SystemExit("Membership exists with different permissions; bootstrap will not override it")
+        from aiflux.turnstile_exchange import ensure_local_users_seeded
+
+        ensure_local_users_seeded(db, settings)
         db.commit()
-    print("IDS bootstrap membership is configured")
+    print("IDS bootstrap membership and default PostgreSQL accounts are configured")
 
 
 def main() -> None:

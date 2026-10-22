@@ -1,3 +1,4 @@
+import os
 from datetime import datetime
 from functools import lru_cache
 from pathlib import Path
@@ -5,7 +6,7 @@ from typing import Literal
 from urllib.parse import urlparse
 from uuid import UUID
 
-from pydantic import Field
+from pydantic import Field, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from sqlalchemy.engine import make_url
 
@@ -46,6 +47,47 @@ class Settings(BaseSettings):
     ingestion_max_rows: int = 10000
     ingestion_start_at: datetime | None = None
     mise_validation_endpoint: str | None = None
+    ledger_storage_account: str = ""
+    ledger_table_name: str = "TurnstileLedger"
+    model_routes_table_name: str = "ModelRoutes"
+    eventhub_namespace: str = ""
+    eventhub_name: str = "token-usage"
+    decision_router_enabled: bool = True
+    decision_router_endpoint: str = "/providers/microsoft/v1/systemone"
+    decision_router_default_model: str = "gpt-5.4-mini"
+    local_auth_enabled: bool = False
+    local_jwt_secret: str = "turnstile-local-postgres-jwt-signing-secret-key-2026"
+    bootstrap_admin_email: str = "admin@tokenx-ids.com"
+    bootstrap_admin_password: str = "tokenx-admin"
+    bootstrap_customer_email: str = "developer@caldova.com"
+    bootstrap_customer_password: str = "caldova-pass"
+    bootstrap_customer_org: str = "Caldova"
+    upstream_apim_url: str = ""
+    upstream_apim_key: str = ""
+
+    @model_validator(mode="after")
+    def populate_turnstile_env_fallbacks(self) -> "Settings":
+        if not self.ledger_storage_account and os.environ.get("LEDGER_STORAGE_ACCOUNT"):
+            self.ledger_storage_account = os.environ["LEDGER_STORAGE_ACCOUNT"]
+        if os.environ.get("LEDGER_TABLE_NAME"):
+            self.ledger_table_name = os.environ["LEDGER_TABLE_NAME"]
+        if not self.eventhub_namespace and os.environ.get("EVENTHUB_NAMESPACE"):
+            self.eventhub_namespace = os.environ["EVENTHUB_NAMESPACE"]
+        if os.environ.get("EVENTHUB_NAME"):
+            self.eventhub_name = os.environ["EVENTHUB_NAME"]
+        if not self.upstream_apim_url and os.environ.get("APIM_GATEWAY_URL"):
+            self.upstream_apim_url = os.environ["APIM_GATEWAY_URL"]
+        if not self.upstream_apim_key and os.environ.get("APIM_PROBE_SUBSCRIPTION_KEY"):
+            self.upstream_apim_key = os.environ["APIM_PROBE_SUBSCRIPTION_KEY"]
+        is_pg = self.database_url.startswith(("postgresql://", "postgresql+psycopg://"))
+        if is_pg and self.environment != "production":
+            self.local_auth_enabled = True
+        if self.local_auth_enabled and self.database_url:
+            if not self.home_tenant_id:
+                self.home_tenant_id = "00000000-0000-0000-0000-000000000001"
+            if not self.entra_audience:
+                self.entra_audience = "local://turnstile-postgres-auth"
+        return self
 
     def identity_errors(self) -> list[str]:
         errors = []
@@ -74,9 +116,11 @@ class Settings(BaseSettings):
                     errors.append("mise_validation_endpoint must target the /Validate path")
             except Exception:
                 errors.append("mise_validation_endpoint must be a valid URL")
-        if self.environment == "production" and not self.database_url.startswith("mssql+pyodbc://"):
-            errors.append("production requires passwordless Azure SQL")
-        if self.environment == "production" and self.database_url.startswith("mssql+pyodbc://"):
+        is_postgres = self.database_url.startswith(("postgresql://", "postgresql+psycopg://"))
+        is_mssql = self.database_url.startswith("mssql+pyodbc://")
+        if self.environment == "production" and not (is_mssql or is_postgres):
+            errors.append("production requires passwordless Azure SQL or Azure PostgreSQL")
+        if self.environment == "production" and is_mssql:
             url = make_url(self.database_url)
             if url.username or url.password:
                 errors.append("production SQL credentials must use managed identity")
@@ -88,6 +132,14 @@ class Settings(BaseSettings):
                 errors.append("production SQL must encrypt connections")
             if str(url.query.get("TrustServerCertificate", "no")).lower() not in ("no", "false"):
                 errors.append("production SQL must validate the server certificate")
+        if self.environment == "production" and is_postgres:
+            url = make_url(self.database_url)
+            if url.password:
+                errors.append("production PostgreSQL credentials must use managed identity")
+            if str(url.query.get("sslmode", "require")).lower() not in (
+                "require", "verify-ca", "verify-full",
+            ):
+                errors.append("production PostgreSQL must encrypt connections with sslmode=require")
         return errors
 
 

@@ -1,13 +1,15 @@
 import logging
+import os
 import re
 from dataclasses import asdict
 from datetime import UTC, datetime, timedelta
+from pathlib import Path
 from typing import Annotated, Any
 from uuid import UUID
 
 from fastapi import Depends, FastAPI, Header, HTTPException, Query, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import PlainTextResponse
+from fastapi.responses import FileResponse, PlainTextResponse
 from pydantic import ValidationError
 from sqlalchemy import func, literal, select, text, true
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
@@ -53,6 +55,9 @@ from aiflux.schemas import (
     AdminSubscriptionCreate,
     AdminSubscriptionOutput,
     CatalogOutput,
+    CreditBudgetOutput,
+    CreditBudgetUpdate,
+    CreditSummaryOutput,
     EnabledRequest,
     GatewayRevisionOutput,
     GatewayScope,
@@ -62,20 +67,36 @@ from aiflux.schemas import (
     GatewayTarget,
     IdentityOutput,
     KeyRequest,
+    LocalLoginRequest,
+    LocalLoginResponse,
+    LocalRegisterRequest,
+    LocalUserCreate,
+    LocalUserOutput,
+    LocalUserUpdate,
     MemberCreate,
     MemberOutput,
+    ModelGardenItemOutput,
+    ModelGardenUpsert,
+    ModelRouterConfigOutput,
+    ModelRouterConfigUpdate,
     ModelTokenSeries,
     OrganizationCreate,
     OrganizationOutput,
     Page,
+    PlaygroundChatRequest,
+    PlaygroundChatResponse,
+    PlaygroundMessage,
     PriceCreate,
     PriceEnd,
     PriceOutput,
+    RouterDecisionOutput,
+    RouterDecisionRequest,
     SafetyOutput,
     SafetySettingsUpdate,
     StateRequest,
     SubscriptionCreate,
     SubscriptionOutput,
+    TurnstilePolicyPreviewOutput,
     UsagePage,
     UsageSeries,
 )
@@ -87,6 +108,23 @@ from aiflux.subscriptions import (
     owned,
     reconcile,
     subscription_dict,
+)
+from aiflux.turnstile_exchange import (
+    authenticate_local_user,
+    create_local_user,
+    credit_summary_response,
+    decide_model_route,
+    get_router_config_output,
+    list_budgets,
+    list_local_users,
+    list_model_garden,
+    register_local_user,
+    render_turnstile_exchange_policy,
+    run_playground_chat,
+    update_local_user,
+    update_router_config,
+    upsert_budget,
+    upsert_model_garden_item,
 )
 
 Db = Annotated[Session, Depends(get_db)]
@@ -115,8 +153,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.add_middleware(
         CORSMiddleware,
         allow_origins=settings.cors_origins,
-        allow_methods=["GET", "POST", "PUT"],
-        allow_headers=["Authorization", "Content-Type", "Idempotency-Key"],
+        allow_methods=["GET", "POST", "PUT", "OPTIONS"],
+        allow_headers=["Authorization", "Content-Type", "Idempotency-Key", "Ocp-Apim-Subscription-Key"],
     )
 
     @app.middleware("http")
@@ -253,8 +291,22 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         return {"items": [revision_output(row) for row in rows], "total": total}
 
     @app.get("/api/models", response_model=Page[CatalogOutput])
-    def models(principal: User) -> dict:
+    def models(principal: User, db: Db) -> dict:
         if not settings.catalog_configured:
+            if settings.local_auth_enabled:
+                garden = list_model_garden(db, include_disabled=False)
+                items = [
+                    {
+                        "id": m.id,
+                        "provider": m.vendor,
+                        "capabilities": m.capabilities,
+                        "enabled": m.enabled and not m.coming_soon,
+                        "placeholder": m.coming_soon,
+                        "max_completion_tokens": m.max_completion_tokens,
+                    }
+                    for m in garden
+                ]
+                return {"items": items, "total": len(items)}
             raise HTTPException(503, "Model catalog has not passed gateway capability validation")
         try:
             catalog = Catalog.load(settings.catalog_path)
@@ -766,6 +818,212 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         audit(db, principal, "price.period.closed", row.id)
         db.commit()
         return price_dict(row)
+
+    @app.get("/api/model-garden", response_model=Page[ModelGardenItemOutput])
+    def customer_model_garden(principal: User, db: Db) -> dict:
+        items = list_model_garden(db, include_disabled=False)
+        return {"items": items, "total": len(items)}
+
+    @app.get("/api/admin/model-garden", response_model=Page[ModelGardenItemOutput])
+    def admin_model_garden(principal: Admin, db: Db) -> dict:
+        items = list_model_garden(db, include_disabled=True)
+        return {"items": items, "total": len(items)}
+
+    @app.post("/api/admin/model-garden", response_model=ModelGardenItemOutput)
+    @app.put("/api/admin/model-garden/{model_id}", response_model=ModelGardenItemOutput)
+    def save_model_garden_item(
+        payload: ModelGardenUpsert, principal: Admin, db: Db, model_id: str | None = None
+    ) -> ModelGardenItemOutput:
+        if model_id is not None and payload.id != model_id:
+            raise HTTPException(422, "Path model_id must match payload id")
+        return upsert_model_garden_item(db, principal, payload)
+
+    @app.get("/api/credits/summary", response_model=CreditSummaryOutput)
+    def customer_credits_summary(
+        principal: User,
+        db: Db,
+        days: int = Query(30, ge=1, le=366),
+        subscription_id: UUID | None = None,
+    ) -> CreditSummaryOutput:
+        check_usage_subscription(db, principal.organization_id, subscription_id)
+        return credit_summary_response(
+            db, principal.organization_id, days, str(subscription_id) if subscription_id else None
+        )
+
+    @app.get("/api/admin/finops/summary", response_model=CreditSummaryOutput)
+    def admin_finops_summary(
+        principal: Admin,
+        db: Db,
+        organization_id: UUID | None = None,
+        days: int = Query(30, ge=1, le=366),
+        subscription_id: UUID | None = None,
+    ) -> CreditSummaryOutput:
+        target_org = str(organization_id) if organization_id else principal.organization_id
+        check_usage_subscription(db, target_org, subscription_id)
+        return credit_summary_response(
+            db, target_org, days, str(subscription_id) if subscription_id else None
+        )
+
+    @app.get("/api/admin/budgets", response_model=Page[CreditBudgetOutput])
+    def admin_budgets(
+        principal: Admin, db: Db, organization_id: UUID | None = None
+    ) -> dict:
+        items = list_budgets(db, str(organization_id) if organization_id else None)
+        return {"items": items, "total": len(items)}
+
+    @app.put("/api/admin/budgets/{organization_id}", response_model=CreditBudgetOutput)
+    def admin_update_budget(
+        organization_id: UUID, payload: CreditBudgetUpdate, principal: Admin, db: Db
+    ) -> CreditBudgetOutput:
+        return upsert_budget(db, principal, str(organization_id), payload)
+
+    @app.post("/api/subscriptions/{sid}/customer-rotate")
+    def customer_rotate_key(
+        sid: UUID, payload: KeyRequest, principal: User, db: Db, apim: Apim
+    ) -> dict:
+        lock_organization(db, principal.organization_id)
+        row = owned(db, sid, principal)
+        if row.state != "active":
+            raise HTTPException(409, "Only active subscriptions can rotate keys")
+        audit(db, principal, f"subscription.customer_rotate.{payload.key}", row.id)
+        db.flush()
+        apim.rotate(row.id, payload.key)
+        db.commit()
+        return {"state": row.state, "rotated_key": payload.key}
+
+    @app.get("/api/model-router", response_model=ModelRouterConfigOutput)
+    def customer_model_router_info(principal: User, db: Db) -> ModelRouterConfigOutput:
+        return get_router_config_output(db, settings)
+
+    @app.get("/api/admin/model-router", response_model=ModelRouterConfigOutput)
+    def admin_get_model_router(principal: Admin, db: Db) -> ModelRouterConfigOutput:
+        return get_router_config_output(db, settings)
+
+    @app.put("/api/admin/model-router", response_model=ModelRouterConfigOutput)
+    def admin_update_model_router(
+        payload: ModelRouterConfigUpdate, principal: Admin, db: Db
+    ) -> ModelRouterConfigOutput:
+        return update_router_config(db, settings, principal, payload)
+
+    @app.post("/api/model-router/decide", response_model=RouterDecisionOutput)
+    def model_router_decide(
+        payload: RouterDecisionRequest, principal: User, db: Db
+    ) -> RouterDecisionOutput:
+        return decide_model_route(db, settings, payload)
+
+    @app.post("/api/playground/chat", response_model=PlaygroundChatResponse)
+    def playground_chat(
+        payload: PlaygroundChatRequest, principal: User, db: Db
+    ) -> PlaygroundChatResponse:
+        return run_playground_chat(db, settings, principal, payload)
+
+    @app.get("/api/admin/turnstile/policy-preview", response_model=TurnstilePolicyPreviewOutput)
+    def admin_turnstile_policy_preview(principal: Admin, db: Db) -> TurnstilePolicyPreviewOutput:
+        return render_turnstile_exchange_policy(db, settings)
+
+    @app.post("/api/auth/login", response_model=LocalLoginResponse)
+    def local_auth_login(payload: LocalLoginRequest, db: Db) -> LocalLoginResponse:
+        return authenticate_local_user(db, settings, payload)
+
+    @app.post("/api/auth/register", status_code=201, response_model=LocalLoginResponse)
+    def local_auth_register(payload: LocalRegisterRequest, db: Db) -> LocalLoginResponse:
+        return register_local_user(db, settings, payload)
+
+    @app.get("/api/admin/local-users", response_model=Page[LocalUserOutput])
+    def admin_get_local_users(
+        principal: Admin, db: Db, organization_id: UUID | None = None
+    ) -> dict:
+        items = list_local_users(db, settings, str(organization_id) if organization_id else None)
+        return {"items": items, "total": len(items)}
+
+    @app.post("/api/admin/local-users", status_code=201, response_model=LocalUserOutput)
+    def admin_add_local_user(
+        payload: LocalUserCreate, principal: Admin, db: Db
+    ) -> LocalUserOutput:
+        return create_local_user(db, settings, principal, payload)
+
+    @app.put("/api/admin/local-users/{user_id}", response_model=LocalUserOutput)
+    def admin_modify_local_user(
+        user_id: UUID, payload: LocalUserUpdate, principal: Admin, db: Db
+    ) -> LocalUserOutput:
+        return update_local_user(db, principal, str(user_id), payload)
+
+    @app.post("/v1/chat/completions")
+    def local_gateway_chat_completions(
+        payload: dict[str, Any],
+        db: Db,
+        subscription_key: str | None = Header(default=None, alias="Ocp-Apim-Subscription-Key"),
+    ) -> dict[str, Any]:
+        if not settings.local_auth_enabled:
+            raise HTTPException(404, "Not found")
+        if not subscription_key or not subscription_key.strip():
+            raise HTTPException(401, "Missing Ocp-Apim-Subscription-Key header")
+        from aiflux.turnstile_exchange import ensure_local_users_seeded
+
+        ensure_local_users_seeded(db, settings)
+        cust_org = db.scalar(
+            select(Organization).where(Organization.tenant_id == "00000000-0000-0000-0000-000000000002")
+        ) or db.scalar(select(Organization))
+        if cust_org is None:
+            raise HTTPException(503, "No organization configured")
+        principal = Principal(
+            cust_org.id, cust_org.name, cust_org.tenant_id, "00000000-0000-0000-0000-000000000202", "customer"
+        )
+        raw_msgs = payload.get("messages") or [{"role": "user", "content": "Hello"}]
+        req = PlaygroundChatRequest(
+            model=str(payload.get("model", "auto")),
+            messages=[
+                PlaygroundMessage(role=m.get("role", "user"), content=str(m.get("content", "")))
+                for m in raw_msgs
+                if isinstance(m, dict) and m.get("content")
+            ],
+            max_completion_tokens=int(payload.get("max_completion_tokens") or 512),
+        )
+        res = run_playground_chat(db, settings, principal, req)
+        return {
+            "id": res.id,
+            "object": "chat.completion",
+            "model": res.selected_model,
+            "choices": [
+                {
+                    "index": 0,
+                    "message": {"role": "assistant", "content": res.reply},
+                    "finish_reason": "content_filter" if res.safety_status == "blocked" else "stop",
+                }
+            ],
+            "usage": {
+                "prompt_tokens": res.input_tokens,
+                "completion_tokens": res.output_tokens,
+                "total_tokens": res.total_tokens,
+            },
+            "routing_decision": res.routing_decision.model_dump() if res.routing_decision else None,
+        }
+
+    portals_dir = os.environ.get("AIFLUX_SERVE_PORTALS_DIR", "").strip()
+    if portals_dir and Path(portals_dir).is_dir():
+        root_dir = Path(portals_dir).resolve()
+        admin_dist = (root_dir / "admin").resolve()
+        customer_dist = (root_dir / "customer").resolve()
+
+        @app.get("/admin", include_in_schema=False)
+        @app.get("/admin/{subpath:path}", include_in_schema=False)
+        def serve_admin_spa(subpath: str = "") -> FileResponse:
+            if subpath:
+                candidate = (admin_dist / subpath).resolve()
+                if candidate.is_relative_to(admin_dist) and candidate.is_file():
+                    return FileResponse(candidate)
+            return FileResponse(admin_dist / "index.html")
+
+        @app.get("/", include_in_schema=False)
+        @app.get("/{subpath:path}", include_in_schema=False)
+        def serve_customer_spa(subpath: str = "") -> FileResponse:
+            if subpath.startswith(("api/", "v1/", "health", "ready", ".well-known/", "_edge-denied/")):
+                raise HTTPException(404, "Not found")
+            if subpath:
+                candidate = (customer_dist / subpath).resolve()
+                if candidate.is_relative_to(customer_dist) and candidate.is_file():
+                    return FileResponse(candidate)
+            return FileResponse(customer_dist / "index.html")
 
     return app
 

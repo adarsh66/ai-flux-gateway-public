@@ -5,10 +5,10 @@ export function BrandMark() {
   return (
     <div className="brand" aria-label="Singtel IDS AIFLUX">
       <svg width="28" height="28" viewBox="0 0 32 32" aria-hidden="true">
-        <rect width="32" height="32" rx="8" fill="#14b8a6" />
-        <path d="M7 21c4-9 8-9 12-3s5 3 6-6" fill="none" stroke="#06182f" strokeWidth="3" strokeLinecap="round" />
+        <rect width="32" height="32" rx="8" fill="var(--teal-500)" />
+        <path d="M9 16h14M16 9l7 7-7 7" fill="none" stroke="#ffffff" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" />
       </svg>
-      <span><strong>AIFLUX</strong><small>Singtel IDS</small></span>
+      <span><strong>AIFLUX</strong><small>Token Exchange</small></span>
     </div>
   );
 }

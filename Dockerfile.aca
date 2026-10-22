@@ -1,0 +1,41 @@
+FROM node:22-alpine AS ui-build
+WORKDIR /repo
+COPY package.json package-lock.json tsconfig.base.json ./
+COPY packages/ui packages/ui
+COPY apps/customer-portal apps/customer-portal
+COPY apps/admin-portal apps/admin-portal
+RUN npm ci --workspaces --include-workspace-root
+ENV VITE_AUTH_MODE=local \
+    VITE_ENTRA_CLIENT_ID=00000000-0000-0000-0000-000000000000 \
+    VITE_ENTRA_AUTHORITY=https://login.microsoftonline.com/organizations \
+    VITE_API_SCOPE=access_as_user \
+    VITE_CONTROL_API_URL=/api \
+    VITE_GATEWAY_URL=/v1
+RUN npm run build -w @aiflux/customer-portal && npm run build -w @aiflux/admin-portal
+
+FROM python:3.12-slim-bookworm
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    AIFLUX_SERVE_PORTALS_DIR=/app/static \
+    AIFLUX_LOCAL_AUTH_ENABLED=true \
+    AIFLUX_DATABASE_URL=postgresql://turnstile:turnstile_local_dev@127.0.0.1:5432/aiflux_exchange \
+    AIFLUX_GATEWAY_SETTINGS_SCOPES='["dev-openai","dev-unified"]' \
+    AIFLUX_GATEWAY_CONTROLS_V2_ENABLED=true
+WORKDIR /app
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl ca-certificates g++ unixodbc-dev postgresql postgresql-contrib sudo \
+    && rm -rf /var/lib/apt/lists/*
+COPY pyproject.toml ./
+COPY services/control-plane ./services/control-plane
+RUN pip install --no-cache-dir .
+COPY gateway/catalog ./gateway/catalog
+COPY gateway/policies/settings-unconfigured.xml ./gateway/policies/settings-unconfigured.xml
+COPY --from=ui-build /repo/apps/customer-portal/dist /app/static/customer
+COPY --from=ui-build /repo/apps/admin-portal/dist /app/static/admin
+
+RUN printf '#!/bin/sh\nset -e\nservice postgresql start\nsu - postgres -c "psql -tc \\"SELECT 1 FROM pg_roles WHERE rolname='\''turnstile'\''\\" | grep -q 1 || psql -c \\"CREATE USER turnstile WITH SUPERUSER PASSWORD '\''turnstile_local_dev'\'';\\""\nsu - postgres -c "psql -tc \\"SELECT 1 FROM pg_database WHERE datname='\''aiflux_exchange'\''\\" | grep -q 1 || psql -c \\"CREATE DATABASE aiflux_exchange OWNER turnstile;\\""\npython3 -c "from alembic import command; from alembic.config import Config; from aiflux.config import get_settings; from aiflux.db import engine_for; from aiflux.turnstile_exchange import ensure_local_users_seeded; from sqlalchemy.orm import Session; command.upgrade(Config('\''services/control-plane/alembic.ini'\''), '\''head'\''); s=get_settings(); e=engine_for(s.database_url); db=Session(e); ensure_local_users_seeded(db, s); db.close()"\nexec uvicorn aiflux.app:app --host 0.0.0.0 --port 8000\n' > /app/start-aca.sh \
+    && chmod +x /app/start-aca.sh
+
+EXPOSE 8000
+HEALTHCHECK CMD curl -fsS http://127.0.0.1:8000/health || exit 1
+CMD ["/app/start-aca.sh"]

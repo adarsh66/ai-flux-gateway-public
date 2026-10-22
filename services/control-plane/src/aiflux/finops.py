@@ -272,6 +272,8 @@ def usage_series_query(
         minute = func.dateadd(
             literal_column("minute"), func.datediff(literal_column("minute"), epoch, timestamp), epoch,
         )
+    elif dialect == "postgresql":
+        minute = func.date_trunc("minute", timestamp)
     elif dialect == "sqlite":
         minute = func.strftime("%Y-%m-%dT%H:%M:00Z", timestamp)
     else:
@@ -345,6 +347,10 @@ def model_token_query(
         # Positional parameters in repeated GROUP BY expressions are distinct
         # to SQL Server. Only validated server-owned interval constants are inlined.
         bucket = func.floor(cast(minutes, Float) / literal_column(str(interval_seconds // 60)))
+    elif dialect == "postgresql":
+        epoch_seconds = int(TOKEN_BUCKET_EPOCH.timestamp())
+        pg_seconds = cast(func.extract("epoch", timestamp), Float) - literal_column(str(epoch_seconds))
+        bucket = func.floor(pg_seconds / literal_column(str(interval_seconds)))
     elif dialect == "sqlite":
         seconds = cast(func.strftime("%s", timestamp), BigInteger) - int(TOKEN_BUCKET_EPOCH.timestamp())
         bucket = func.floor(cast(seconds, Float) / interval_seconds)
