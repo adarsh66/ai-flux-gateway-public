@@ -362,3 +362,221 @@ class SafetyOutput(BaseModel):
     category: str
     action: str
     correlation_id: str
+
+
+class ModelGardenItemOutput(BaseModel):
+    id: str
+    display_name: str
+    provider: str
+    vendor: str
+    region: str
+    backend_model: str
+    endpoint_url: str
+    context_window: int
+    max_completion_tokens: int
+    input_per_million: str
+    output_per_million: str
+    cached_input_per_million: str | None = None
+    currency: str = "USD"
+    capabilities: list[str]
+    description: str
+    enabled: bool
+    coming_soon: bool = False
+    content_safety_enabled: bool = True
+    priority: int = 100
+
+
+class ModelGardenUpsert(Input):
+    id: str = Field(min_length=1, max_length=100)
+    display_name: str = Field(min_length=1, max_length=120)
+    provider: str = Field(min_length=1, max_length=60)
+    vendor: str = Field(min_length=1, max_length=60)
+    region: str = Field(default="eastus2", min_length=1, max_length=60)
+    backend_model: str = Field(min_length=1, max_length=100)
+    endpoint_url: str = Field(default="", max_length=500)
+    context_window: int = Field(default=128000, ge=1024, le=10000000)
+    max_completion_tokens: int = Field(default=16384, ge=1, le=200000)
+    input_per_million: Decimal = Field(default=Decimal("0"), ge=0, max_digits=20, decimal_places=8)
+    output_per_million: Decimal = Field(default=Decimal("0"), ge=0, max_digits=20, decimal_places=8)
+    cached_input_per_million: Decimal | None = Field(default=None, ge=0, max_digits=20, decimal_places=8)
+    currency: str = Field(default="USD", pattern=r"^[A-Z]{3}$")
+    capabilities: list[str] = Field(default_factory=lambda: ["chat", "streaming"])
+    description: str = Field(default="", max_length=500)
+    enabled: bool = True
+    coming_soon: bool = False
+    content_safety_enabled: bool = True
+    priority: int = Field(default=100, ge=1, le=1000)
+
+
+class CreditBudgetUpdate(Input):
+    subscription_id: UUID | None = None
+    monthly_budget_usd: Decimal = Field(ge=0, max_digits=20, decimal_places=4)
+    credit_allocation: Decimal = Field(ge=0, max_digits=20, decimal_places=4)
+    alert_threshold_pct: int = Field(default=80, ge=1, le=100)
+    allowed_models: list[str] = Field(default_factory=lambda: ["*"])
+    product_name: str = Field(default="Enterprise AI Gateway", min_length=1, max_length=100)
+    channel: str = Field(default="api-gateway", min_length=1, max_length=60)
+    hard_stop_enabled: bool = True
+
+
+class CreditBudgetOutput(BaseModel):
+    id: str
+    organization_id: str
+    organization_name: str
+    subscription_id: str | None
+    subscription_name: str | None = None
+    monthly_budget_usd: str
+    credit_allocation: str
+    used_credits: str
+    remaining_credits: str
+    utilization_pct: float
+    low_credit_alert: bool
+    alert_threshold_pct: int
+    allowed_models: list[str]
+    product_name: str
+    channel: str
+    hard_stop_enabled: bool
+    ledger_row_key: str
+    updated_at: datetime
+
+
+class ModelUsageBreakdownItem(BaseModel):
+    model: str
+    provider: str
+    vendor: str
+    requests: int
+    input_tokens: int
+    output_tokens: int
+    total_tokens: int
+    cost_usd: str
+    share_pct: float
+
+
+class ProductUsageBreakdownItem(BaseModel):
+    subscription_id: str
+    subscription_name: str
+    team: str
+    product_name: str
+    requests: int
+    total_tokens: int
+    cost_usd: str
+    share_pct: float
+
+
+class ChannelUsageBreakdownItem(BaseModel):
+    channel: str
+    requests: int
+    total_tokens: int
+    cost_usd: str
+    share_pct: float
+
+
+class CreditSummaryOutput(BaseModel):
+    organization_id: str
+    organization_name: str
+    currency: str = "USD"
+    total_credits: str
+    used_credits: str
+    remaining_credits: str
+    utilization_pct: float
+    alert_threshold_pct: int
+    low_credit_alert: bool
+    hard_stop_enabled: bool
+    total_requests: int
+    total_tokens: int
+    by_model: list[ModelUsageBreakdownItem]
+    by_product: list[ProductUsageBreakdownItem]
+    by_channel: list[ChannelUsageBreakdownItem]
+
+
+class RouterRuleItem(Input):
+    category: str = Field(min_length=1, max_length=60)
+    description: str = Field(min_length=1, max_length=240)
+    keywords: list[str] = Field(default_factory=list)
+    preferred_model: str = Field(min_length=1, max_length=100)
+    fallback_model: str = Field(min_length=1, max_length=100)
+
+
+class ModelRouterConfigOutput(BaseModel):
+    enabled: bool
+    strategy: Literal["microsoft-decision-1", "cost-optimized", "latency-optimized", "quality-first"]
+    decision_endpoint: str
+    default_model: str
+    candidate_models: list[str]
+    rules: list[RouterRuleItem]
+    updated_at: datetime
+
+
+class ModelRouterConfigUpdate(Input):
+    enabled: bool = True
+    strategy: Literal[
+        "microsoft-decision-1", "cost-optimized", "latency-optimized", "quality-first"
+    ] = "microsoft-decision-1"
+    decision_endpoint: str = Field(
+        default="/providers/microsoft/v1/systemone", min_length=1, max_length=500,
+    )
+    default_model: str = Field(default="gpt-5.4-mini", min_length=1, max_length=100)
+    candidate_models: list[str] = Field(min_length=1, max_length=20)
+    rules: list[RouterRuleItem] = Field(default_factory=list, max_length=20)
+
+
+class RouterDecisionRequest(Input):
+    prompt: str = Field(min_length=1, max_length=8000)
+    strategy: Literal[
+        "microsoft-decision-1", "cost-optimized", "latency-optimized", "quality-first"
+    ] | None = None
+
+
+class RouterDecisionOutput(BaseModel):
+    requested_model: str = "auto"
+    selected_model: str
+    display_name: str
+    provider: str
+    vendor: str
+    category: str
+    strategy: str
+    decision_endpoint: str
+    confidence: float
+    reason: str
+    estimated_input_per_million: str
+    estimated_output_per_million: str
+
+
+class PlaygroundMessage(Input):
+    role: Literal["system", "user", "assistant"]
+    content: str = Field(min_length=1, max_length=8000)
+
+
+class PlaygroundChatRequest(Input):
+    model: str = Field(default="auto", min_length=1, max_length=100)
+    messages: list[PlaygroundMessage] = Field(min_length=1, max_length=25)
+    max_completion_tokens: int = Field(default=512, ge=1, le=16384)
+    temperature: float = Field(default=0.3, ge=0.0, le=2.0)
+    subscription_id: UUID | None = None
+
+
+class PlaygroundChatResponse(BaseModel):
+    id: str
+    requested_model: str
+    selected_model: str
+    provider: str
+    vendor: str
+    reply: str
+    routing_decision: RouterDecisionOutput | None = None
+    safety_status: Literal["passed", "blocked"]
+    safety_categories: dict[str, int]
+    input_tokens: int
+    output_tokens: int
+    total_tokens: int
+    estimated_cost_usd: str
+    latency_ms: int
+
+
+class TurnstilePolicyPreviewOutput(BaseModel):
+    ledger_storage_account: str
+    ledger_table_name: str
+    model_routes_table_name: str
+    decision_router_enabled: bool
+    decision_endpoint: str
+    policy_xml: str
+

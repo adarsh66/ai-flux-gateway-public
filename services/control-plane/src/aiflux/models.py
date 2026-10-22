@@ -171,3 +171,62 @@ class GatewaySettingsRevision(Base):
     base_hash: Mapped[str] = mapped_column(String(64))
     base_etag: Mapped[str] = mapped_column(String(200))
     error: Mapped[str | None] = mapped_column(String(200), nullable=True)
+
+
+class CreditBudget(Base):
+    __tablename__ = "credit_budgets"
+    __table_args__ = (UniqueConstraint("organization_id", "subscription_id"),)
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=new_id)
+    organization_id: Mapped[str] = mapped_column(ForeignKey("organizations.id"), index=True)
+    subscription_id: Mapped[str | None] = mapped_column(
+        ForeignKey("team_subscriptions.id"), nullable=True, index=True,
+    )
+    monthly_budget_usd: Mapped[Decimal] = mapped_column(Numeric(20, 4), default=Decimal("5000.0000"))
+    credit_allocation: Mapped[Decimal] = mapped_column(Numeric(20, 4), default=Decimal("5000.0000"))
+    alert_threshold_pct: Mapped[int] = mapped_column(Integer, default=80)
+    allowed_models_json: Mapped[str] = mapped_column(Text, default='["*"]')
+    product_name: Mapped[str] = mapped_column(String(100), default="Enterprise AI Gateway")
+    channel: Mapped[str] = mapped_column(String(60), default="api-gateway")
+    hard_stop_enabled: Mapped[bool] = mapped_column(Boolean, default=True)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+
+
+class ManagedModelEndpoint(Base):
+    __tablename__ = "managed_model_endpoints"
+    id: Mapped[str] = mapped_column(String(100), primary_key=True)
+    display_name: Mapped[str] = mapped_column(String(120))
+    provider: Mapped[str] = mapped_column(String(60))
+    vendor: Mapped[str] = mapped_column(String(60))
+    region: Mapped[str] = mapped_column(String(60), default="eastus2")
+    backend_model: Mapped[str] = mapped_column(String(100))
+    endpoint_url: Mapped[str] = mapped_column(String(500), default="")
+    context_window: Mapped[int] = mapped_column(Integer, default=128000)
+    max_completion_tokens: Mapped[int] = mapped_column(Integer, default=16384)
+    input_per_million: Mapped[Decimal] = mapped_column(Numeric(20, 8), default=Decimal("0"))
+    output_per_million: Mapped[Decimal] = mapped_column(Numeric(20, 8), default=Decimal("0"))
+    cached_input_per_million: Mapped[Decimal | None] = mapped_column(Numeric(20, 8), nullable=True)
+    currency: Mapped[str] = mapped_column(String(3), default="USD")
+    capabilities_json: Mapped[str] = mapped_column(Text, default='["chat", "streaming"]')
+    description: Mapped[str] = mapped_column(String(500), default="")
+    enabled: Mapped[bool] = mapped_column(Boolean, default=True)
+    coming_soon: Mapped[bool] = mapped_column(Boolean, default=False)
+    content_safety_enabled: Mapped[bool] = mapped_column(Boolean, default=True)
+    priority: Mapped[int] = mapped_column(Integer, default=100)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+
+
+class ModelRouterConfig(Base):
+    __tablename__ = "model_router_configs"
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default="default")
+    enabled: Mapped[bool] = mapped_column(Boolean, default=True)
+    strategy: Mapped[str] = mapped_column(String(40), default="microsoft-decision-1")
+    decision_endpoint: Mapped[str] = mapped_column(
+        String(500), default="/providers/microsoft/v1/systemone",
+    )
+    default_model: Mapped[str] = mapped_column(String(100), default="gpt-5.4-mini")
+    candidate_models_json: Mapped[str] = mapped_column(
+        Text, default='["gpt-5.4-mini", "gpt-5.4", "claude-sonnet-4-5", "DeepSeek-V3.2-Speciale"]',
+    )
+    rules_json: Mapped[str] = mapped_column(Text, default="[]")
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+

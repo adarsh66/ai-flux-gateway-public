@@ -5,7 +5,13 @@ import logging
 from pathlib import Path
 from uuid import UUID
 
-import pyodbc
+try:
+    import pyodbc
+except ImportError:
+    from aiflux.db import _fallback_pyodbc
+
+    pyodbc = _fallback_pyodbc()
+
 from aiflux.catalog import Catalog
 from aiflux.config import get_settings
 from aiflux.db import engine_for
@@ -17,7 +23,8 @@ from sqlalchemy.orm import Session
 
 def verify_runtime(subscription_id: str | None = None) -> dict:
     settings = get_settings()
-    if "ODBC Driver 18 for SQL Server" not in pyodbc.drivers():
+    is_postgres = settings.database_url.startswith(("postgresql://", "postgresql+psycopg://"))
+    if not is_postgres and "ODBC Driver 18 for SQL Server" not in pyodbc.drivers():
         raise RuntimeError("Required SQL Server ODBC Driver 18 is unavailable")
     catalog = Catalog.load(Path(settings.catalog_path))
     with Session(engine_for(settings.database_url)) as db:

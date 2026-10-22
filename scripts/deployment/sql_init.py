@@ -12,7 +12,12 @@ from .launcher import ROOT, DeploymentError, read_json, require
 
 
 def initialize(document: dict) -> None:
-    import pyodbc
+    try:
+        import pyodbc
+    except ImportError:
+        from aiflux.db import _fallback_pyodbc
+
+        pyodbc = _fallback_pyodbc()
     from alembic import command
     from alembic.config import Config
     from azure.identity import AzureCliCredential
