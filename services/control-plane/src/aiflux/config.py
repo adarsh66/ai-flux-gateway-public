@@ -56,11 +56,11 @@ class Settings(BaseSettings):
     decision_router_endpoint: str = "/providers/microsoft/v1/systemone"
     decision_router_default_model: str = "gpt-5.4-mini"
     local_auth_enabled: bool = False
-    local_jwt_secret: str = "turnstile-local-postgres-jwt-signing-secret-key-2026"
+    local_jwt_secret: str = Field(default="turnstile-local-postgres-jwt-signing-secret-key-2026", repr=False)
     bootstrap_admin_email: str = "admin@tokenx-ids.com"
-    bootstrap_admin_password: str = "tokenx-admin"
+    bootstrap_admin_password: str = Field(default="tokenx-admin", repr=False)
     bootstrap_customer_email: str = "developer@caldova.com"
-    bootstrap_customer_password: str = "caldova-pass"
+    bootstrap_customer_password: str = Field(default="caldova-pass", repr=False)
     bootstrap_customer_org: str = "Caldova"
     upstream_apim_url: str = ""
     upstream_apim_key: str = ""
@@ -82,7 +82,7 @@ class Settings(BaseSettings):
         is_pg = self.database_url.startswith(("postgresql://", "postgresql+psycopg://"))
         if is_pg and self.environment != "production":
             self.local_auth_enabled = True
-        if self.local_auth_enabled and self.database_url:
+        if self.local_auth_enabled and self.database_url and self.environment != "production":
             if not self.home_tenant_id:
                 self.home_tenant_id = "00000000-0000-0000-0000-000000000001"
             if not self.entra_audience:
@@ -91,6 +91,14 @@ class Settings(BaseSettings):
 
     def identity_errors(self) -> list[str]:
         errors = []
+        if self.environment == "production" and self.local_auth_enabled:
+            if (
+                self.local_jwt_secret == type(self).model_fields["local_jwt_secret"].default
+                or self.local_jwt_secret.startswith("@Microsoft.KeyVault(")
+                or len(self.local_jwt_secret) < 32
+                or len(set(self.local_jwt_secret)) < 16
+            ):
+                errors.append("production local authentication requires a resolved, strong JWT signing secret")
         for name in ("database_url", "entra_audience", "home_tenant_id"):
             if not getattr(self, name):
                 errors.append(f"{name} is required")

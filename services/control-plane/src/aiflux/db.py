@@ -76,8 +76,8 @@ def engine_for(url: str, credential: TokenCredential | None = None) -> Engine:
             cparams["attrs_before"] = {1256: struct.pack(f"<I{len(token)}s", len(token), token)}
     elif normalized_url.startswith("postgresql+psycopg://"):
         parsed = make_url(normalized_url)
-        if not parsed.password and credential is not None:
-            pg_credential = credential
+        if not parsed.password:
+            pg_credential = credential if credential is not None else DefaultAzureCredential()
 
             @event.listens_for(engine, "do_connect")
             def provide_pg_token(dialect: object, conn_rec: object, cargs: list, cparams: dict) -> None:
