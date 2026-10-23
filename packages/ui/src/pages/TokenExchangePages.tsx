@@ -1,7 +1,9 @@
-import { useState, type FormEvent, type ReactNode } from "react";
+import { useEffect, useState, type FormEvent, type ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { ApiError } from "../client";
 import { useSession } from "../session";
+import { MembersPage } from "./admin";
+import { UsagePage } from "./UsagePage";
 import type {
   CreditBudget,
   KeyName,
@@ -905,8 +907,16 @@ export function CustomerKeysPage() {
   );
 }
 
-export function AdminBudgetsAndFinOpsPage() {
+export function AdminBudgetsAndFinOpsPage({
+  initialTab = "quotas",
+}: {
+  initialTab?: "quotas" | "usage";
+} = {}) {
   const { api } = useSession();
+  const [activeTab, setActiveTab] = useState<"quotas" | "usage">(initialTab);
+  useEffect(() => {
+    setActiveTab(initialTab);
+  }, [initialTab]);
   const [version, setVersion] = useState(0);
   const budgets = useAsync(() => api.adminBudgets(), [api, version]);
   const [selectedOrg, setSelectedOrg] = useState("");
@@ -968,165 +978,203 @@ export function AdminBudgetsAndFinOpsPage() {
   return (
     <>
       <PageHeader
-        title="OpCo credit budgets & FinOps ledger"
-        subtitle="Allocate monthly token credits, configure RPM/TPM rate limits and low-credit alert thresholds, restrict model allowlists, and project limits to TurnstileLedger."
-      />
-      {saveErr && <ErrorState message={saveErr} />}
-      {saveMsg && (
-        <p role="status" className="notice">
-          {saveMsg}
-        </p>
-      )}
-      <AsyncView state={budgets}>
-        {(d) => (
-          <>
-            <Table
-              caption="Organization credit allocations and utilization"
-              head={[
-                "Organization (OpCo)",
-                "Allocated Credits",
-                "Used",
-                "Remaining",
-                "Rate Limits (RPM / TPM)",
-                "Utilization",
-                "Allowed Models",
-                "Ledger Key",
-                "Action",
-              ]}
+        title="FinOps, credit quotas & chargeback"
+        subtitle="Manage customer credit allocations, RPM/TPM rate limits, model allowlists, and cross-organization token usage & chargeback in one unified workspace."
+        actions={
+          <div className="segmented-tabs" role="tablist" aria-label="FinOps view mode">
+            <button
+              type="button"
+              role="tab"
+              aria-selected={activeTab === "quotas"}
+              className={`seg-tab ${activeTab === "quotas" ? "active" : ""}`}
+              onClick={() => setActiveTab("quotas")}
             >
-              {d.items.map((b) => (
-                <tr key={b.id}>
-                  <td><strong>{b.organization_name}</strong></td>
-                  <td>USD {b.credit_allocation}</td>
-                  <td>USD {b.used_credits}</td>
-                  <td>USD {b.remaining_credits}</td>
-                  <td style={{ fontFamily: "var(--font-mono)", whiteSpace: "nowrap" }}>
-                    {b.rpm_limit ?? 60} RPM · {fmtInt(b.tpm_limit ?? 120000)} TPM
-                  </td>
-                  <td>
-                    <Badge tone={b.low_credit_alert ? "bad" : "ok"}>
-                      {b.utilization_pct}% (alert @ {b.alert_threshold_pct}%)
-                    </Badge>
-                  </td>
-                  <td><code>{b.allowed_models.join(", ")}</code></td>
-                  <td><code>{b.ledger_row_key}</code></td>
-                  <td>
-                    <button
-                      className="btn"
-                      type="button"
-                      title={`Edit quota & rate limits for ${b.organization_name}`}
-                      onClick={() => selectBudget(b)}
-                    >
-                      <IconPencil /> Configure
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </Table>
+              Credit Quotas & Rate Limits
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={activeTab === "usage"}
+              className={`seg-tab ${activeTab === "usage" ? "active" : ""}`}
+              onClick={() => setActiveTab("usage")}
+            >
+              Usage & Chargeback Analytics
+            </button>
+          </div>
+        }
+      />
+      {activeTab === "usage" ? (
+        <UsagePage admin />
+      ) : (
+        <>
+          {saveErr && <ErrorState message={saveErr} />}
+          {saveMsg && (
+            <p role="status" className="notice">
+              {saveMsg}
+            </p>
+          )}
+          <AsyncView state={budgets}>
+            {(d) => (
+              <>
+                <Table
+                  caption="Organization credit allocations and utilization"
+                  head={[
+                    "Organization (OpCo)",
+                    "Allocated Credits",
+                    "Used",
+                    "Remaining",
+                    "Rate Limits (RPM / TPM)",
+                    "Utilization",
+                    "Allowed Models",
+                    "Ledger Key",
+                    "Action",
+                  ]}
+                >
+                  {d.items.map((b) => (
+                    <tr key={b.id}>
+                      <td><strong>{b.organization_name}</strong></td>
+                      <td>USD {b.credit_allocation}</td>
+                      <td>USD {b.used_credits}</td>
+                      <td>USD {b.remaining_credits}</td>
+                      <td style={{ fontFamily: "var(--font-mono)", whiteSpace: "nowrap" }}>
+                        {b.rpm_limit ?? 60} RPM · {fmtInt(b.tpm_limit ?? 120000)} TPM
+                      </td>
+                      <td>
+                        <Badge tone={b.low_credit_alert ? "bad" : "ok"}>
+                          {b.utilization_pct}% (alert @ {b.alert_threshold_pct}%)
+                        </Badge>
+                      </td>
+                      <td><code>{b.allowed_models.join(", ")}</code></td>
+                      <td><code>{b.ledger_row_key}</code></td>
+                      <td>
+                        <div className="actions" style={{ flexWrap: "nowrap" }}>
+                          <button
+                            className="btn"
+                            type="button"
+                            title={`Edit quota & rate limits for ${b.organization_name}`}
+                            onClick={() => selectBudget(b)}
+                          >
+                            <IconPencil /> Configure
+                          </button>
+                          <button
+                            className="btn"
+                            type="button"
+                            title="View usage & chargeback analytics"
+                            onClick={() => setActiveTab("usage")}
+                          >
+                            Chargeback →
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </Table>
 
-            <section className="panel" aria-labelledby="edit-budget-heading">
-              <h2 id="edit-budget-heading">Update OpCo credit allocation, rate limits & model allowlist</h2>
-              <form onSubmit={(e) => void saveBudget(e)} className="form-row">
-                <Field label="Organization">
-                  {(id) => (
-                    <select
-                      id={id}
-                      value={selectedOrg}
-                      onChange={(e) => {
-                        const found = d.items.find((x) => x.organization_id === e.target.value);
-                        if (found) selectBudget(found);
-                        else setSelectedOrg(e.target.value);
-                      }}
-                      required
-                    >
-                      <option value="">Select an OpCo…</option>
-                      {d.items.map((b) => (
-                        <option key={b.organization_id} value={b.organization_id}>
-                          {b.organization_name}
-                        </option>
-                      ))}
-                    </select>
-                  )}
-                </Field>
-                <Field label="Credit allocation (USD)">
-                  {(id) => (
-                    <input
-                      id={id}
-                      value={credits}
-                      onChange={(e) => {
-                        setCredits(e.target.value);
-                        setMonthlyUsd(e.target.value);
-                      }}
-                      required
-                    />
-                  )}
-                </Field>
-                <Field label="RPM limit (reqs/min)">
-                  {(id) => (
-                    <input
-                      id={id}
-                      type="number"
-                      min={1}
-                      max={100000}
-                      value={rpmLimit}
-                      onChange={(e) => setRpmLimit(Number(e.target.value))}
-                      required
-                    />
-                  )}
-                </Field>
-                <Field label="TPM limit (tokens/min)">
-                  {(id) => (
-                    <input
-                      id={id}
-                      type="number"
-                      min={100}
-                      max={100000000}
-                      step={1000}
-                      value={tpmLimit}
-                      onChange={(e) => setTpmLimit(Number(e.target.value))}
-                      required
-                    />
-                  )}
-                </Field>
-                <Field label="Alert threshold (%)">
-                  {(id) => (
-                    <input
-                      id={id}
-                      type="number"
-                      min={1}
-                      max={100}
-                      value={alertPct}
-                      onChange={(e) => setAlertPct(Number(e.target.value))}
-                      required
-                    />
-                  )}
-                </Field>
-                <Field label="Allowed models (comma-separated or *)">
-                  {(id) => (
-                    <input
-                      id={id}
-                      value={allowedModels}
-                      onChange={(e) => setAllowedModels(e.target.value)}
-                      required
-                    />
-                  )}
-                </Field>
-                <label className="checkbox">
-                  <input
-                    type="checkbox"
-                    checked={hardStop}
-                    onChange={(e) => setHardStop(e.target.checked)}
-                  />{" "}
-                  Enforce hard stop at 100% credit usage in APIM
-                </label>
-                <button className="btn primary" disabled={!selectedOrg || saving}>
-                  {saving ? "Saving…" : "Save & Sync to TurnstileLedger"}
-                </button>
-              </form>
-            </section>
-          </>
-        )}
-      </AsyncView>
+                <section className="panel" aria-labelledby="edit-budget-heading">
+                  <h2 id="edit-budget-heading">Update OpCo credit allocation, rate limits & model allowlist</h2>
+                  <form onSubmit={(e) => void saveBudget(e)} className="form-row">
+                    <Field label="Organization">
+                      {(id) => (
+                        <select
+                          id={id}
+                          value={selectedOrg}
+                          onChange={(e) => {
+                            const found = d.items.find((x) => x.organization_id === e.target.value);
+                            if (found) selectBudget(found);
+                            else setSelectedOrg(e.target.value);
+                          }}
+                          required
+                        >
+                          <option value="">Select an OpCo…</option>
+                          {d.items.map((b) => (
+                            <option key={b.organization_id} value={b.organization_id}>
+                              {b.organization_name}
+                            </option>
+                          ))}
+                        </select>
+                      )}
+                    </Field>
+                    <Field label="Credit allocation (USD)">
+                      {(id) => (
+                        <input
+                          id={id}
+                          value={credits}
+                          onChange={(e) => {
+                            setCredits(e.target.value);
+                            setMonthlyUsd(e.target.value);
+                          }}
+                          required
+                        />
+                      )}
+                    </Field>
+                    <Field label="RPM limit (reqs/min)">
+                      {(id) => (
+                        <input
+                          id={id}
+                          type="number"
+                          min={1}
+                          max={100000}
+                          value={rpmLimit}
+                          onChange={(e) => setRpmLimit(Number(e.target.value))}
+                          required
+                        />
+                      )}
+                    </Field>
+                    <Field label="TPM limit (tokens/min)">
+                      {(id) => (
+                        <input
+                          id={id}
+                          type="number"
+                          min={100}
+                          max={100000000}
+                          step={1000}
+                          value={tpmLimit}
+                          onChange={(e) => setTpmLimit(Number(e.target.value))}
+                          required
+                        />
+                      )}
+                    </Field>
+                    <Field label="Alert threshold (%)">
+                      {(id) => (
+                        <input
+                          id={id}
+                          type="number"
+                          min={1}
+                          max={100}
+                          value={alertPct}
+                          onChange={(e) => setAlertPct(Number(e.target.value))}
+                          required
+                        />
+                      )}
+                    </Field>
+                    <Field label="Allowed models (comma-separated or *)">
+                      {(id) => (
+                        <input
+                          id={id}
+                          value={allowedModels}
+                          onChange={(e) => setAllowedModels(e.target.value)}
+                          required
+                        />
+                      )}
+                    </Field>
+                    <label className="checkbox">
+                      <input
+                        type="checkbox"
+                        checked={hardStop}
+                        onChange={(e) => setHardStop(e.target.checked)}
+                      />{" "}
+                      Enforce hard stop at 100% credit usage in APIM
+                    </label>
+                    <button className="btn primary" disabled={!selectedOrg || saving}>
+                      {saving ? "Saving…" : "Save & Sync to TurnstileLedger"}
+                    </button>
+                  </form>
+                </section>
+              </>
+            )}
+          </AsyncView>
+        </>
+      )}
     </>
   );
 }
@@ -1992,8 +2040,16 @@ export function AdminModelRouterPage() {
   );
 }
 
-export function AdminLocalUsersPage() {
+export function AdminLocalUsersPage({
+  initialTab = "portal",
+}: {
+  initialTab?: "portal" | "sso";
+} = {}) {
   const { api } = useSession();
+  const [activeTab, setActiveTab] = useState<"portal" | "sso">(initialTab);
+  useEffect(() => {
+    setActiveTab(initialTab);
+  }, [initialTab]);
   const [version, setVersion] = useState(0);
   const usersState = useAsync(() => api.localUsers(), [api, version]);
   const orgsState = useAsync(() => api.organizations(), [api]);
@@ -2047,74 +2103,102 @@ export function AdminLocalUsersPage() {
   return (
     <>
       <PageHeader
-        title="Local users (PostgreSQL)"
-        subtitle="Manage email & password accounts stored in PostgreSQL (local_users) for OpCo customers and platform administrators."
+        title="User access & identity directory"
+        subtitle="Manage Portal Accounts (PostgreSQL email/password) and Federated Entra SSO identities across customer organizations."
+        actions={
+          <div className="segmented-tabs" role="tablist" aria-label="User identity mode">
+            <button
+              type="button"
+              role="tab"
+              aria-selected={activeTab === "portal"}
+              className={`seg-tab ${activeTab === "portal" ? "active" : ""}`}
+              onClick={() => setActiveTab("portal")}
+            >
+              Portal Accounts (PostgreSQL)
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={activeTab === "sso"}
+              className={`seg-tab ${activeTab === "sso" ? "active" : ""}`}
+              onClick={() => setActiveTab("sso")}
+            >
+              Entra SSO Directory
+            </button>
+          </div>
+        }
       />
-      {error && <ErrorState message={error} />}
-      {notice && <p role="status" className="notice">{notice}</p>}
-      <AsyncView state={orgsState}>
-        {(orgs) => (
-          <section className="panel" aria-labelledby="new-local-user-heading">
-            <h2 id="new-local-user-heading">Create PostgreSQL user account</h2>
-            <form onSubmit={(e) => void createUser(e)} className="form-row">
-              <Field label="Organization (OpCo)">
-                {(id) => (
-                  <select id={id} value={organizationId} onChange={(e) => setOrganizationId(e.target.value)} required>
-                    <option value="">Select organization…</option>
-                    {orgs.items.map((o) => (
-                      <option key={o.id} value={o.id}>{o.name}</option>
-                    ))}
-                  </select>
-                )}
-              </Field>
-              <Field label="Display name">
-                {(id) => <input id={id} value={displayName} onChange={(e) => setDisplayName(e.target.value)} required />}
-              </Field>
-              <Field label="Email">
-                {(id) => <input id={id} type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />}
-              </Field>
-              <Field label="Initial password">
-                {(id) => <input id={id} type="password" minLength={6} value={password} onChange={(e) => setPassword(e.target.value)} required />}
-              </Field>
-              <Field label="Role">
-                {(id) => (
-                  <select id={id} value={role} onChange={(e) => setRole(e.target.value as Role)}>
-                    <option value="customer">customer (OpCo portal)</option>
-                    <option value="ids_admin">ids_admin (Admin portal)</option>
-                  </select>
-                )}
-              </Field>
-              <button className="btn primary" disabled={busy || !organizationId}>
-                {busy ? "Creating…" : "Create PostgreSQL user"}
-              </button>
-            </form>
-          </section>
-        )}
-      </AsyncView>
-      <AsyncView state={usersState}>
-        {(data) => (
-          <Table
-            caption="PostgreSQL local user accounts"
-            head={["Email", "Display name", "Organization", "Role", "Status", "Created", "Action"]}
-          >
-            {data.items.map((u) => (
-              <tr key={u.id}>
-                <td><code>{u.email}</code></td>
-                <td>{u.display_name}</td>
-                <td>{u.organization_name}</td>
-                <td><Badge tone={u.role === "ids_admin" ? "info" : "neutral"}>{u.role}</Badge></td>
-                <td><Badge tone={u.enabled ? "ok" : "bad"}>{u.enabled ? "Enabled" : "Disabled"}</Badge></td>
-                <td>{fmtDate(u.created_at)}</td>
-                <td>
-                  <button className="btn" type="button" onClick={() => void toggleUser(u)}>
-                    {u.enabled ? "Disable" : "Enable"}
+      {activeTab === "sso" ? (
+        <MembersPage />
+      ) : (
+        <>
+          {error && <ErrorState message={error} />}
+          {notice && <p role="status" className="notice">{notice}</p>}
+          <AsyncView state={orgsState}>
+            {(orgs) => (
+              <section className="panel" aria-labelledby="new-local-user-heading">
+                <h2 id="new-local-user-heading">Create PostgreSQL user account</h2>
+                <form onSubmit={(e) => void createUser(e)} className="form-row">
+                  <Field label="Organization (OpCo)">
+                    {(id) => (
+                      <select id={id} value={organizationId} onChange={(e) => setOrganizationId(e.target.value)} required>
+                        <option value="">Select organization…</option>
+                        {orgs.items.map((o) => (
+                          <option key={o.id} value={o.id}>{o.name}</option>
+                        ))}
+                      </select>
+                    )}
+                  </Field>
+                  <Field label="Display name">
+                    {(id) => <input id={id} value={displayName} onChange={(e) => setDisplayName(e.target.value)} required />}
+                  </Field>
+                  <Field label="Email">
+                    {(id) => <input id={id} type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />}
+                  </Field>
+                  <Field label="Initial password">
+                    {(id) => <input id={id} type="password" minLength={6} value={password} onChange={(e) => setPassword(e.target.value)} required />}
+                  </Field>
+                  <Field label="Role">
+                    {(id) => (
+                      <select id={id} value={role} onChange={(e) => setRole(e.target.value as Role)}>
+                        <option value="customer">customer (OpCo portal)</option>
+                        <option value="ids_admin">ids_admin (Admin portal)</option>
+                      </select>
+                    )}
+                  </Field>
+                  <button className="btn primary" disabled={busy || !organizationId}>
+                    {busy ? "Creating…" : "Create PostgreSQL user"}
                   </button>
-                </td>
-              </tr>
-            ))}
-          </Table>
-        )}
-      </AsyncView>
+                </form>
+              </section>
+            )}
+          </AsyncView>
+          <AsyncView state={usersState}>
+            {(data) => (
+              <Table
+                caption="PostgreSQL local user accounts"
+                head={["Email", "Display name", "Organization", "Role", "Status", "Created", "Action"]}
+              >
+                {data.items.map((u) => (
+                  <tr key={u.id}>
+                    <td><code>{u.email}</code></td>
+                    <td>{u.display_name}</td>
+                    <td>{u.organization_name}</td>
+                    <td><Badge tone={u.role === "ids_admin" ? "info" : "neutral"}>{u.role}</Badge></td>
+                    <td><Badge tone={u.enabled ? "ok" : "bad"}>{u.enabled ? "Enabled" : "Disabled"}</Badge></td>
+                    <td>{fmtDate(u.created_at)}</td>
+                    <td>
+                      <button className="btn" type="button" onClick={() => void toggleUser(u)}>
+                        {u.enabled ? "Disable" : "Enable"}
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </Table>
+            )}
+          </AsyncView>
+        </>
+      )}
     </>
   );
 }

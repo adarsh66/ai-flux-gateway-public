@@ -287,8 +287,8 @@ export function PricesPage() {
           <Field label="Effective to (optional)">{(id) => <input id={id} type="datetime-local" value={form.effective_to} onChange={set("effective_to")} />}</Field>
           <Field label="Input / 1M tokens">{(id) => <input id={id} inputMode="decimal" value={form.input_per_million} onChange={set("input_per_million")} />}</Field>
           <Field label="Output / 1M tokens">{(id) => <input id={id} inputMode="decimal" value={form.output_per_million} onChange={set("output_per_million")} />}</Field>
-          <Field label="Cached input / 1M (optional)" hint="Leave blank if unpriced.">{(id, d) => <input id={id} aria-describedby={d} inputMode="decimal" value={form.cached_input_per_million} onChange={set("cached_input_per_million")} />}</Field>
-          <Field label="Cache write / 1M (optional)">{(id) => <input id={id} inputMode="decimal" value={form.cache_write_per_million} onChange={set("cache_write_per_million")} />}</Field>
+          <Field label="Prompt Cache Hit (In) / 1M (optional)" hint="Discounted rate when repeated system prompts/context hit KV cache.">{(id, d) => <input id={id} aria-describedby={d} inputMode="decimal" value={form.cached_input_per_million} onChange={set("cached_input_per_million")} />}</Field>
+          <Field label="Prompt Cache Write / 1M (optional)" hint="Optional cache creation fee (e.g. Anthropic).">{(id, d) => <input id={id} aria-describedby={d} inputMode="decimal" value={form.cache_write_per_million} onChange={set("cache_write_per_million")} />}</Field>
           <Field label="Input tokens include cached?">{(id) => <select id={id} value={form.input_includes_cached} onChange={set("input_includes_cached")}><option value="false">No (reported separately)</option><option value="true">Yes (included in input)</option></select>}</Field>
           <div className="form-actions"><button className="btn primary" disabled={busy}>{busy ? "Saving…" : "Add price"}</button></div>
         </form>
@@ -296,7 +296,7 @@ export function PricesPage() {
       </section>
       <AsyncView state={state} isEmpty={(d) => d.items.length === 0} emptyTitle="No prices configured" emptyHint="Without prices, cost is shown as Unknown (never zero).">
         {(d) => (
-          <Table caption="Configured prices" head={["Model", "Provider / region", "Wholesale List (In / Out)", "Customer Price (In)", "Customer Price (Out)", "Gross Margin", "Cached in", "Period"]}>
+          <Table caption="Configured prices" head={["Model", "Provider / region", "Wholesale List (In / Out)", "Customer Price (In)", "Customer Price (Out)", "Gross Margin", "Prompt Cache Hit (In)", "Period"]}>
             {d.items.map((p: Price) => {
               const custIn = Number(p.input_per_million);
               const custOut = Number(p.output_per_million);
@@ -310,7 +310,9 @@ export function PricesPage() {
                   <td className="num">{p.currency} {p.input_per_million}</td>
                   <td className="num">{p.currency} {p.output_per_million}</td>
                   <td><Badge tone="ok">+22.0% Margin</Badge></td>
-                  <td className="num">{p.cached_input_per_million ?? "Not priced"}</td>
+                  <td className="num" title="Discounted rate per 1M input tokens when repeated prompt prefixes hit the provider's KV prompt cache">
+                    {p.cached_input_per_million ? `${p.currency} ${p.cached_input_per_million}` : "Standard rate"}
+                  </td>
                   <td>
                     {p.effective_to ? <Badge tone="neutral">closed</Badge> : closing === p.id ? (
                       <span className="actions">
