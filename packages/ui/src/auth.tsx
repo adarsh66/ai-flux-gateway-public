@@ -5,6 +5,7 @@ import { loadConfig, type PortalConfig } from "./config";
 import { SessionProvider } from "./session";
 import type { Me, Role } from "./types";
 import { BrandMark, Field } from "./components/ui";
+import { localAuthErrorMessage } from "./auth-errors";
 
 interface Props {
   portalName: string;
@@ -99,8 +100,9 @@ function LocalPostgresGate({ config, portalName, allowedRoles, children }: { con
         body: JSON.stringify(payload),
       });
       if (!res.ok) {
-        const body = (await res.json().catch(() => ({}))) as { detail?: string };
-        throw new ApiError(res.status, body.detail || "Invalid email or password.");
+        const body: unknown = await res.json().catch(() => null);
+        const detail = body && typeof body === "object" && "detail" in body ? body.detail : undefined;
+        throw new ApiError(res.status, localAuthErrorMessage(res.status, detail));
       }
       const data = (await res.json()) as { access_token: string; user: Me };
       if (!allowedRoles.includes(data.user.role)) {
