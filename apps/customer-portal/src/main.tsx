@@ -22,7 +22,7 @@ const nav: NavItem[] = [
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <AuthGate portalName="Customer portal" allowedRoles={["customer", "ids_admin"]} env={import.meta.env}>
+    <AuthGate portalName="Customer portal" allowedRoles={["customer", "ids_admin"]} env={{ VITE_AUTH_MODE: "local", ...import.meta.env }}>
       <BrowserRouter>
         <Routes>
           <Route element={<Shell portalName="Customer portal" nav={nav} />}>

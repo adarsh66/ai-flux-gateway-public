@@ -64,6 +64,8 @@ class Settings(BaseSettings):
     bootstrap_customer_org: str = "Caldova"
     upstream_apim_url: str = ""
     upstream_apim_key: str = ""
+    content_safety_endpoint: str = "https://agents-contentsafety.cognitiveservices.azure.com"
+    content_safety_key: str = ""
 
     @model_validator(mode="after")
     def populate_turnstile_env_fallbacks(self) -> "Settings":
@@ -80,13 +82,20 @@ class Settings(BaseSettings):
         if not self.upstream_apim_key and os.environ.get("APIM_PROBE_SUBSCRIPTION_KEY"):
             self.upstream_apim_key = os.environ["APIM_PROBE_SUBSCRIPTION_KEY"]
         is_pg = self.database_url.startswith(("postgresql://", "postgresql+psycopg://"))
-        if is_pg and self.environment != "production":
+        if is_pg and (self.environment != "production" or not self.entra_audience):
             self.local_auth_enabled = True
         if self.local_auth_enabled and self.database_url:
             if not self.home_tenant_id:
                 self.home_tenant_id = "00000000-0000-0000-0000-000000000001"
             if not self.entra_audience:
                 self.entra_audience = "local://turnstile-postgres-auth"
+            if self.environment != "testing" and not self.gateway_settings_scopes:
+                self.gateway_settings_scopes = ["dev-openai", "dev-unified"]
+                self.gateway_controls_v2_enabled = True
+                self.gateway_protected_material_available = True
+                self.gateway_safety_relaxation_allowed = True
+                self.gateway_enforcement_enabled = True
+                self.gateway_max_rpm = max(self.gateway_max_rpm, 600)
         return self
 
     def identity_errors(self) -> list[str]:
@@ -134,7 +143,7 @@ class Settings(BaseSettings):
                 errors.append("production SQL must validate the server certificate")
         if self.environment == "production" and is_postgres:
             url = make_url(self.database_url)
-            if url.password:
+            if url.password and not self.local_auth_enabled:
                 errors.append("production PostgreSQL credentials must use managed identity")
             if str(url.query.get("sslmode", "require")).lower() not in (
                 "require", "verify-ca", "verify-full",

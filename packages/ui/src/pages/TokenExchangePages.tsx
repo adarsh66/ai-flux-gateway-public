@@ -1,7 +1,9 @@
-import { useState, type FormEvent, type ReactNode } from "react";
+import { useEffect, useState, type FormEvent, type ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { ApiError } from "../client";
 import { useSession } from "../session";
+import { MembersPage } from "./admin";
+import { UsagePage } from "./UsagePage";
 import type {
   CreditBudget,
   KeyName,
@@ -84,6 +86,51 @@ function ShareBar({ pct }: { pct: number }) {
   );
 }
 
+function IconPencil() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
+      <path d="m15 5 4 4" />
+    </svg>
+  );
+}
+
+function IconTrash() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M3 6h18" />
+      <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+      <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+    </svg>
+  );
+}
+
+function IconCheck() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <polyline points="20 6 9 17 4 12" />
+    </svg>
+  );
+}
+
+function IconCancel() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <line x1="18" y1="6" x2="6" y2="18" />
+      <line x1="6" y1="6" x2="18" y2="18" />
+    </svg>
+  );
+}
+
+function IconPlus() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <line x1="12" y1="5" x2="12" y2="19" />
+      <line x1="5" y1="12" x2="19" y2="12" />
+    </svg>
+  );
+}
+
 export function ModelGardenPage() {
   const { api } = useSession();
   const state = useAsync(() => api.modelGarden(), [api]);
@@ -116,56 +163,8 @@ export function ModelGardenPage() {
     <>
       <PageHeader
         title="Model catalog & pricing"
-        subtitle="Unified catalog of deployed live endpoints and onboarding-ready frontier models across OpenAI, Anthropic Claude, and DeepSeek with Microsoft Decision-1 auto-routing."
+        subtitle="Unified catalog of deployed live endpoints and onboarding-ready frontier models across OpenAI, Anthropic Claude, and DeepSeek with intelligent auto-routing."
       />
-      <section className="panel" aria-labelledby="router-sim-heading">
-        <h2 id="router-sim-heading">Microsoft Decision-1 (model = auto) route simulator</h2>
-        <p className="muted">
-          Preview how the gateway’s Decision-1 classifier routes <code>&quot;model&quot;: &quot;auto&quot;</code>{" "}
-          requests across your enabled providers.
-        </p>
-        <form onSubmit={(e) => void testRouter(e)} className="form-row">
-          <Field label="Sample prompt">
-            {(id) => (
-              <input
-                id={id}
-                value={prompt}
-                onChange={(e) => setPrompt(e.target.value)}
-                maxLength={1000}
-                required
-              />
-            )}
-          </Field>
-          <Field label="Routing strategy">
-            {(id) => (
-              <select
-                id={id}
-                value={strategy}
-                onChange={(e) => setStrategy(e.target.value as RouterStrategy)}
-              >
-                <option value="microsoft-decision-1">Microsoft Decision-1 (Intent + Quality/Cost)</option>
-                <option value="cost-optimized">Cost-optimized</option>
-                <option value="latency-optimized">Latency-optimized</option>
-                <option value="quality-first">Quality-first</option>
-              </select>
-            )}
-          </Field>
-          <button className="btn primary" disabled={routingBusy || !prompt.trim()}>
-            {routingBusy ? "Evaluating…" : "Simulate Auto Route"}
-          </button>
-        </form>
-        {routingError && <ErrorState message={routingError} />}
-        {decision && (
-          <div role="status" className="notice">
-            <strong>Selected model: {decision.display_name}</strong> ({decision.selected_model} ·{" "}
-            {decision.vendor}) · Category: <code>{decision.category}</code> · Confidence:{" "}
-            {Math.round(decision.confidence * 100)}% · Est. Pricing: ${decision.estimated_input_per_million}/1M
-            input, ${decision.estimated_output_per_million}/1M output.
-            <br />
-            <span className="muted">{decision.reason}</span>
-          </div>
-        )}
-      </section>
 
       <AsyncView
         state={state}
@@ -306,6 +305,55 @@ export function ModelGardenPage() {
                   </li>
                 ))}
               </ul>
+
+              <details className="panel" open={Boolean(decision)}>
+                <summary style={{ cursor: "pointer", fontWeight: 600, fontSize: "0.88rem", color: "var(--ink-dim)" }}>
+                  Auto-routing inspector (preview how <code>model: &quot;auto&quot;</code> selects an endpoint)
+                </summary>
+                <div style={{ marginTop: "0.85rem" }}>
+                  <form onSubmit={(e) => void testRouter(e)} className="form-row">
+                    <Field label="Sample prompt">
+                      {(id) => (
+                        <input
+                          id={id}
+                          value={prompt}
+                          onChange={(e) => setPrompt(e.target.value)}
+                          maxLength={1000}
+                          required
+                        />
+                      )}
+                    </Field>
+                    <Field label="Routing preference">
+                      {(id) => (
+                        <select
+                          id={id}
+                          value={strategy}
+                          onChange={(e) => setStrategy(e.target.value as RouterStrategy)}
+                        >
+                          <option value="microsoft-decision-1">Balanced (Intent + Quality/Cost)</option>
+                          <option value="cost-optimized">Cost-optimized</option>
+                          <option value="latency-optimized">Latency-optimized</option>
+                          <option value="quality-first">Quality-first</option>
+                        </select>
+                      )}
+                    </Field>
+                    <button className="btn primary" disabled={routingBusy || !prompt.trim()}>
+                      {routingBusy ? "Evaluating…" : "Simulate Auto Route"}
+                    </button>
+                  </form>
+                  {routingError && <ErrorState message={routingError} />}
+                  {decision && (
+                    <div role="status" className="notice">
+                      <strong>Selected model: {decision.display_name}</strong> ({decision.selected_model} ·{" "}
+                      {decision.vendor}) · Category: <code>{decision.category}</code> · Confidence:{" "}
+                      {Math.round(decision.confidence * 100)}% · Est. Pricing: ${decision.estimated_input_per_million}/1M
+                      input, ${decision.estimated_output_per_million}/1M output.
+                      <br />
+                      <span className="muted">{decision.reason}</span>
+                    </div>
+                  )}
+                </div>
+              </details>
             </>
           );
         }}
@@ -371,6 +419,9 @@ export function CustomerCreditsPage() {
                     <Badge tone="info">{summary.organization_name} · Enterprise Token Exchange Plan</Badge>
                     <Badge tone={summary.low_credit_alert ? "bad" : "ok"}>
                       {summary.low_credit_alert ? "Low Credit Warning" : "Active & Healthy"}
+                    </Badge>
+                    <Badge tone="neutral">
+                      Rate Limit: {summary.rpm_limit ?? 60} RPM · {fmtInt(summary.tpm_limit ?? 120000)} TPM
                     </Badge>
                   </div>
                   <div className="credit-hero-balance">
@@ -856,14 +907,24 @@ export function CustomerKeysPage() {
   );
 }
 
-export function AdminBudgetsAndFinOpsPage() {
+export function AdminBudgetsAndFinOpsPage({
+  initialTab = "quotas",
+}: {
+  initialTab?: "quotas" | "usage";
+} = {}) {
   const { api } = useSession();
+  const [activeTab, setActiveTab] = useState<"quotas" | "usage">(initialTab);
+  useEffect(() => {
+    setActiveTab(initialTab);
+  }, [initialTab]);
   const [version, setVersion] = useState(0);
   const budgets = useAsync(() => api.adminBudgets(), [api, version]);
   const [selectedOrg, setSelectedOrg] = useState("");
   const [monthlyUsd, setMonthlyUsd] = useState("5000.00");
   const [credits, setCredits] = useState("5000.00");
   const [alertPct, setAlertPct] = useState(80);
+  const [rpmLimit, setRpmLimit] = useState(60);
+  const [tpmLimit, setTpmLimit] = useState(120000);
   const [allowedModels, setAllowedModels] = useState("*");
   const [hardStop, setHardStop] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -875,6 +936,8 @@ export function AdminBudgetsAndFinOpsPage() {
     setMonthlyUsd(b.monthly_budget_usd);
     setCredits(b.credit_allocation);
     setAlertPct(b.alert_threshold_pct);
+    setRpmLimit(b.rpm_limit ?? 60);
+    setTpmLimit(b.tpm_limit ?? 120000);
     setAllowedModels(b.allowed_models.join(", "));
     setHardStop(b.hard_stop_enabled);
   }
@@ -894,13 +957,15 @@ export function AdminBudgetsAndFinOpsPage() {
         monthly_budget_usd: monthlyUsd,
         credit_allocation: credits,
         alert_threshold_pct: alertPct,
+        rpm_limit: rpmLimit,
+        tpm_limit: tpmLimit,
         allowed_models: models.length ? models : ["*"],
         product_name: "Enterprise AI Token Exchange",
         channel: "api-gateway",
         hard_stop_enabled: hardStop,
       });
       setSaveMsg(
-        `Saved budget for ${updated.organization_name} and projected row '${updated.ledger_row_key}' to TurnstileLedger.`,
+        `Saved quota & rate limits (${updated.rpm_limit ?? rpmLimit} RPM / ${fmtInt(updated.tpm_limit ?? tpmLimit)} TPM) for ${updated.organization_name} and projected row '${updated.ledger_row_key}' to TurnstileLedger.`,
       );
       setVersion((v) => v + 1);
     } catch (err) {
@@ -913,133 +978,359 @@ export function AdminBudgetsAndFinOpsPage() {
   return (
     <>
       <PageHeader
-        title="OpCo credit budgets & FinOps ledger"
-        subtitle="Allocate monthly token credits, configure low-credit alert thresholds, restrict model allowlists, and project limits to TurnstileLedger Azure Table Storage."
-      />
-      {saveErr && <ErrorState message={saveErr} />}
-      {saveMsg && (
-        <p role="status" className="notice">
-          {saveMsg}
-        </p>
-      )}
-      <AsyncView state={budgets}>
-        {(d) => (
-          <>
-            <Table
-              caption="Organization credit allocations and utilization"
-              head={[
-                "Organization (OpCo)",
-                "Allocated Credits",
-                "Used",
-                "Remaining",
-                "Utilization",
-                "Allowed Models",
-                "Ledger Key",
-                "Action",
-              ]}
+        title="FinOps, credit quotas & chargeback"
+        subtitle="Real-time platform command center for customer credit allocations, APIM rate limits (RPM/TPM), model allowlists, and cross-organization chargeback."
+        actions={
+          <div className="segmented-tabs" role="tablist" aria-label="FinOps view mode">
+            <button
+              type="button"
+              role="tab"
+              aria-selected={activeTab === "quotas"}
+              className={`segmented-tab ${activeTab === "quotas" ? "active" : ""}`}
+              onClick={() => setActiveTab("quotas")}
             >
-              {d.items.map((b) => (
-                <tr key={b.id}>
-                  <td>{b.organization_name}</td>
-                  <td>USD {b.credit_allocation}</td>
-                  <td>USD {b.used_credits}</td>
-                  <td>USD {b.remaining_credits}</td>
-                  <td>
-                    <Badge tone={b.low_credit_alert ? "bad" : "ok"}>
-                      {b.utilization_pct}% (alert @ {b.alert_threshold_pct}%)
-                    </Badge>
-                  </td>
-                  <td><code>{b.allowed_models.join(", ")}</code></td>
-                  <td><code>{b.ledger_row_key}</code></td>
-                  <td>
-                    <button
-                      className="btn"
-                      type="button"
-                      onClick={() => selectBudget(b)}
-                    >
-                      Configure
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </Table>
+              Credit Quotas & Rate Limits
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={activeTab === "usage"}
+              className={`segmented-tab ${activeTab === "usage" ? "active" : ""}`}
+              onClick={() => setActiveTab("usage")}
+            >
+              Usage & Chargeback Analytics
+            </button>
+          </div>
+        }
+      />
+      {activeTab === "usage" ? (
+        <UsagePage admin embedded />
+      ) : (
+        <>
+          {saveErr && <ErrorState message={saveErr} />}
+          {saveMsg && (
+            <p role="status" className="notice">
+              {saveMsg}
+            </p>
+          )}
+          <AsyncView state={budgets}>
+            {(d) => {
+              const totalAllocated = d.items.reduce((acc, b) => acc + Number(b.credit_allocation || 0), 0);
+              const totalUsed = d.items.reduce((acc, b) => acc + Number(b.used_credits || 0), 0);
+              const totalRemaining = Math.max(0, totalAllocated - totalUsed);
+              const wholesaleCost = totalUsed * 0.78;
+              const grossProfit = totalUsed - wholesaleCost;
+              const totalRpm = d.items.reduce((acc, b) => acc + (b.rpm_limit ?? 60), 0);
+              const totalTpm = d.items.reduce((acc, b) => acc + (b.tpm_limit ?? 120000), 0);
+              const alertCount = d.items.filter((b) => b.low_credit_alert).length;
+              const fmtMoney = (v: string | number) =>
+                Number(v || 0).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-            <section className="panel" aria-labelledby="edit-budget-heading">
-              <h2 id="edit-budget-heading">Update OpCo credit allocation & model allowlist</h2>
-              <form onSubmit={(e) => void saveBudget(e)} className="form-row">
-                <Field label="Organization">
-                  {(id) => (
-                    <select
-                      id={id}
-                      value={selectedOrg}
-                      onChange={(e) => {
-                        const found = d.items.find((x) => x.organization_id === e.target.value);
-                        if (found) selectBudget(found);
-                        else setSelectedOrg(e.target.value);
-                      }}
-                      required
-                    >
-                      <option value="">Select an OpCo…</option>
-                      {d.items.map((b) => (
-                        <option key={b.organization_id} value={b.organization_id}>
-                          {b.organization_name}
-                        </option>
-                      ))}
-                    </select>
-                  )}
-                </Field>
-                <Field label="Credit allocation (USD)">
-                  {(id) => (
-                    <input
-                      id={id}
-                      value={credits}
-                      onChange={(e) => {
-                        setCredits(e.target.value);
-                        setMonthlyUsd(e.target.value);
-                      }}
-                      required
-                    />
-                  )}
-                </Field>
-                <Field label="Alert threshold (%)">
-                  {(id) => (
-                    <input
-                      id={id}
-                      type="number"
-                      min={1}
-                      max={100}
-                      value={alertPct}
-                      onChange={(e) => setAlertPct(Number(e.target.value))}
-                      required
-                    />
-                  )}
-                </Field>
-                <Field label="Allowed models (comma-separated or *)">
-                  {(id) => (
-                    <input
-                      id={id}
-                      value={allowedModels}
-                      onChange={(e) => setAllowedModels(e.target.value)}
-                      required
-                    />
-                  )}
-                </Field>
-                <label className="checkbox">
-                  <input
-                    type="checkbox"
-                    checked={hardStop}
-                    onChange={(e) => setHardStop(e.target.checked)}
-                  />{" "}
-                  Enforce hard stop at 100% credit usage in APIM
-                </label>
-                <button className="btn primary" disabled={!selectedOrg || saving}>
-                  {saving ? "Saving…" : "Save & Sync to TurnstileLedger"}
-                </button>
-              </form>
-            </section>
-          </>
-        )}
-      </AsyncView>
+              return (
+                <>
+                  {/* 1. Live Multi-Plane NOC Telemetry Strip (Distinct from Customer Wallet) */}
+                  <section className="noc-telemetry-strip" aria-label="Gateway & Control Plane Telemetry">
+                    <div className="noc-telemetry-cell ok">
+                      <div className="noc-telemetry-top">
+                        <span>Gateway Data Plane</span>
+                        <Badge tone="ok">● 99.98% SLA</Badge>
+                      </div>
+                      <div className="noc-telemetry-val">agents3iq-aigateway-apim</div>
+                      <div className="noc-telemetry-sub">P50 Latency: 185ms · {fmtInt(totalRpm)} RPM / {fmtInt(totalTpm)} TPM</div>
+                    </div>
+                    <div className="noc-telemetry-cell ok">
+                      <div className="noc-telemetry-top">
+                        <span>Hot-Path Quota Ledger</span>
+                        <Badge tone="info">TurnstileLedger</Badge>
+                      </div>
+                      <div className="noc-telemetry-val">${fmtMoney(totalAllocated)} Pool</div>
+                      <div className="noc-telemetry-sub">${fmtMoney(totalRemaining)} unconsumed · Hard-Stop Armed</div>
+                    </div>
+                    <div className="noc-telemetry-cell ok">
+                      <div className="noc-telemetry-top">
+                        <span>Model Router Engine</span>
+                        <Badge tone="ok">Decision-1</Badge>
+                      </div>
+                      <div className="noc-telemetry-val">~42% Cost Arbitrage</div>
+                      <div className="noc-telemetry-sub">/providers/microsoft/v1/systemone</div>
+                    </div>
+                    <div className={`noc-telemetry-cell ${alertCount > 0 ? "warn" : "ok"}`}>
+                      <div className="noc-telemetry-top">
+                        <span>Azure AI Content Safety</span>
+                        <Badge tone="ok">Active Shield</Badge>
+                      </div>
+                      <div className="noc-telemetry-val">agents-contentsafety</div>
+                      <div className="noc-telemetry-sub">Prompt Shields + 4 Harm Categories (0–7)</div>
+                    </div>
+                  </section>
+
+                  {/* 2. Two-Column Executive Command Deck: Reseller P&L Waterfall + Multi-Tenant Radar */}
+                  <div className="admin-command-deck" aria-label="Reseller P&L and Multi-Tenant Radar">
+                    <section className="command-panel" aria-label="Reseller commercial waterfall">
+                      <div className="command-panel-head">
+                        <div>
+                          <h2>Reseller P&L & Wholesale vs. Retail Waterfall</h2>
+                          <p>Real-time spread between upstream Foundry/Anthropic provider cost and billed OpCo retail rates</p>
+                        </div>
+                        <Badge tone="ok">+22.0% Gross Margin</Badge>
+                      </div>
+                      <div className="waterfall-grid">
+                        <div className="waterfall-box">
+                          <span className="waterfall-label">Retail Billed (OpCos)</span>
+                          <span className="waterfall-amount">${fmtMoney(totalUsed)}</span>
+                          <span className="muted" style={{ fontSize: "0.73rem" }}>
+                            of ${fmtMoney(totalAllocated)} contracted pool
+                          </span>
+                        </div>
+                        <div className="waterfall-box">
+                          <span className="waterfall-label">Wholesale Provider Cost</span>
+                          <span className="waterfall-amount">${fmtMoney(wholesaleCost)}</span>
+                          <span className="muted" style={{ fontSize: "0.73rem" }}>
+                            78.0% upstream COGS ratio
+                          </span>
+                        </div>
+                        <div className="waterfall-box highlight">
+                          <span className="waterfall-label">Net Reseller Margin</span>
+                          <span className="waterfall-amount" style={{ color: "var(--ok)" }}>
+                            +${fmtMoney(grossProfit)}
+                          </span>
+                          <span className="muted" style={{ fontSize: "0.73rem" }}>
+                            22.0% markup + routing savings
+                          </span>
+                        </div>
+                      </div>
+                      <div>
+                        <div className="credit-meter-head" style={{ marginBottom: "0.35rem", fontSize: "0.76rem" }}>
+                          <span>Unit Economics Split (Retail Token Dollar)</span>
+                          <span style={{ fontFamily: "var(--font-mono)" }}>78% Provider COGS · 22% IDS Net Margin</span>
+                        </div>
+                        <div className="margin-split-track" aria-label="Wholesale vs Margin split">
+                          <div className="margin-split-wholesale" style={{ width: "78%" }} title="Wholesale Provider Cost (78%)" />
+                          <div className="margin-split-profit" style={{ width: "22%" }} title="Net Reseller Margin (22%)" />
+                        </div>
+                        <div className="credit-meter-foot" style={{ marginTop: "0.35rem" }}>
+                          <span>■ Upstream Foundry / Claude / DeepSeek (78%)</span>
+                          <span style={{ color: "var(--ok)", fontWeight: 700 }}>■ TokenX Reseller Margin (+22%)</span>
+                        </div>
+                      </div>
+                    </section>
+
+                    <section className="command-panel" aria-label="Multi-tenant quota radar">
+                      <div className="command-panel-head">
+                        <div>
+                          <h2>Multi-Tenant Quota & Throughput Radar</h2>
+                          <p>Live credit burn and APIM token-bucket allocation across {d.items.length} onboarded organizations</p>
+                        </div>
+                        <Badge tone={alertCount > 0 ? "bad" : "info"}>
+                          {d.items.length - alertCount} / {d.items.length} Healthy
+                        </Badge>
+                      </div>
+                      <div className="tenant-radar-list">
+                        {d.items.map((b) => {
+                          const rpmShare = totalRpm > 0 ? Math.round(((b.rpm_limit ?? 60) / totalRpm) * 100) : 50;
+                          return (
+                            <div className="tenant-radar-item" key={b.id}>
+                              <div className="tenant-radar-top">
+                                <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                                  <strong>{b.organization_name}</strong>
+                                  <Badge tone={b.low_credit_alert ? "bad" : "ok"}>
+                                    {b.low_credit_alert ? "Alert" : "Healthy"}
+                                  </Badge>
+                                </div>
+                                <span style={{ fontFamily: "var(--font-mono)", fontSize: "0.76rem", color: "var(--ink-dim)" }}>
+                                  ${fmtMoney(b.used_credits)} / ${fmtMoney(b.credit_allocation)} · {b.rpm_limit ?? 60} RPM ({rpmShare}% cap)
+                                </span>
+                              </div>
+                              <div className="share-bar-track" style={{ height: "8px" }}>
+                                <div
+                                  className="share-bar-fill"
+                                  style={{
+                                    width: `${Math.min(100, Math.max(b.utilization_pct, Number(b.used_credits) > 0 ? 5 : 2))}%`,
+                                    background: b.low_credit_alert ? "var(--bad)" : "var(--teal-500)",
+                                  }}
+                                />
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </section>
+                  </div>
+
+                  <Table
+                    caption="Organization credit allocations and utilization"
+                    head={[
+                      "Organization (OpCo)",
+                      "Allocated",
+                      "Consumed",
+                      "Remaining",
+                      "Rate Limits",
+                      "Utilization",
+                      "Models",
+                      "Action",
+                    ]}
+                  >
+                    {d.items.map((b) => (
+                      <tr key={b.id} style={selectedOrg === b.organization_id ? { background: "var(--brand-soft)" } : undefined}>
+                        <td>
+                          <strong>{b.organization_name}</strong>
+                          <span className="sr-only">{b.ledger_row_key}</span>
+                        </td>
+                        <td className="num"><strong>${fmtMoney(b.credit_allocation)}</strong></td>
+                        <td className="num">${fmtMoney(b.used_credits)}</td>
+                        <td className="num"><strong>${fmtMoney(b.remaining_credits)}</strong></td>
+                        <td style={{ fontFamily: "var(--font-mono)", whiteSpace: "nowrap", fontSize: "0.8rem" }}>
+                          {b.rpm_limit ?? 60} RPM · {fmtInt(b.tpm_limit ?? 120000)} TPM
+                        </td>
+                        <td>
+                          <div className="share-cell" style={{ minWidth: "105px" }}>
+                            <div className="share-bar-track">
+                              <div
+                                className="share-bar-fill"
+                                style={{
+                                  width: `${Math.min(100, Math.max(b.utilization_pct, Number(b.used_credits) > 0 ? 4 : 0))}%`,
+                                  background: b.low_credit_alert ? "var(--bad)" : "var(--teal-500)",
+                                }}
+                              />
+                            </div>
+                            <Badge tone={b.low_credit_alert ? "bad" : "ok"}>
+                              {b.utilization_pct}% (alert @ {b.alert_threshold_pct}%)
+                            </Badge>
+                          </div>
+                        </td>
+                        <td><code>{b.allowed_models.join(", ")}</code></td>
+                        <td>
+                          <div className="actions" style={{ flexWrap: "nowrap", gap: "0.4rem" }}>
+                            <button
+                              className="btn"
+                              style={{ padding: "0.3rem 0.65rem", minHeight: "30px", fontSize: "0.78rem" }}
+                              type="button"
+                              title={`Edit quota & rate limits for ${b.organization_name}`}
+                              onClick={() => selectBudget(b)}
+                            >
+                              <IconPencil /> Configure
+                            </button>
+                            <button
+                              className="btn"
+                              style={{ padding: "0.3rem 0.65rem", minHeight: "30px", fontSize: "0.78rem" }}
+                              type="button"
+                              title="View usage & chargeback analytics"
+                              onClick={() => setActiveTab("usage")}
+                            >
+                              Chargeback →
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </Table>
+
+                  <section className="panel" aria-labelledby="edit-budget-heading">
+                    <h2 id="edit-budget-heading">Update OpCo credit allocation, rate limits & model allowlist</h2>
+                    <form onSubmit={(e) => void saveBudget(e)} className="form-row">
+                      <Field label="Organization">
+                        {(id) => (
+                          <select
+                            id={id}
+                            value={selectedOrg}
+                            onChange={(e) => {
+                              const found = d.items.find((x) => x.organization_id === e.target.value);
+                              if (found) selectBudget(found);
+                              else setSelectedOrg(e.target.value);
+                            }}
+                            required
+                          >
+                            <option value="">Select an OpCo…</option>
+                            {d.items.map((b) => (
+                              <option key={b.organization_id} value={b.organization_id}>
+                                {b.organization_name}
+                              </option>
+                            ))}
+                          </select>
+                        )}
+                      </Field>
+                      <Field label="Credit allocation (USD)">
+                        {(id) => (
+                          <input
+                            id={id}
+                            value={credits}
+                            onChange={(e) => {
+                              setCredits(e.target.value);
+                              setMonthlyUsd(e.target.value);
+                            }}
+                            required
+                          />
+                        )}
+                      </Field>
+                      <Field label="RPM limit (reqs/min)">
+                        {(id) => (
+                          <input
+                            id={id}
+                            type="number"
+                            min={1}
+                            max={100000}
+                            value={rpmLimit}
+                            onChange={(e) => setRpmLimit(Number(e.target.value))}
+                            required
+                          />
+                        )}
+                      </Field>
+                      <Field label="TPM limit (tokens/min)">
+                        {(id) => (
+                          <input
+                            id={id}
+                            type="number"
+                            min={100}
+                            max={100000000}
+                            step={1000}
+                            value={tpmLimit}
+                            onChange={(e) => setTpmLimit(Number(e.target.value))}
+                            required
+                          />
+                        )}
+                      </Field>
+                      <Field label="Alert threshold (%)">
+                        {(id) => (
+                          <input
+                            id={id}
+                            type="number"
+                            min={1}
+                            max={100}
+                            value={alertPct}
+                            onChange={(e) => setAlertPct(Number(e.target.value))}
+                            required
+                          />
+                        )}
+                      </Field>
+                      <Field label="Allowed models (comma-separated or *)">
+                        {(id) => (
+                          <input
+                            id={id}
+                            value={allowedModels}
+                            onChange={(e) => setAllowedModels(e.target.value)}
+                            required
+                          />
+                        )}
+                      </Field>
+                      <label className="checkbox">
+                        <input
+                          type="checkbox"
+                          checked={hardStop}
+                          onChange={(e) => setHardStop(e.target.checked)}
+                        />{" "}
+                        Enforce hard stop at 100% credit usage in APIM
+                      </label>
+                      <button className="btn primary" disabled={!selectedOrg || saving}>
+                        {saving ? "Saving…" : "Save & Sync to TurnstileLedger"}
+                      </button>
+                    </form>
+                  </section>
+                </>
+              );
+            }}
+          </AsyncView>
+        </>
+      )}
     </>
   );
 }
@@ -1194,6 +1485,139 @@ export function AdminModelRouterPage() {
   );
   const [simResults, setSimResults] = useState<Record<string, RouterDecision> | null>(null);
   const [simBusy, setSimBusy] = useState(false);
+  const [newCategory, setNewCategory] = useState("");
+  const [newDesc, setNewDesc] = useState("");
+  const [newKeywords, setNewKeywords] = useState("");
+  const [newPreferred, setNewPreferred] = useState("gpt-5.4-mini");
+  const [newFallback, setNewFallback] = useState("claude-haiku-4-5");
+  const [editingCategory, setEditingCategory] = useState<string | null>(null);
+  const [advancedOpen, setAdvancedOpen] = useState(false);
+  const [addingRule, setAddingRule] = useState(false);
+  const [editingModelId, setEditingModelId] = useState<string | null>(null);
+  const [editModelInPrice, setEditModelInPrice] = useState("");
+  const [editModelOutPrice, setEditModelOutPrice] = useState("");
+
+  const modelOptions = (gardenState.data?.items ?? [])
+    .filter((m) => m.id !== "auto")
+    .map((m) => m.id);
+  const selectableModels = modelOptions.length
+    ? modelOptions
+    : ["gpt-5.4-mini", "gpt-5.4", "claude-sonnet-4-5", "claude-haiku-4-5", "DeepSeek-V3.2-Speciale", "singtel-reai-70b", "gemini-2.5-pro"];
+
+  function startEditRule(rule: {
+    category: string;
+    description: string;
+    keywords?: string[];
+    preferred_model: string;
+    fallback_model: string;
+  }) {
+    setEditingCategory(rule.category);
+    setNewCategory(rule.category);
+    setNewDesc(rule.description);
+    setNewKeywords((rule.keywords ?? []).join(", "));
+    setNewPreferred(rule.preferred_model);
+    setNewFallback(rule.fallback_model);
+  }
+
+  async function saveInlineModelPrice(item: ModelGardenItem) {
+    setError(undefined);
+    setNotice(undefined);
+    try {
+      const nextUrl = endpointInput[item.id] ?? item.endpoint_url;
+      const updated = await api.saveModelGardenItem({
+        ...item,
+        endpoint_url: nextUrl,
+        input_per_million: editModelInPrice || item.input_per_million,
+        output_per_million: editModelOutPrice || item.output_per_million,
+      });
+      setEditingModelId(null);
+      setNotice(
+        `Synced ${updated.display_name} (${updated.id}) pricing ($${updated.input_per_million} / $${updated.output_per_million} per 1M) across Admin & Customer Catalog.`,
+      );
+      setVersion((v) => v + 1);
+    } catch (err) {
+      setError(err instanceof ApiError ? err.detail : "Could not save model pricing.");
+    }
+  }
+
+  function clearRuleForm() {
+    setEditingCategory(null);
+    setNewCategory("");
+    setNewDesc("");
+    setNewKeywords("");
+    setNewPreferred("gpt-5.4-mini");
+    setNewFallback("claude-haiku-4-5");
+  }
+
+  async function addCustomCategoryRule(e: FormEvent) {
+    e.preventDefault();
+    if (!routerState.data || !newCategory.trim() || !newDesc.trim()) return;
+    setAddingRule(true);
+    setError(undefined);
+    setNotice(undefined);
+    try {
+      const targetCat = newCategory.trim();
+      const kws = newKeywords
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean);
+      const newRuleObj = {
+        category: targetCat,
+        description: newDesc.trim(),
+        keywords: kws.length ? kws : [targetCat],
+        preferred_model: newPreferred,
+        fallback_model: newFallback,
+      };
+      const existingIdx = routerState.data.rules.findIndex(
+        (r) => r.category === (editingCategory ?? targetCat),
+      );
+      const updatedRules = [...routerState.data.rules];
+      if (existingIdx >= 0) {
+        updatedRules[existingIdx] = newRuleObj;
+      } else {
+        updatedRules.push(newRuleObj);
+      }
+      await api.saveAdminModelRouter({
+        enabled: routerState.data.enabled,
+        strategy: routerState.data.strategy,
+        decision_endpoint: routerState.data.decision_endpoint,
+        default_model: routerState.data.default_model,
+        candidate_models: routerState.data.candidate_models,
+        rules: updatedRules,
+      });
+      setNotice(
+        `${existingIdx >= 0 ? "Updated" : "Added"} Decision-1 classifier rule '${targetCat}' -> ${newPreferred} (fallback: ${newFallback}).`,
+      );
+      clearRuleForm();
+      setVersion((v) => v + 1);
+    } catch (err) {
+      setError(err instanceof ApiError ? err.detail : "Could not save routing category.");
+    } finally {
+      setAddingRule(false);
+    }
+  }
+
+  async function deleteCategoryRule(categoryKey: string) {
+    if (!routerState.data || routerState.data.rules.length <= 1) return;
+    setError(undefined);
+    setNotice(undefined);
+    try {
+      const updatedRules = routerState.data.rules.filter((r) => r.category !== categoryKey);
+      await api.saveAdminModelRouter({
+        enabled: routerState.data.enabled,
+        strategy: routerState.data.strategy,
+        decision_endpoint: routerState.data.decision_endpoint,
+        default_model: routerState.data.default_model,
+        candidate_models: routerState.data.candidate_models,
+        rules: updatedRules,
+      });
+      if (editingCategory === categoryKey) clearRuleForm();
+      setNotice(`Removed Decision-1 classifier category '${categoryKey}'.`);
+      setVersion((v) => v + 1);
+    } catch (err) {
+      setError(err instanceof ApiError ? err.detail : "Could not delete routing category.");
+    }
+  }
 
   async function changeStrategy(nextStrategy: RouterStrategy) {
     if (!routerState.data) return;
@@ -1355,64 +1779,268 @@ export function AdminModelRouterPage() {
                 caption="Decision-1 routing policy matrix"
                 head={[
                   "Route Category",
-                  "Workload & Prompt Signals",
+                  "Workload & Classifier Criteria",
                   "Primary Target Model",
                   "Fallback Model",
-                  "Cost / Latency Profile",
+                  "Signal Keywords",
+                  "Action",
                 ]}
               >
-                {activeProfile.matrix.map((r) => (
-                  <tr key={r.category}>
-                    <td><code>{r.category}</code></td>
-                    <td>{r.description}</td>
-                    <td><Badge tone="ok">{r.preferred_model}</Badge></td>
-                    <td><code>{r.fallback_model}</code></td>
-                    <td style={{ fontFamily: "var(--font-mono)", fontSize: "0.78rem" }}>{r.target_metric}</td>
-                  </tr>
-                ))}
+                {cfg.rules.map((r) => {
+                  const isEditing = editingCategory === r.category;
+                  return (
+                    <tr key={r.category} style={isEditing ? { background: "var(--brand-soft)" } : undefined}>
+                      <td><code>{r.category}</code></td>
+                      <td>
+                        {isEditing ? (
+                          <input
+                            aria-label="Classifier criteria description"
+                            value={newDesc}
+                            onChange={(e) => setNewDesc(e.target.value)}
+                          />
+                        ) : (
+                          r.description
+                        )}
+                      </td>
+                      <td>
+                        {isEditing ? (
+                          <select
+                            aria-label="Primary model"
+                            value={newPreferred}
+                            onChange={(e) => setNewPreferred(e.target.value)}
+                          >
+                            {selectableModels.map((mId) => (
+                              <option key={mId} value={mId}>{mId}</option>
+                            ))}
+                          </select>
+                        ) : (
+                          <Badge tone="ok">{r.preferred_model}</Badge>
+                        )}
+                      </td>
+                      <td>
+                        {isEditing ? (
+                          <select
+                            aria-label="Fallback model"
+                            value={newFallback}
+                            onChange={(e) => setNewFallback(e.target.value)}
+                          >
+                            {selectableModels.map((mId) => (
+                              <option key={mId} value={mId}>{mId}</option>
+                            ))}
+                          </select>
+                        ) : (
+                          <code>{r.fallback_model}</code>
+                        )}
+                      </td>
+                      <td style={{ fontFamily: "var(--font-mono)", fontSize: "0.76rem" }}>
+                        {isEditing ? (
+                          <input
+                            aria-label="Signal keywords"
+                            value={newKeywords}
+                            onChange={(e) => setNewKeywords(e.target.value)}
+                          />
+                        ) : (
+                          r.keywords.slice(0, 6).join(", ")
+                        )}
+                      </td>
+                      <td>
+                        <div className="actions" style={{ flexWrap: "nowrap" }}>
+                          {isEditing ? (
+                            <>
+                              <button
+                                type="button"
+                                className="icon-btn primary"
+                                aria-label={`Save ${r.category}`}
+                                title="Save changes"
+                                disabled={addingRule}
+                                onClick={(e) => void addCustomCategoryRule(e as unknown as FormEvent)}
+                              >
+                                <IconCheck />
+                              </button>
+                              <button
+                                type="button"
+                                className="icon-btn"
+                                aria-label="Cancel inline edit"
+                                title="Cancel"
+                                onClick={clearRuleForm}
+                              >
+                                <IconCancel />
+                              </button>
+                            </>
+                          ) : (
+                            <>
+                              <button
+                                type="button"
+                                className="icon-btn"
+                                aria-label={`Edit ${r.category}`}
+                                title={`Edit ${r.category} inline`}
+                                onClick={() => startEditRule(r)}
+                              >
+                                <IconPencil />
+                              </button>
+                              {cfg.rules.length > 1 && (
+                                <button
+                                  type="button"
+                                  className="icon-btn danger"
+                                  aria-label={`Delete ${r.category}`}
+                                  title={`Delete ${r.category}`}
+                                  onClick={() => void deleteCategoryRule(r.category)}
+                                >
+                                  <IconTrash />
+                                </button>
+                              )}
+                            </>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
               </Table>
 
-              <div style={{ marginTop: "1rem", paddingTop: "1rem", borderTop: "1px solid var(--line)" }}>
-                <h2>Compare all 4 routing strategies side-by-side</h2>
-                <form onSubmit={(e) => void compareAllStrategies(e)} className="form-row">
-                  <Field label="Test prompt across all 4 strategies">
-                    {(id) => (
-                      <input
-                        id={id}
-                        value={simPrompt}
-                        onChange={(e) => setSimPrompt(e.target.value)}
-                        required
-                      />
-                    )}
-                  </Field>
-                  <button className="btn primary" type="submit" disabled={simBusy}>
-                    {simBusy ? "Comparing…" : "Compare 4 Strategies"}
-                  </button>
-                </form>
-                {simResults && (
-                  <Table
-                    caption="Side-by-side strategy comparison"
-                    head={["Strategy", "Selected Model", "Vendor", "Category", "Est. Input / Output ($/1M)", "Decision-1 Rationale"]}
-                  >
-                    {(["microsoft-decision-1", "cost-optimized", "latency-optimized", "quality-first"] as RouterStrategy[]).map((sKey) => {
-                      const d = simResults[sKey];
-                      if (!d) return null;
-                      return (
-                        <tr key={sKey}>
-                          <td><code>{sKey}</code></td>
-                          <td><Badge tone="ok">{d.selected_model}</Badge></td>
-                          <td>{d.vendor}</td>
-                          <td><code>{d.category}</code></td>
-                          <td style={{ fontFamily: "var(--font-mono)", whiteSpace: "nowrap" }}>
-                            ${d.estimated_input_per_million} / ${d.estimated_output_per_million}
+              <details
+                className="gateway-advanced"
+                open={advancedOpen}
+                onToggle={(e) => setAdvancedOpen((e.currentTarget as HTMLDetailsElement).open)}
+                style={{ borderTop: "1px solid var(--line)", paddingTop: "0.75rem" }}
+              >
+                <summary style={{ fontSize: "0.86rem", color: "var(--ink-dim)" }}>
+                  Advanced: Decision-1 classifier criteria (<code>choice</code> / <code>noul</code> / <code>score</code>), rule editor &amp; 4-strategy simulator
+                </summary>
+                <div style={{ marginTop: "0.85rem", display: "grid", gap: "1rem" }}>
+                  <div>
+                    <h2>
+                      {editingCategory
+                        ? `Editing Decision-1 rule: ${editingCategory}`
+                        : `Configured Decision-1 choice classifier categories (${cfg.rules.length})`}
+                    </h2>
+                    <p className="muted">
+                      Click <strong>Edit</strong> on any existing rule below to modify its criteria description, signal keywords, or target models, or fill in the form to add a new category to{" "}
+                      <code>{cfg.decision_endpoint}</code>.
+                    </p>
+                    <Table
+                      caption="Decision-1 intent routing rules"
+                      head={["Category ID", "Classifier Criteria Description", "Preferred Model", "Fallback Model", "Signal Keywords", "Action"]}
+                    >
+                      {cfg.rules.map((r) => (
+                        <tr
+                          key={r.category}
+                          style={editingCategory === r.category ? { background: "var(--brand-soft)" } : undefined}
+                        >
+                          <td><code>{r.category}</code></td>
+                          <td>{r.description}</td>
+                          <td><Badge tone="ok">{r.preferred_model}</Badge></td>
+                          <td><code>{r.fallback_model}</code></td>
+                          <td>{r.keywords.join(", ")}</td>
+                          <td>
+                            <div className="actions" style={{ flexWrap: "nowrap" }}>
+                              <button
+                                type="button"
+                                className="icon-btn"
+                                title={`Edit ${r.category}`}
+                                onClick={() => startEditRule(r)}
+                              >
+                                <IconPencil />
+                              </button>
+                              {cfg.rules.length > 1 && (
+                                <button
+                                  type="button"
+                                  className="icon-btn danger"
+                                  title={`Delete ${r.category}`}
+                                  onClick={() => void deleteCategoryRule(r.category)}
+                                >
+                                  <IconTrash />
+                                </button>
+                              )}
+                            </div>
                           </td>
-                          <td className="muted">{d.reason}</td>
                         </tr>
-                      );
-                    })}
-                  </Table>
-                )}
-              </div>
+                      ))}
+                    </Table>
+                    <form onSubmit={(e) => void addCustomCategoryRule(e)} className="form-row" style={{ marginTop: "0.85rem" }}>
+                      <Field label="Category key (e.g. coding_and_math)">
+                        {(id) => <input id={id} value={newCategory} onChange={(e) => setNewCategory(e.target.value)} required />}
+                      </Field>
+                      <Field label="Classifier criteria description">
+                        {(id) => <input id={id} value={newDesc} onChange={(e) => setNewDesc(e.target.value)} required />}
+                      </Field>
+                      <Field label="Signal keywords (comma-separated)">
+                        {(id) => <input id={id} value={newKeywords} onChange={(e) => setNewKeywords(e.target.value)} placeholder="audit, regulation, mas" />}
+                      </Field>
+                      <Field label="Primary model">
+                        {(id) => (
+                          <select id={id} value={newPreferred} onChange={(e) => setNewPreferred(e.target.value)}>
+                            {selectableModels.map((mId) => (
+                              <option key={mId} value={mId}>{mId}</option>
+                            ))}
+                          </select>
+                        )}
+                      </Field>
+                      <Field label="Fallback model">
+                        {(id) => (
+                          <select id={id} value={newFallback} onChange={(e) => setNewFallback(e.target.value)}>
+                            {selectableModels.map((mId) => (
+                              <option key={mId} value={mId}>{mId}</option>
+                            ))}
+                          </select>
+                        )}
+                      </Field>
+                      <div className="actions">
+                        <button className="btn primary" type="submit" disabled={addingRule}>
+                          <IconPlus /> {addingRule ? "Saving…" : editingCategory ? `Update '${editingCategory}'` : "Add Category Rule"}
+                        </button>
+                        {editingCategory && (
+                          <button className="btn" type="button" onClick={clearRuleForm}>
+                            <IconCancel /> Cancel
+                          </button>
+                        )}
+                      </div>
+                    </form>
+                  </div>
+
+                  <div style={{ paddingTop: "0.75rem", borderTop: "1px solid var(--line)" }}>
+                    <h2>Compare all 4 routing strategies side-by-side</h2>
+                    <form onSubmit={(e) => void compareAllStrategies(e)} className="form-row">
+                      <Field label="Test prompt across all 4 strategies">
+                        {(id) => (
+                          <input
+                            id={id}
+                            value={simPrompt}
+                            onChange={(e) => setSimPrompt(e.target.value)}
+                            required
+                          />
+                        )}
+                      </Field>
+                      <button className="btn primary" type="submit" disabled={simBusy}>
+                        {simBusy ? "Comparing…" : "Compare 4 Strategies"}
+                      </button>
+                    </form>
+                    {simResults && (
+                      <Table
+                        caption="Side-by-side strategy comparison"
+                        head={["Strategy", "Selected Model", "Vendor", "Category", "Est. Input / Output ($/1M)", "Decision-1 Rationale"]}
+                      >
+                        {(["microsoft-decision-1", "cost-optimized", "latency-optimized", "quality-first"] as RouterStrategy[]).map((sKey) => {
+                          const d = simResults[sKey];
+                          if (!d) return null;
+                          return (
+                            <tr key={sKey}>
+                              <td><code>{sKey}</code></td>
+                              <td><Badge tone="ok">{d.selected_model}</Badge></td>
+                              <td>{d.vendor}</td>
+                              <td><code>{d.category}</code></td>
+                              <td style={{ fontFamily: "var(--font-mono)", whiteSpace: "nowrap" }}>
+                                ${d.estimated_input_per_million} / ${d.estimated_output_per_million}
+                              </td>
+                              <td className="muted">{d.reason}</td>
+                            </tr>
+                          );
+                        })}
+                      </Table>
+                    )}
+                  </div>
+                </div>
+              </details>
             </section>
           );
         }}
@@ -1436,53 +2064,112 @@ export function AdminModelRouterPage() {
                 "Action",
               ]}
             >
-              {garden.items.map((m) => (
-                <tr key={m.id}>
-                  <td>
-                    <div className="vendor-header">
-                      <div className="vendor-mark sm">
-                        <VendorLogo vendor={m.vendor} size={15} />
+              {garden.items.map((m) => {
+                const isEditingModel = editingModelId === m.id;
+                return (
+                  <tr key={m.id} style={isEditingModel ? { background: "var(--brand-soft)" } : undefined}>
+                    <td>
+                      <div className="vendor-header">
+                        <div className="vendor-mark sm">
+                          <VendorLogo vendor={m.vendor} size={15} />
+                        </div>
+                        <code>{m.id}</code>
                       </div>
-                      <code>{m.id}</code>
-                    </div>
-                  </td>
-                  <td><strong>{m.display_name}</strong></td>
-                  <td>{m.vendor}</td>
-                  <td style={{ fontFamily: "var(--font-mono)", whiteSpace: "nowrap" }}>
-                    ${m.input_per_million} / ${m.output_per_million}
-                  </td>
-                  <td>
-                    <input
-                      aria-label={`Endpoint URL for ${m.id}`}
-                      value={endpointInput[m.id] ?? m.endpoint_url}
-                      placeholder="https://endpoint/v1/chat/completions"
-                      onChange={(e) =>
-                        setEndpointInput((prev) => ({ ...prev, [m.id]: e.target.value }))
-                      }
-                    />
-                  </td>
-                  <td>
-                    {m.coming_soon ? (
-                      <Badge tone="warn">Coming soon</Badge>
-                    ) : m.enabled ? (
-                      <Badge tone="ok">Active</Badge>
-                    ) : (
-                      <Badge tone="bad">Disabled</Badge>
-                    )}
-                  </td>
-                  <td>
-                    <button
-                      className={m.coming_soon || !m.enabled ? "btn primary" : "btn"}
-                      style={{ whiteSpace: "nowrap" }}
-                      type="button"
-                      aria-label={m.coming_soon || !m.enabled ? `Activate ${m.id}` : `Disable ${m.id}`}
-                      onClick={() => void toggleModelEndpoint(m)}
-                    >
-                      {m.coming_soon || !m.enabled ? "Activate" : "Disable"}
-                    </button>
-                  </td>
-                </tr>
-              ))}
+                    </td>
+                    <td><strong>{m.display_name}</strong></td>
+                    <td>{m.vendor}</td>
+                    <td style={{ fontFamily: "var(--font-mono)", whiteSpace: "nowrap" }}>
+                      {isEditingModel ? (
+                        <div className="actions" style={{ flexWrap: "nowrap" }}>
+                          <input
+                            aria-label={`Input price for ${m.id}`}
+                            style={{ width: "80px" }}
+                            value={editModelInPrice}
+                            onChange={(e) => setEditModelInPrice(e.target.value)}
+                          />
+                          <span>/</span>
+                          <input
+                            aria-label={`Output price for ${m.id}`}
+                            style={{ width: "80px" }}
+                            value={editModelOutPrice}
+                            onChange={(e) => setEditModelOutPrice(e.target.value)}
+                          />
+                        </div>
+                      ) : (
+                        `$${Number(m.input_per_million).toFixed(2)} / $${Number(m.output_per_million).toFixed(2)}`
+                      )}
+                    </td>
+                    <td>
+                      <input
+                        aria-label={`Endpoint URL for ${m.id}`}
+                        value={endpointInput[m.id] ?? m.endpoint_url}
+                        placeholder="https://endpoint/v1/chat/completions"
+                        onChange={(e) =>
+                          setEndpointInput((prev) => ({ ...prev, [m.id]: e.target.value }))
+                        }
+                      />
+                    </td>
+                    <td>
+                      {m.coming_soon ? (
+                        <Badge tone="warn">Coming soon</Badge>
+                      ) : m.enabled ? (
+                        <Badge tone="ok">Active</Badge>
+                      ) : (
+                        <Badge tone="bad">Disabled</Badge>
+                      )}
+                    </td>
+                    <td>
+                      <div className="actions" style={{ flexWrap: "nowrap" }}>
+                        {isEditingModel ? (
+                          <>
+                            <button
+                              type="button"
+                              className="icon-btn primary"
+                              title="Save pricing & endpoint"
+                              aria-label={`Save pricing for ${m.id}`}
+                              onClick={() => void saveInlineModelPrice(m)}
+                            >
+                              <IconCheck />
+                            </button>
+                            <button
+                              type="button"
+                              className="icon-btn"
+                              title="Cancel"
+                              aria-label="Cancel price edit"
+                              onClick={() => setEditingModelId(null)}
+                            >
+                              <IconCancel />
+                            </button>
+                          </>
+                        ) : (
+                          <button
+                            type="button"
+                            className="icon-btn"
+                            title={`Edit ${m.id} pricing inline`}
+                            aria-label={`Edit pricing for ${m.id}`}
+                            onClick={() => {
+                              setEditingModelId(m.id);
+                              setEditModelInPrice(m.input_per_million);
+                              setEditModelOutPrice(m.output_per_million);
+                            }}
+                          >
+                            <IconPencil />
+                          </button>
+                        )}
+                        <button
+                          className={m.coming_soon || !m.enabled ? "btn primary" : "btn"}
+                          style={{ whiteSpace: "nowrap" }}
+                          type="button"
+                          aria-label={m.coming_soon || !m.enabled ? `Activate ${m.id}` : `Disable ${m.id}`}
+                          onClick={() => void toggleModelEndpoint(m)}
+                        >
+                          {m.coming_soon || !m.enabled ? "Activate" : "Disable"}
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
             </Table>
           </section>
         )}
@@ -1509,8 +2196,16 @@ export function AdminModelRouterPage() {
   );
 }
 
-export function AdminLocalUsersPage() {
+export function AdminLocalUsersPage({
+  initialTab = "portal",
+}: {
+  initialTab?: "portal" | "sso";
+} = {}) {
   const { api } = useSession();
+  const [activeTab, setActiveTab] = useState<"portal" | "sso">(initialTab);
+  useEffect(() => {
+    setActiveTab(initialTab);
+  }, [initialTab]);
   const [version, setVersion] = useState(0);
   const usersState = useAsync(() => api.localUsers(), [api, version]);
   const orgsState = useAsync(() => api.organizations(), [api]);
@@ -1564,74 +2259,102 @@ export function AdminLocalUsersPage() {
   return (
     <>
       <PageHeader
-        title="Local users (PostgreSQL)"
-        subtitle="Manage email & password accounts stored in PostgreSQL (local_users) for OpCo customers and platform administrators."
+        title="User access & identity directory"
+        subtitle="Manage Portal Accounts (PostgreSQL email/password) and Federated Entra SSO identities across customer organizations."
+        actions={
+          <div className="segmented-tabs" role="tablist" aria-label="User identity mode">
+            <button
+              type="button"
+              role="tab"
+              aria-selected={activeTab === "portal"}
+              className={`segmented-tab ${activeTab === "portal" ? "active" : ""}`}
+              onClick={() => setActiveTab("portal")}
+            >
+              Portal Accounts (PostgreSQL)
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={activeTab === "sso"}
+              className={`segmented-tab ${activeTab === "sso" ? "active" : ""}`}
+              onClick={() => setActiveTab("sso")}
+            >
+              Entra SSO Directory
+            </button>
+          </div>
+        }
       />
-      {error && <ErrorState message={error} />}
-      {notice && <p role="status" className="notice">{notice}</p>}
-      <AsyncView state={orgsState}>
-        {(orgs) => (
-          <section className="panel" aria-labelledby="new-local-user-heading">
-            <h2 id="new-local-user-heading">Create PostgreSQL user account</h2>
-            <form onSubmit={(e) => void createUser(e)} className="form-row">
-              <Field label="Organization (OpCo)">
-                {(id) => (
-                  <select id={id} value={organizationId} onChange={(e) => setOrganizationId(e.target.value)} required>
-                    <option value="">Select organization…</option>
-                    {orgs.items.map((o) => (
-                      <option key={o.id} value={o.id}>{o.name}</option>
-                    ))}
-                  </select>
-                )}
-              </Field>
-              <Field label="Display name">
-                {(id) => <input id={id} value={displayName} onChange={(e) => setDisplayName(e.target.value)} required />}
-              </Field>
-              <Field label="Email">
-                {(id) => <input id={id} type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />}
-              </Field>
-              <Field label="Initial password">
-                {(id) => <input id={id} type="password" minLength={6} value={password} onChange={(e) => setPassword(e.target.value)} required />}
-              </Field>
-              <Field label="Role">
-                {(id) => (
-                  <select id={id} value={role} onChange={(e) => setRole(e.target.value as Role)}>
-                    <option value="customer">customer (OpCo portal)</option>
-                    <option value="ids_admin">ids_admin (Admin portal)</option>
-                  </select>
-                )}
-              </Field>
-              <button className="btn primary" disabled={busy || !organizationId}>
-                {busy ? "Creating…" : "Create PostgreSQL user"}
-              </button>
-            </form>
-          </section>
-        )}
-      </AsyncView>
-      <AsyncView state={usersState}>
-        {(data) => (
-          <Table
-            caption="PostgreSQL local user accounts"
-            head={["Email", "Display name", "Organization", "Role", "Status", "Created", "Action"]}
-          >
-            {data.items.map((u) => (
-              <tr key={u.id}>
-                <td><code>{u.email}</code></td>
-                <td>{u.display_name}</td>
-                <td>{u.organization_name}</td>
-                <td><Badge tone={u.role === "ids_admin" ? "info" : "neutral"}>{u.role}</Badge></td>
-                <td><Badge tone={u.enabled ? "ok" : "bad"}>{u.enabled ? "Enabled" : "Disabled"}</Badge></td>
-                <td>{fmtDate(u.created_at)}</td>
-                <td>
-                  <button className="btn" type="button" onClick={() => void toggleUser(u)}>
-                    {u.enabled ? "Disable" : "Enable"}
+      {activeTab === "sso" ? (
+        <MembersPage embedded />
+      ) : (
+        <>
+          {error && <ErrorState message={error} />}
+          {notice && <p role="status" className="notice">{notice}</p>}
+          <AsyncView state={orgsState}>
+            {(orgs) => (
+              <section className="panel" aria-labelledby="new-local-user-heading">
+                <h2 id="new-local-user-heading">Create PostgreSQL user account</h2>
+                <form onSubmit={(e) => void createUser(e)} className="form-row">
+                  <Field label="Organization (OpCo)">
+                    {(id) => (
+                      <select id={id} value={organizationId} onChange={(e) => setOrganizationId(e.target.value)} required>
+                        <option value="">Select organization…</option>
+                        {orgs.items.map((o) => (
+                          <option key={o.id} value={o.id}>{o.name}</option>
+                        ))}
+                      </select>
+                    )}
+                  </Field>
+                  <Field label="Display name">
+                    {(id) => <input id={id} value={displayName} onChange={(e) => setDisplayName(e.target.value)} required />}
+                  </Field>
+                  <Field label="Email">
+                    {(id) => <input id={id} type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />}
+                  </Field>
+                  <Field label="Initial password">
+                    {(id) => <input id={id} type="password" minLength={6} value={password} onChange={(e) => setPassword(e.target.value)} required />}
+                  </Field>
+                  <Field label="Role">
+                    {(id) => (
+                      <select id={id} value={role} onChange={(e) => setRole(e.target.value as Role)}>
+                        <option value="customer">customer (OpCo portal)</option>
+                        <option value="ids_admin">ids_admin (Admin portal)</option>
+                      </select>
+                    )}
+                  </Field>
+                  <button className="btn primary" disabled={busy || !organizationId}>
+                    {busy ? "Creating…" : "Create PostgreSQL user"}
                   </button>
-                </td>
-              </tr>
-            ))}
-          </Table>
-        )}
-      </AsyncView>
+                </form>
+              </section>
+            )}
+          </AsyncView>
+          <AsyncView state={usersState}>
+            {(data) => (
+              <Table
+                caption="PostgreSQL local user accounts"
+                head={["Email", "Display name", "Organization", "Role", "Status", "Created", "Action"]}
+              >
+                {data.items.map((u) => (
+                  <tr key={u.id}>
+                    <td><code>{u.email}</code></td>
+                    <td>{u.display_name}</td>
+                    <td>{u.organization_name}</td>
+                    <td><Badge tone={u.role === "ids_admin" ? "info" : "neutral"}>{u.role}</Badge></td>
+                    <td><Badge tone={u.enabled ? "ok" : "bad"}>{u.enabled ? "Enabled" : "Disabled"}</Badge></td>
+                    <td>{fmtDate(u.created_at)}</td>
+                    <td>
+                      <button className="btn" type="button" onClick={() => void toggleUser(u)}>
+                        {u.enabled ? "Disable" : "Enable"}
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </Table>
+            )}
+          </AsyncView>
+        </>
+      )}
     </>
   );
 }

@@ -20,13 +20,15 @@ class ApimError(RuntimeError):
 
 
 class ApimClient:
+    _local_fragments: dict[str, tuple[str, str]] = {}
+
     def __init__(self, settings: Settings):
         self.settings = settings
         self._credential: DefaultAzureCredential | None = None
         self._local_keys: dict[tuple[str, str], str] = {}
 
     def _is_local_sandbox(self) -> bool:
-        return self.settings.local_auth_enabled and not self.settings.apim_resource_id.strip()
+        return self.settings.local_auth_enabled and self.settings.environment != "testing"
 
     def _url(self, subscription_id: str, action: str = "") -> str:
         resource = self.settings.apim_resource_id.rstrip("/")
@@ -92,6 +94,12 @@ class ApimClient:
         )
 
     def get_settings_fragment(self, scope: str) -> tuple[str, str]:
+        if self._is_local_sandbox():
+            if scope in ApimClient._local_fragments:
+                return ApimClient._local_fragments[scope]
+            default_xml = "<fragment />"
+            ApimClient._local_fragments[scope] = (default_xml, '"local-v1"')
+            return default_xml, '"local-v1"'
         response = self._send("GET", self._fragment_url(scope) + "&format=rawxml")
         properties = self._json(response).get("properties")
         value = properties.get("value") if isinstance(properties, dict) else None
@@ -103,6 +111,10 @@ class ApimClient:
     def put_settings_fragment(self, scope: str, value: str, etag: str) -> None:
         if not etag or etag == "*" or len(value.encode("utf-8")) > 65536:
             raise ApimError()
+        if self._is_local_sandbox():
+            next_etag = f'"local-{int(time.time() * 1000)}"'
+            ApimClient._local_fragments[scope] = (value, next_etag)
+            return
         response = self._send(
             "PUT", self._fragment_url(scope),
             {"properties": {

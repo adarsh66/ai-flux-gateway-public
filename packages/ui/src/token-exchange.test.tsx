@@ -297,7 +297,7 @@ describe("Token Exchange Customer & Admin Portal Pages", () => {
       </>,
     );
     expect(await screen.findByText("org:org-1")).toBeInTheDocument();
-    expect(await screen.findByText("/providers/microsoft/v1/systemone")).toBeInTheDocument();
+    expect((await screen.findAllByText("/providers/microsoft/v1/systemone")).length).toBeGreaterThanOrEqual(1);
     expect(await screen.findByText("Singtel RE:AI Sovereign 70B")).toBeInTheDocument();
     expect(await screen.findByText(/<llm-content-safety \/>/)).toBeInTheDocument();
   });

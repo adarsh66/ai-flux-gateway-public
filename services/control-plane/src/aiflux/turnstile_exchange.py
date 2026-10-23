@@ -10,7 +10,7 @@ from uuid import uuid4
 
 import httpx
 from fastapi import HTTPException
-from sqlalchemy import func, select
+from sqlalchemy import func, inspect, select, text
 from sqlalchemy.orm import Session
 
 from aiflux.auth import Principal, hash_password, issue_local_jwt, verify_password
@@ -286,8 +286,35 @@ DEFAULT_ROUTER_RULES: list[dict[str, Any]] = [
 ]
 
 
+_CHECKED_BINDS: set[int] = set()
+
+
+def _ensure_credit_budget_columns(db: Session) -> None:
+    bind = db.get_bind()
+    bind_key = id(bind)
+    if bind_key in _CHECKED_BINDS:
+        return
+    try:
+        cols = {c["name"] for c in inspect(bind).get_columns("credit_budgets")}
+    except Exception:
+        return
+    for col_name, default_val in (("rpm_limit", 60), ("tpm_limit", 120000)):
+        if col_name not in cols:
+            try:
+                ddl = (
+                    f"ALTER TABLE credit_budgets ADD COLUMN {col_name} "
+                    f"INTEGER DEFAULT {default_val} NOT NULL"
+                )
+                db.execute(text(ddl))
+                db.commit()
+            except Exception:
+                db.rollback()
+    _CHECKED_BINDS.add(bind_key)
+
+
 def ensure_model_garden_seeded(db: Session) -> None:
     Base.metadata.create_all(db.get_bind(), checkfirst=True)
+    _ensure_credit_budget_columns(db)
     existing_count = db.scalar(select(func.count()).select_from(ManagedModelEndpoint)) or 0
     if existing_count > 0:
         return
@@ -389,7 +416,9 @@ def model_garden_item_dict(row: ManagedModelEndpoint) -> ModelGardenItemOutput:
     )
 
 
-def list_model_garden(db: Session, *, include_disabled: bool = True) -> list[ModelGardenItemOutput]:
+def list_model_garden(
+    db: Session, *, include_disabled: bool = True, organization_id: str | None = None
+) -> list[ModelGardenItemOutput]:
     ensure_model_garden_seeded(db)
     query = select(ManagedModelEndpoint).order_by(
         ManagedModelEndpoint.priority.asc(), ManagedModelEndpoint.id.asc()
@@ -398,7 +427,13 @@ def list_model_garden(db: Session, *, include_disabled: bool = True) -> list[Mod
         query = query.where(
             (ManagedModelEndpoint.enabled.is_(True)) | (ManagedModelEndpoint.coming_soon.is_(True))
         )
-    rows = db.scalars(query).all()
+    rows = list(db.scalars(query).all())
+    if organization_id is not None and not include_disabled:
+        budget = ensure_organization_budget(db, organization_id)
+        allowed = json.loads(budget.allowed_models_json or '["*"]')
+        if "*" not in allowed:
+            allowed_set = set(allowed) | {"auto"}
+            rows = [r for r in rows if r.id in allowed_set]
     return [model_garden_item_dict(row) for row in rows]
 
 
@@ -430,12 +465,43 @@ def upsert_model_garden_item(
     row.content_safety_enabled = payload.content_safety_enabled
     row.priority = payload.priority
     row.updated_at = now
+
+    open_price = db.scalar(
+        select(ModelPrice)
+        .where(ModelPrice.model == payload.id, ModelPrice.effective_to.is_(None))
+        .order_by(ModelPrice.effective_from.desc())
+    )
+    if open_price is not None:
+        open_price.provider = payload.provider
+        open_price.region = payload.region
+        open_price.currency = payload.currency
+        open_price.input_per_million = payload.input_per_million
+        open_price.output_per_million = payload.output_per_million
+        open_price.cached_input_per_million = payload.cached_input_per_million
+    else:
+        db.add(
+            ModelPrice(
+                model=payload.id,
+                provider=payload.provider,
+                region=payload.region,
+                effective_from=datetime(2025, 1, 1, tzinfo=UTC),
+                effective_to=None,
+                currency=payload.currency,
+                input_per_million=payload.input_per_million,
+                output_per_million=payload.output_per_million,
+                cached_input_per_million=payload.cached_input_per_million,
+                cache_write_per_million=None,
+                input_includes_cached=True,
+            )
+        )
+
     audit(db, principal, "model_garden.upserted", row.id)
     db.commit()
     return model_garden_item_dict(row)
 
 
 def ensure_organization_budget(db: Session, organization_id: str) -> CreditBudget:
+    _ensure_credit_budget_columns(db)
     row = db.scalar(
         select(CreditBudget).where(
             CreditBudget.organization_id == organization_id,
@@ -449,6 +515,8 @@ def ensure_organization_budget(db: Session, organization_id: str) -> CreditBudge
             monthly_budget_usd=Decimal("5000.0000"),
             credit_allocation=Decimal("5000.0000"),
             alert_threshold_pct=80,
+            rpm_limit=60,
+            tpm_limit=120000,
             allowed_models_json=json.dumps(["*"]),
             product_name="Enterprise AI Token Exchange",
             channel="api-gateway",
@@ -496,6 +564,8 @@ def _budget_output(db: Session, row: CreditBudget) -> CreditBudgetOutput:
         utilization_pct=round(utilization, 2),
         low_credit_alert=utilization >= row.alert_threshold_pct,
         alert_threshold_pct=row.alert_threshold_pct,
+        rpm_limit=getattr(row, "rpm_limit", 60) or 60,
+        tpm_limit=getattr(row, "tpm_limit", 120000) or 120000,
         allowed_models=json.loads(row.allowed_models_json or '["*"]'),
         product_name=row.product_name,
         channel=row.channel,
@@ -546,6 +616,8 @@ def upsert_budget(
     row.monthly_budget_usd = payload.monthly_budget_usd
     row.credit_allocation = payload.credit_allocation
     row.alert_threshold_pct = payload.alert_threshold_pct
+    row.rpm_limit = payload.rpm_limit
+    row.tpm_limit = payload.tpm_limit
     row.allowed_models_json = json.dumps(payload.allowed_models or ["*"])
     row.product_name = payload.product_name
     row.channel = payload.channel
@@ -700,6 +772,9 @@ def credit_summary_response(
         remaining_credits=f"{remaining:.4f}",
         utilization_pct=round(utilization, 2),
         alert_threshold_pct=budget.alert_threshold_pct,
+        rpm_limit=getattr(budget, "rpm_limit", 60) or 60,
+        tpm_limit=getattr(budget, "tpm_limit", 120000) or 120000,
+        allowed_models=json.loads(budget.allowed_models_json or '["*"]'),
         low_credit_alert=utilization >= budget.alert_threshold_pct,
         hard_stop_enabled=budget.hard_stop_enabled,
         total_requests=len(rows),
@@ -741,7 +816,10 @@ def update_router_config(
 
 
 def decide_model_route(
-    db: Session, settings: Settings, payload: RouterDecisionRequest
+    db: Session,
+    settings: Settings,
+    payload: RouterDecisionRequest,
+    organization_id: str | None = None,
 ) -> RouterDecisionOutput:
     config = get_router_config_output(db, settings)
     strategy = payload.strategy or config.strategy
@@ -750,10 +828,19 @@ def decide_model_route(
         m.id: m
         for m in db.scalars(
             select(ManagedModelEndpoint).where(
-                ManagedModelEndpoint.enabled.is_(True), ManagedModelEndpoint.id != "auto"
+                ManagedModelEndpoint.enabled.is_(True),
+                ManagedModelEndpoint.coming_soon.is_(False),
+                ManagedModelEndpoint.id != "auto",
             )
         ).all()
     }
+    if organization_id is not None:
+        budget = ensure_organization_budget(db, organization_id)
+        allowed = json.loads(budget.allowed_models_json or '["*"]')
+        if "*" not in allowed:
+            allowed_endpoints = {k: v for k, v in endpoints.items() if k in set(allowed)}
+            if allowed_endpoints:
+                endpoints = allowed_endpoints
     candidates = [m for m in config.candidate_models if m in endpoints]
     if not candidates:
         candidates = list(endpoints.keys()) or ["gpt-5.4-mini"]
@@ -902,15 +989,130 @@ _UNSAFE_PATTERNS: list[tuple[str, re.Pattern[str]]] = [
     ("hate", re.compile(r"(hate speech slur)", re.I)),
 ]
 
+_cs_token_cache: tuple[str, float] = ("", 0.0)
 
-def _evaluate_content_safety(text_input: str) -> tuple[Literal["passed", "blocked"], dict[str, int], str]:
+
+def _get_content_safety_bearer() -> str:
+    global _cs_token_cache
+    now_ts = time.time()
+    if _cs_token_cache[0] and _cs_token_cache[1] > now_ts + 120:
+        return _cs_token_cache[0]
+    try:
+        from azure.identity import DefaultAzureCredential
+
+        tok = DefaultAzureCredential().get_token("https://cognitiveservices.azure.com/.default")
+        _cs_token_cache = (tok.token, float(tok.expires_on))
+        return tok.token
+    except Exception:
+        return ""
+
+
+def _active_safety_thresholds(db: Session | None) -> dict[str, Any]:
+    defaults: dict[str, Any] = {
+        "hate": 4,
+        "violence": 4,
+        "sexual": 4,
+        "self_harm": 4,
+        "prompt_attack": True,
+        "protected_material": True,
+        "input_filtering": True,
+        "output_filtering": True,
+    }
+    if db is None:
+        return defaults
+    try:
+        from aiflux.models import GatewaySettings, GatewaySettingsRevision
+
+        head = db.scalar(select(GatewaySettings).order_by(GatewaySettings.version.desc()))
+        if head and head.version:
+            rev = db.scalar(
+                select(GatewaySettingsRevision).where(
+                    GatewaySettingsRevision.scope == head.scope,
+                    GatewaySettingsRevision.version == (head.published_version or head.version),
+                )
+            )
+            if rev:
+                stored = json.loads(rev.configuration)
+                cfg = stored.get("configuration", stored)
+                safety = cfg.get("safety")
+                if isinstance(safety, dict):
+                    defaults.update(safety)
+    except Exception:
+        pass
+    return defaults
+
+
+def _evaluate_content_safety(
+    text_input: str,
+    db: Session | None = None,
+    settings: Settings | None = None,
+) -> tuple[Literal["passed", "blocked"], dict[str, int], str]:
     scores = {"hate": 0, "violence": 0, "sexual": 0, "self_harm": 0, "prompt_attack": 0}
     triggered_category = ""
-    for category, pattern in _UNSAFE_PATTERNS:
-        if pattern.search(text_input):
-            scores[category] = 6
-            triggered_category = category
-            break
+    thresholds = _active_safety_thresholds(db)
+    if not thresholds.get("input_filtering", True):
+        return "passed", scores, ""
+
+    # 1. Live Azure AI Content Safety inspection (agents-contentsafety.cognitiveservices.azure.com)
+    if settings and settings.content_safety_endpoint and settings.environment != "testing":
+        base_cs = settings.content_safety_endpoint.rstrip("/")
+        headers: dict[str, str] = {"Content-Type": "application/json"}
+        if settings.content_safety_key:
+            headers["Ocp-Apim-Subscription-Key"] = settings.content_safety_key
+        else:
+            bearer = _get_content_safety_bearer()
+            if bearer:
+                headers["Authorization"] = f"Bearer {bearer}"
+        if "Ocp-Apim-Subscription-Key" in headers or "Authorization" in headers:
+            try:
+                resp = httpx.post(
+                    f"{base_cs}/contentsafety/text:analyze?api-version=2024-09-01",
+                    headers=headers,
+                    json={
+                        "text": text_input[:4000],
+                        "categories": ["Hate", "SelfHarm", "Sexual", "Violence"],
+                        "outputType": "EightSeverityLevels",
+                    },
+                    timeout=5.0,
+                )
+                if resp.status_code == 200:
+                    cat_map = {
+                        "Hate": "hate",
+                        "SelfHarm": "self_harm",
+                        "Sexual": "sexual",
+                        "Violence": "violence",
+                    }
+                    for item in resp.json().get("categoriesAnalysis", []):
+                        key = cat_map.get(item.get("category", ""))
+                        sev = int(item.get("severity") or 0)
+                        if key:
+                            scores[key] = sev
+                            limit = max(1, int(thresholds.get(key, 4)))
+                            if sev >= limit and not triggered_category:
+                                triggered_category = key
+                if thresholds.get("prompt_attack", True) and not triggered_category:
+                    sh_resp = httpx.post(
+                        f"{base_cs}/contentsafety/text:shieldPrompt?api-version=2024-09-01",
+                        headers=headers,
+                        json={"userPrompt": text_input[:4000], "documents": []},
+                        timeout=5.0,
+                    )
+                    if sh_resp.status_code == 200:
+                        if sh_resp.json().get("userPromptAnalysis", {}).get("attackDetected"):
+                            scores["prompt_attack"] = 6
+                            triggered_category = "prompt_attack"
+            except httpx.HTTPError:
+                pass
+
+    # 2. Deterministic guardrail fallback (ensures offline/test determinism)
+    if not triggered_category:
+        for category, pattern in _UNSAFE_PATTERNS:
+            if category == "prompt_attack" and not thresholds.get("prompt_attack", True):
+                continue
+            if pattern.search(text_input):
+                scores[category] = 6
+                triggered_category = category
+                break
     status: Literal["passed", "blocked"] = "blocked" if triggered_category else "passed"
     return status, scores, triggered_category
 
@@ -958,7 +1160,10 @@ def run_playground_chat(
     requested_model = payload.model
     if requested_model == "auto":
         routing_decision = decide_model_route(
-            db, settings, RouterDecisionRequest(prompt=combined_prompt or "Hello")
+            db,
+            settings,
+            RouterDecisionRequest(prompt=combined_prompt or "Hello"),
+            organization_id=principal.organization_id,
         )
         selected_model_id = routing_decision.selected_model
     else:
@@ -972,7 +1177,9 @@ def run_playground_chat(
     if "*" not in allowed and selected_model_id not in allowed and requested_model not in allowed:
         raise HTTPException(403, f"Model '{selected_model_id}' is not in this organization's allowlist")
 
-    safety_status, safety_scores, triggered_cat = _evaluate_content_safety(combined_prompt)
+    safety_status, safety_scores, triggered_cat = _evaluate_content_safety(
+        combined_prompt, db=db, settings=settings
+    )
     now = datetime.now(UTC)
     if safety_status == "blocked":
         db.add(
@@ -1150,6 +1357,8 @@ def render_turnstile_exchange_policy(db: Session, settings: Settings) -> Turnsti
         '{"error":{"code":"credit_budget_exhausted",'
         '"message":"Monthly OpCo token credit allocation has been reached."}}'
     )
+    safety_cfg = _active_safety_thresholds(db)
+    shield_str = "true" if safety_cfg.get("prompt_attack", True) else "false"
     lines = [
         "<policies>",
         "  <inbound>",
@@ -1182,12 +1391,12 @@ def render_turnstile_exchange_policy(db: Session, settings: Settings) -> Turnsti
         "      </when>",
         "    </choose>",
         "    <!-- 2. Azure AI Content Safety Guardrail (Foundry Content Safety + Prompt Shields) -->",
-        '    <llm-content-safety backend-id="foundry-content-safety" shield-prompt="true">',
+        f'    <llm-content-safety backend-id="foundry-content-safety" shield-prompt="{shield_str}">',
         '      <categories output-type="EightSeverityLevels">',
-        '        <category name="Hate" threshold="1" />',
-        '        <category name="Violence" threshold="1" />',
-        '        <category name="Sexual" threshold="1" />',
-        '        <category name="SelfHarm" threshold="1" />',
+        f'        <category name="Hate" threshold="{safety_cfg.get("hate", 4)}" />',
+        f'        <category name="Violence" threshold="{safety_cfg.get("violence", 4)}" />',
+        f'        <category name="Sexual" threshold="{safety_cfg.get("sexual", 4)}" />',
+        f'        <category name="SelfHarm" threshold="{safety_cfg.get("self_harm", 4)}" />',
         "      </categories>",
         "    </llm-content-safety>",
         "    <!-- 3. Microsoft Decision-1 (model = auto) Dynamic Model Router -->",

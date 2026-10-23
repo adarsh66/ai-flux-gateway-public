@@ -283,6 +283,8 @@ export interface CreditBudget {
   utilization_pct: number;
   low_credit_alert: boolean;
   alert_threshold_pct: number;
+  rpm_limit?: number;
+  tpm_limit?: number;
   allowed_models: string[];
   product_name: string;
   channel: string;
@@ -296,6 +298,8 @@ export interface CreditBudgetUpdateInput {
   monthly_budget_usd: string;
   credit_allocation: string;
   alert_threshold_pct: number;
+  rpm_limit?: number;
+  tpm_limit?: number;
   allowed_models: string[];
   product_name: string;
   channel: string;
@@ -342,6 +346,9 @@ export interface CreditSummary {
   remaining_credits: string;
   utilization_pct: number;
   alert_threshold_pct: number;
+  rpm_limit?: number;
+  tpm_limit?: number;
+  allowed_models?: string[];
   low_credit_alert: boolean;
   hard_stop_enabled: boolean;
   total_requests: number;
