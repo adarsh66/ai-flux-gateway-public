@@ -36,27 +36,5 @@ resource "azapi_resource" "gateway_settings" {
   }
 }
 
-# Elevated privileges required for role assignment
-# Manual RBAC handoff also applies when admin-managed settings are enabled.
-/*
-resource "azurerm_role_definition" "gateway_settings" {
-  count       = var.dev_admin_settings_enabled ? 1 : 0
-  name        = "${local.prefix}-gateway-settings"
-  scope       = local.rg_id
-  description = "Read/write approved settings fragments only; no API policy, backend, role or service writes."
-  permissions {
-    actions = [
-      "Microsoft.ApiManagement/service/policyFragments/read",
-      "Microsoft.ApiManagement/service/policyFragments/write",
-    ]
-  }
-  assignable_scopes = [local.rg_id]
-}
-
-resource "azurerm_role_assignment" "gateway_settings" {
-  for_each           = local.gateway_settings_scopes
-  scope              = azapi_resource.gateway_settings[each.key].id
-  role_definition_id = azurerm_role_definition.gateway_settings[0].role_definition_resource_id
-  principal_id       = azurerm_user_assigned_identity.identity["api"].principal_id
-}
-*/
+# Fragment-scoped permissions are requested in central_rbac_handoff only.
+# Central administrators own the custom definition and its grants externally.

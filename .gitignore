@@ -28,6 +28,19 @@ test-results/
 .tools/
 # Customer deployment inputs, state backups, plans, and internal RBAC handoffs
 .deployment/
+.copilot-azure/
+# Local editor/workflow state and security-drift overrides are not source releases.
+.azure/
+.vscode/
+/infra/terraform/zz_runtime_rollout_override.tf.json
+*.tfplan.*
+.terraform.tfstate.lock.info
+crash.log
+crash.*.log
+*.pem
+*.key
+*.pfx
+*.p12
 services/usage-ingestion/wheels/
 services/usage-ingestion/gateway/
 build/

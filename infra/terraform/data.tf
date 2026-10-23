@@ -42,7 +42,7 @@ resource "azurerm_postgresql_flexible_server" "main" {
   storage_mb                    = 32768
   backup_retention_days         = 7
   geo_redundant_backup_enabled  = false
-  public_network_access_enabled = var.sql_public_network_access_enabled
+  public_network_access_enabled = var.postgres_bootstrap_public_ipv4 != null
   zone                          = "1"
   tags                          = local.tags
   authentication {
@@ -97,7 +97,7 @@ resource "azapi_resource" "function_storage" {
       defaultToOAuthAuthentication = true
       networkAcls = {
         defaultAction       = "Allow"
-        bypass              = var.turnstile_platform_enabled ? "AzureServices" : "None"
+        bypass              = var.turnstile_platform_enabled && !var.hybrid_private_data_enabled ? "AzureServices" : "None"
         ipRules             = []
         virtualNetworkRules = []
       }
@@ -129,7 +129,7 @@ resource "azurerm_eventhub_namespace" "main" {
   capacity                      = 1
   auto_inflate_enabled          = true
   maximum_throughput_units      = 2
-  public_network_access_enabled = true
+  public_network_access_enabled = !var.hybrid_private_data_enabled
   local_authentication_enabled  = false
   minimum_tls_version           = "1.2"
   tags                          = local.tags
@@ -142,6 +142,41 @@ resource "azurerm_eventhub" "token_usage" {
   namespace_id      = azurerm_eventhub_namespace.main[0].id
   partition_count   = 4
   message_retention = 7
+}
+
+resource "azurerm_private_dns_zone" "eventhub" {
+  count               = local.turnstile_stage && var.hybrid_private_data_enabled ? 1 : 0
+  name                = "privatelink.servicebus.windows.net"
+  resource_group_name = local.rg
+  tags                = local.tags
+}
+
+resource "azurerm_private_dns_zone_virtual_network_link" "eventhub" {
+  count                = local.turnstile_stage && var.hybrid_private_data_enabled ? 1 : 0
+  name                 = "${local.prefix}-eventhub"
+  private_dns_zone_id  = azurerm_private_dns_zone.eventhub[0].id
+  virtual_network_id   = azurerm_virtual_network.main[0].id
+  registration_enabled = false
+  tags                 = local.tags
+}
+
+resource "azurerm_private_endpoint" "eventhub" {
+  count               = local.turnstile_stage && var.hybrid_private_data_enabled ? 1 : 0
+  name                = "${local.prefix}-eventhub-pe"
+  location            = var.location
+  resource_group_name = local.rg
+  subnet_id           = azurerm_subnet.private_endpoints[0].id
+  tags                = local.tags
+  private_service_connection {
+    name                           = "${local.prefix}-eventhub"
+    private_connection_resource_id = azurerm_eventhub_namespace.main[0].id
+    subresource_names              = ["namespace"]
+    is_manual_connection           = false
+  }
+  private_dns_zone_group {
+    name                 = "data"
+    private_dns_zone_ids = [azurerm_private_dns_zone.eventhub[0].id]
+  }
 }
 
 resource "azurerm_api_management_logger" "eventhub" {
@@ -173,20 +208,27 @@ resource "azurerm_mssql_firewall_rule" "apps" {
   end_ip_address   = each.value
 }
 
-resource "azurerm_postgresql_flexible_server_firewall_rule" "operator" {
-  count            = local.postgres_stage && var.sql_public_network_access_enabled ? 1 : 0
-  name             = "reviewed-operator"
-  server_id        = azurerm_postgresql_flexible_server.main[0].id
-  start_ip_address = var.operator_ip
-  end_ip_address   = var.operator_ip
+# State-adoption only: keep empty normally. Imported out-of-band bootstrap rules
+# are destroyed by the reviewed containment plan; never use this for access.
+variable "postgres_bootstrap_rules_to_retire" {
+  type    = set(string)
+  default = []
 }
 
-resource "azurerm_postgresql_flexible_server_firewall_rule" "apps" {
-  for_each         = local.platform_stage && local.postgres_stage && var.sql_public_network_access_enabled ? var.sql_firewall_ipv4s : {}
-  name             = "app-${each.key}"
+resource "azurerm_postgresql_flexible_server_firewall_rule" "bootstrap_retired" {
+  for_each         = var.postgres_bootstrap_rules_to_retire
+  name             = each.value
   server_id        = azurerm_postgresql_flexible_server.main[0].id
-  start_ip_address = each.value
-  end_ip_address   = each.value
+  start_ip_address = "0.0.0.0"
+  end_ip_address   = "0.0.0.0"
+}
+
+resource "azurerm_postgresql_flexible_server_firewall_rule" "bootstrap" {
+  count            = local.postgres_stage && var.postgres_bootstrap_public_ipv4 != null ? 1 : 0
+  name             = "temporary-reviewed-dba-bootstrap"
+  server_id        = azurerm_postgresql_flexible_server.main[0].id
+  start_ip_address = var.postgres_bootstrap_public_ipv4
+  end_ip_address   = var.postgres_bootstrap_public_ipv4
 }
 
 locals {
@@ -205,5 +247,5 @@ resource "terraform_data" "sql_firewall_gate" {
       error_message = "Before public edge approval, capture all platform possible outbound IPv4 addresses and add reviewed exact-address SQL firewall rules in a second platform plan."
     }
   }
-  depends_on = [azurerm_mssql_firewall_rule.apps, azurerm_postgresql_flexible_server_firewall_rule.apps]
+  depends_on = [azurerm_mssql_firewall_rule.apps]
 }

@@ -15,7 +15,7 @@ locals {
   platform_stage      = contains(["platform", "edge-bootstrap", "edge-candidate", "public-edge"], var.deployment_stage)
   prerequisites_stage = contains(["prerequisites", "platform", "edge-bootstrap", "edge-candidate", "public-edge"], var.deployment_stage)
   sql_stage           = local.prerequisites_stage && var.sql_enabled
-  mssql_stage         = local.sql_stage && var.database_engine == "mssql"
+  mssql_stage         = local.sql_stage && (var.database_engine == "mssql" || var.retain_legacy_mssql)
   postgres_stage      = local.sql_stage && var.database_engine == "postgresql"
   turnstile_stage     = local.prerequisites_stage && var.turnstile_platform_enabled
   public_edge_stage   = var.deployment_stage == "public-edge"
@@ -39,7 +39,7 @@ resource "terraform_data" "approval" {
     }
     precondition {
       condition     = (!local.platform_stage && !var.dev_openai_inference_enabled && !var.dev_unified_inference_enabled) || var.manual_rbac_verified
-      error_message = "Elevated privileges required for role assignment: an authorized administrator must provision and verify the documented manual RBAC grants before runtime or inference rollout."
+      error_message = "Runtime activation requires verified central-team grants. Resource/identity provisioning does not require authorization writes; use the guarded provisioning plan, not a full prerequisite apply on existing state."
     }
     precondition {
       condition     = data.azurerm_client_config.current.subscription_id == var.subscription_id
