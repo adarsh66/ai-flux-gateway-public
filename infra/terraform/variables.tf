@@ -45,9 +45,19 @@ variable "deployment_approved" {
 }
 
 variable "manual_rbac_verified" {
-  description = "Operator attests an authorized administrator provisioned and verified the documented manual RBAC grants before runtime/inference or edge rollout. Not needed for prerequisites."
+  description = "Evidence-backed runtime activation attestation after central-team grants. Never set merely to provision resources/identities. This stack never owns role assignments or definitions."
   type        = bool
   default     = false
+}
+
+variable "retain_legacy_mssql" {
+  description = "Keep existing MSSQL and its private endpoint while provisioning PostgreSQL before an independently reviewed runtime/data cutover. Does not activate workloads."
+  type        = bool
+  default     = false
+  validation {
+    condition     = !var.retain_legacy_mssql || (var.sql_enabled && var.database_engine == "postgresql" && var.hybrid_private_data_enabled)
+    error_message = "Legacy MSSQL retention is only for a private PostgreSQL transition with SQL enabled."
+  }
 }
 
 variable "deployment_stage" {
@@ -133,6 +143,27 @@ variable "sql_public_network_access_enabled" {
   default     = true
 }
 
+variable "postgres_bootstrap_public_ipv4" {
+  description = "Temporary PostgreSQL-only DBA bootstrap exception: one reviewed IPv4, or null to disable public access and remove its firewall rule. Never enables MSSQL or application firewall rules."
+  type        = string
+  default     = null
+  validation {
+    condition = var.postgres_bootstrap_public_ipv4 == null ? true : (
+      can(cidrnetmask("${var.postgres_bootstrap_public_ipv4}/32")) &&
+      !contains(["0.0.0.0", "255.255.255.255"], var.postgres_bootstrap_public_ipv4)
+    )
+    error_message = "PostgreSQL bootstrap requires one exact IPv4 (not a CIDR/range, IPv6, or Azure-services wildcard)."
+  }
+  validation {
+    condition = var.postgres_bootstrap_public_ipv4 == null ? true : (
+      var.database_engine == "postgresql" && var.sql_enabled &&
+      var.deployment_stage == "prerequisites" && var.hybrid_private_data_enabled &&
+      !var.sql_public_network_access_enabled && !var.local_auth_enabled
+    )
+    error_message = "Temporary PostgreSQL access is schema-only in prerequisites stage, with hybrid private data, MSSQL public-disabled, and local login disabled."
+  }
+}
+
 variable "hybrid_private_data_enabled" {
   description = "Approved private endpoints for SQL, Key Vault and Function blob/queue/table storage only; public apps/APIM/Foundry remain unchanged."
   type        = bool
@@ -156,6 +187,66 @@ variable "private_sql_connectivity_accepted" {
   default     = false
 }
 
+variable "private_api_enabled" {
+  description = "Keep the API public interface and SCM closed; portals use VNet integration and their same-origin reverse proxy. Existing API private endpoint/DNS must already be verified."
+  type        = bool
+  default     = false
+  validation {
+    condition     = !var.private_api_enabled || var.hybrid_private_data_enabled
+    error_message = "A private API requires the reviewed private-data VNet and App Service integration subnet."
+  }
+}
+
+variable "local_auth_enabled" {
+  description = "Enable PostgreSQL email/password login for separately seeded users, with exactly one JWT signing-secret source."
+  type        = bool
+  default     = false
+  validation {
+    condition     = !var.local_auth_enabled || (var.database_engine == "postgresql" && ((try(var.local_auth.jwt_secret_uri, "") != "") != (var.local_jwt_secret != "")))
+    error_message = "Production local authentication requires PostgreSQL and exactly one JWT source: a Key Vault URI or the sensitive direct signing secret."
+  }
+  validation {
+    condition     = !var.local_auth_enabled || !var.mise_sidecar_enabled
+    error_message = "Local portal login must not enable the Entra authentication sidecar."
+  }
+}
+
+variable "local_auth" {
+  description = "Optional Key Vault JWT reference. Legacy bootstrap metadata is accepted for compatibility but is not injected into production runtime."
+  type = object({
+    jwt_secret_uri                  = string
+    bootstrap_admin_password_uri    = optional(string)
+    bootstrap_customer_password_uri = optional(string)
+    bootstrap_admin_email           = optional(string)
+    bootstrap_customer_email        = optional(string)
+    bootstrap_customer_org          = optional(string)
+  })
+  default = null
+  validation {
+    condition = var.local_auth == null ? true : (
+      can(regex("^https://[a-zA-Z0-9-]+\\.vault\\.azure\\.net/secrets/[a-zA-Z0-9-]+/?$", var.local_auth.jwt_secret_uri))
+    )
+    error_message = "The JWT Key Vault reference must be a versionless Azure Key Vault secret URI."
+  }
+}
+
+variable "local_jwt_secret" {
+  description = "Temporary direct API JWT signing secret. Supply via TF_VAR_local_jwt_secret, never a committed file. Sensitive output is redacted, but App Service settings, Terraform state and saved plans contain the value."
+  type        = string
+  sensitive   = true
+  nullable    = false
+  default     = ""
+  validation {
+    condition = var.local_jwt_secret == "" || (
+      length(var.local_jwt_secret) >= 32 &&
+      length(distinct(split("", var.local_jwt_secret))) >= 16 &&
+      !startswith(var.local_jwt_secret, "@Microsoft.KeyVault(") &&
+      var.local_jwt_secret != "turnstile-local-db-signing-key-change-me"
+    )
+    error_message = "Direct JWT signing requires a generated secret of at least 32 characters and 16 distinct characters, not a placeholder or Key Vault expression."
+  }
+}
+
 variable "gateway_origin_hostname" {
   description = "Candidate public HTTPS gateway hostname used to build/configure the platform before edge release; not a live endpoint or release attestation."
   type        = string
@@ -167,7 +258,7 @@ variable "gateway_origin_hostname" {
 }
 
 variable "entra" {
-  description = "Existing registrations only; no Entra tenant/application is created."
+  description = "Existing portal registrations for Entra login only; local login needs no registration. Azure managed identities remain required."
   default     = null
   type = object({
     audience            = string
@@ -176,7 +267,7 @@ variable "entra" {
     bootstrap_object_id = string
   })
   validation {
-    condition = contains(["platform", "edge-bootstrap", "edge-candidate", "public-edge"], var.deployment_stage) ? (
+    condition = contains(["platform", "edge-bootstrap", "edge-candidate", "public-edge"], var.deployment_stage) && !var.local_auth_enabled ? (
       var.entra == null ? false : (
         length(trimspace(var.entra.audience)) > 0 &&
         length(trimspace(var.entra.client_id)) > 0 &&
@@ -184,7 +275,7 @@ variable "entra" {
         length(trimspace(var.entra.bootstrap_object_id)) > 0
       )
     ) : true
-    error_message = "The platform stages require valid existing Entra audience, client, tenant, and bootstrap object IDs."
+    error_message = "Platform stages using Entra portal login require existing audience, client, tenant, and bootstrap object IDs."
   }
 }
 

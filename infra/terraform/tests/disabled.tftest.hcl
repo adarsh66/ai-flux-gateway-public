@@ -774,7 +774,7 @@ run "turnstile_hybrid_private_postgres_endpoint" {
     }
   }
   assert {
-    condition     = !azurerm_postgresql_flexible_server.main[0].public_network_access_enabled && azurerm_private_dns_zone.data["sql"].name == "privatelink.postgres.database.azure.com" && anytrue([for rule in azurerm_network_security_group.app_service_integration[0].security_rule : rule.access == "Allow" && toset(rule.destination_port_ranges) == toset(["5432", "443"])])
+    condition     = !azurerm_postgresql_flexible_server.main[0].public_network_access_enabled && azurerm_private_dns_zone.data["postgres"].name == "privatelink.postgres.database.azure.com" && anytrue([for rule in azurerm_network_security_group.app_service_integration[0].security_rule : rule.access == "Allow" && toset(rule.destination_port_ranges) == toset(["5432", "443"])])
     error_message = "Hybrid PostgreSQL mode must use privatelink.postgres.database.azure.com and allow outbound port 5432 to the private endpoint subnet."
   }
 }

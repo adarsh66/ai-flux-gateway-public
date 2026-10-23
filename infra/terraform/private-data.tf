@@ -1,15 +1,14 @@
 locals {
-  private_data_services = local.hybrid_data_stage ? {
-    sql = var.database_engine == "postgresql" ? (
-      { resource_id = azurerm_postgresql_flexible_server.main[0].id, group = "postgresqlServer", zone = "privatelink.postgres.database.azure.com" }
-      ) : (
-      { resource_id = azurerm_mssql_server.main[0].id, group = "sqlServer", zone = "privatelink.database.windows.net" }
-    )
+  private_data_services = local.hybrid_data_stage ? merge({
     vault = { resource_id = azurerm_key_vault.main.id, group = "vault", zone = "privatelink.vaultcore.azure.net" }
     blob  = { resource_id = azapi_resource.function_storage[0].id, group = "blob", zone = "privatelink.blob.core.windows.net" }
     queue = { resource_id = azapi_resource.function_storage[0].id, group = "queue", zone = "privatelink.queue.core.windows.net" }
     table = { resource_id = azapi_resource.function_storage[0].id, group = "table", zone = "privatelink.table.core.windows.net" }
-  } : {}
+    }, local.mssql_stage ? {
+    sql = { resource_id = azurerm_mssql_server.main[0].id, group = "sqlServer", zone = "privatelink.database.windows.net" }
+    } : {}, local.postgres_stage ? {
+    postgres = { resource_id = azurerm_postgresql_flexible_server.main[0].id, group = "postgresqlServer", zone = "privatelink.postgres.database.azure.com" }
+  } : {}) : {}
 }
 
 resource "azurerm_subnet" "private_endpoints" {
@@ -48,7 +47,7 @@ resource "azurerm_network_security_group" "app_service_integration" {
     access                     = "Allow"
     protocol                   = "Tcp"
     source_port_range          = "*"
-    destination_port_ranges    = var.database_engine == "postgresql" ? ["5432", "443"] : ["1433", "443"]
+    destination_port_ranges    = var.retain_legacy_mssql ? ["1433", "5432", "443"] : (var.database_engine == "postgresql" ? ["5432", "443"] : ["1433", "443"])
     source_address_prefix      = var.network.app_service_integration_subnet
     destination_address_prefix = var.network.private_endpoint_subnet
   }
