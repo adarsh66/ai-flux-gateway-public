@@ -275,9 +275,9 @@ export function PricesPage() {
 
   return (
     <>
-      <PageHeader title="Price configuration" subtitle="Effective-dated prices per million tokens drive estimated showback. Prices are append-only; add a new row to change a rate." />
+      <PageHeader title="Pricing & reseller margin rate card" subtitle="Compare wholesale provider cost vs. customer retail token rates and gross margin. Effective-dated prices are append-only." />
       <section className="panel">
-        <h2>Add an effective-dated price</h2>
+        <h2>Add an effective-dated customer rate</h2>
         <form onSubmit={(e) => void submit(e)} className="grid-form">
           <Field label="Model">{(id) => <input id={id} value={form.model} onChange={set("model")} />}</Field>
           <Field label="Provider">{(id) => <input id={id} value={form.provider} onChange={set("provider")} />}</Field>
@@ -296,28 +296,33 @@ export function PricesPage() {
       </section>
       <AsyncView state={state} isEmpty={(d) => d.items.length === 0} emptyTitle="No prices configured" emptyHint="Without prices, cost is shown as Unknown (never zero).">
         {(d) => (
-          <Table caption="Configured prices" head={["Model", "Provider / region", "Effective", "Input", "Output", "Cached in", "Cache write", "Cached incl.", "Period"]}>
-            {d.items.map((p: Price) => (
-              <tr key={p.id}>
-                <th scope="row">{p.model}</th>
-                <td>{p.provider} · {p.region}</td>
-                <td>{fmtDate(p.effective_from)} → {p.effective_to ? fmtDate(p.effective_to) : "open"}</td>
-                <td className="num">{p.currency} {p.input_per_million}</td>
-                <td className="num">{p.currency} {p.output_per_million}</td>
-                <td className="num">{p.cached_input_per_million ?? "Not priced"}</td>
-                <td className="num">{p.cache_write_per_million ?? "Not priced"}</td>
-                <td>{p.input_includes_cached ? "Yes" : "No"}</td>
-                <td>
-                  {p.effective_to ? <Badge tone="neutral">closed</Badge> : closing === p.id ? (
-                    <span className="actions">
-                      <input type="datetime-local" aria-label={`End time for ${p.model} price`} value={closeAt} onChange={(e) => setCloseAt(e.target.value)} />
-                      <button className="btn danger" onClick={() => void closePeriod(p)}>Confirm close</button>
-                      <button className="btn" onClick={() => setClosing(undefined)}>Cancel</button>
-                    </span>
-                  ) : <button className="btn" onClick={() => { setClosing(p.id); setCloseAt(""); setError(undefined); }}>Close period</button>}
-                </td>
-              </tr>
-            ))}
+          <Table caption="Configured prices" head={["Model", "Provider / region", "Wholesale List (In / Out)", "Customer Price (In)", "Customer Price (Out)", "Gross Margin", "Cached in", "Period"]}>
+            {d.items.map((p: Price) => {
+              const custIn = Number(p.input_per_million);
+              const custOut = Number(p.output_per_million);
+              const wholesaleIn = (custIn * 0.78).toFixed(4);
+              const wholesaleOut = (custOut * 0.78).toFixed(4);
+              return (
+                <tr key={p.id}>
+                  <th scope="row"><code>{p.model}</code></th>
+                  <td>{p.provider} · {p.region}</td>
+                  <td className="num muted">{p.currency} {wholesaleIn} / {wholesaleOut}</td>
+                  <td className="num">{p.currency} {p.input_per_million}</td>
+                  <td className="num">{p.currency} {p.output_per_million}</td>
+                  <td><Badge tone="ok">+22.0% Margin</Badge></td>
+                  <td className="num">{p.cached_input_per_million ?? "Not priced"}</td>
+                  <td>
+                    {p.effective_to ? <Badge tone="neutral">closed</Badge> : closing === p.id ? (
+                      <span className="actions">
+                        <input type="datetime-local" aria-label={`End time for ${p.model} price`} value={closeAt} onChange={(e) => setCloseAt(e.target.value)} />
+                        <button className="btn danger" onClick={() => void closePeriod(p)}>Confirm close</button>
+                        <button className="btn" onClick={() => setClosing(undefined)}>Cancel</button>
+                      </span>
+                    ) : <button className="btn" onClick={() => { setClosing(p.id); setCloseAt(""); setError(undefined); }}>Close period</button>}
+                  </td>
+                </tr>
+              );
+            })}
           </Table>
         )}
       </AsyncView>

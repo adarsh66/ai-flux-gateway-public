@@ -116,56 +116,8 @@ export function ModelGardenPage() {
     <>
       <PageHeader
         title="Model catalog & pricing"
-        subtitle="Unified catalog of deployed live endpoints and onboarding-ready frontier models across OpenAI, Anthropic Claude, and DeepSeek with Microsoft Decision-1 auto-routing."
+        subtitle="Unified catalog of deployed live endpoints and onboarding-ready frontier models across OpenAI, Anthropic Claude, and DeepSeek with intelligent auto-routing."
       />
-      <section className="panel" aria-labelledby="router-sim-heading">
-        <h2 id="router-sim-heading">Microsoft Decision-1 (model = auto) route simulator</h2>
-        <p className="muted">
-          Preview how the gateway’s Decision-1 classifier routes <code>&quot;model&quot;: &quot;auto&quot;</code>{" "}
-          requests across your enabled providers.
-        </p>
-        <form onSubmit={(e) => void testRouter(e)} className="form-row">
-          <Field label="Sample prompt">
-            {(id) => (
-              <input
-                id={id}
-                value={prompt}
-                onChange={(e) => setPrompt(e.target.value)}
-                maxLength={1000}
-                required
-              />
-            )}
-          </Field>
-          <Field label="Routing strategy">
-            {(id) => (
-              <select
-                id={id}
-                value={strategy}
-                onChange={(e) => setStrategy(e.target.value as RouterStrategy)}
-              >
-                <option value="microsoft-decision-1">Microsoft Decision-1 (Intent + Quality/Cost)</option>
-                <option value="cost-optimized">Cost-optimized</option>
-                <option value="latency-optimized">Latency-optimized</option>
-                <option value="quality-first">Quality-first</option>
-              </select>
-            )}
-          </Field>
-          <button className="btn primary" disabled={routingBusy || !prompt.trim()}>
-            {routingBusy ? "Evaluating…" : "Simulate Auto Route"}
-          </button>
-        </form>
-        {routingError && <ErrorState message={routingError} />}
-        {decision && (
-          <div role="status" className="notice">
-            <strong>Selected model: {decision.display_name}</strong> ({decision.selected_model} ·{" "}
-            {decision.vendor}) · Category: <code>{decision.category}</code> · Confidence:{" "}
-            {Math.round(decision.confidence * 100)}% · Est. Pricing: ${decision.estimated_input_per_million}/1M
-            input, ${decision.estimated_output_per_million}/1M output.
-            <br />
-            <span className="muted">{decision.reason}</span>
-          </div>
-        )}
-      </section>
 
       <AsyncView
         state={state}
@@ -306,6 +258,55 @@ export function ModelGardenPage() {
                   </li>
                 ))}
               </ul>
+
+              <details className="panel" open={Boolean(decision)}>
+                <summary style={{ cursor: "pointer", fontWeight: 600, fontSize: "0.88rem", color: "var(--ink-dim)" }}>
+                  Auto-routing inspector (preview how <code>model: &quot;auto&quot;</code> selects an endpoint)
+                </summary>
+                <div style={{ marginTop: "0.85rem" }}>
+                  <form onSubmit={(e) => void testRouter(e)} className="form-row">
+                    <Field label="Sample prompt">
+                      {(id) => (
+                        <input
+                          id={id}
+                          value={prompt}
+                          onChange={(e) => setPrompt(e.target.value)}
+                          maxLength={1000}
+                          required
+                        />
+                      )}
+                    </Field>
+                    <Field label="Routing preference">
+                      {(id) => (
+                        <select
+                          id={id}
+                          value={strategy}
+                          onChange={(e) => setStrategy(e.target.value as RouterStrategy)}
+                        >
+                          <option value="microsoft-decision-1">Balanced (Intent + Quality/Cost)</option>
+                          <option value="cost-optimized">Cost-optimized</option>
+                          <option value="latency-optimized">Latency-optimized</option>
+                          <option value="quality-first">Quality-first</option>
+                        </select>
+                      )}
+                    </Field>
+                    <button className="btn primary" disabled={routingBusy || !prompt.trim()}>
+                      {routingBusy ? "Evaluating…" : "Simulate Auto Route"}
+                    </button>
+                  </form>
+                  {routingError && <ErrorState message={routingError} />}
+                  {decision && (
+                    <div role="status" className="notice">
+                      <strong>Selected model: {decision.display_name}</strong> ({decision.selected_model} ·{" "}
+                      {decision.vendor}) · Category: <code>{decision.category}</code> · Confidence:{" "}
+                      {Math.round(decision.confidence * 100)}% · Est. Pricing: ${decision.estimated_input_per_million}/1M
+                      input, ${decision.estimated_output_per_million}/1M output.
+                      <br />
+                      <span className="muted">{decision.reason}</span>
+                    </div>
+                  )}
+                </div>
+              </details>
             </>
           );
         }}
@@ -1194,6 +1195,53 @@ export function AdminModelRouterPage() {
   );
   const [simResults, setSimResults] = useState<Record<string, RouterDecision> | null>(null);
   const [simBusy, setSimBusy] = useState(false);
+  const [newCategory, setNewCategory] = useState("");
+  const [newDesc, setNewDesc] = useState("");
+  const [newKeywords, setNewKeywords] = useState("");
+  const [newPreferred, setNewPreferred] = useState("gpt-5.4-mini");
+  const [newFallback, setNewFallback] = useState("claude-haiku-4-5");
+  const [addingRule, setAddingRule] = useState(false);
+
+  async function addCustomCategoryRule(e: FormEvent) {
+    e.preventDefault();
+    if (!routerState.data || !newCategory.trim() || !newDesc.trim()) return;
+    setAddingRule(true);
+    setError(undefined);
+    setNotice(undefined);
+    try {
+      const kws = newKeywords
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean);
+      const updatedRules = [
+        ...routerState.data.rules.filter((r) => r.category !== newCategory.trim()),
+        {
+          category: newCategory.trim(),
+          description: newDesc.trim(),
+          keywords: kws.length ? kws : [newCategory.trim()],
+          preferred_model: newPreferred,
+          fallback_model: newFallback,
+        },
+      ];
+      await api.saveAdminModelRouter({
+        enabled: routerState.data.enabled,
+        strategy: routerState.data.strategy,
+        decision_endpoint: routerState.data.decision_endpoint,
+        default_model: routerState.data.default_model,
+        candidate_models: routerState.data.candidate_models,
+        rules: updatedRules,
+      });
+      setNotice(`Saved Decision-1 classifier category '${newCategory.trim()}' -> ${newPreferred}.`);
+      setNewCategory("");
+      setNewDesc("");
+      setNewKeywords("");
+      setVersion((v) => v + 1);
+    } catch (err) {
+      setError(err instanceof ApiError ? err.detail : "Could not save custom routing category.");
+    } finally {
+      setAddingRule(false);
+    }
+  }
 
   async function changeStrategy(nextStrategy: RouterStrategy) {
     if (!routerState.data) return;
@@ -1372,47 +1420,101 @@ export function AdminModelRouterPage() {
                 ))}
               </Table>
 
-              <div style={{ marginTop: "1rem", paddingTop: "1rem", borderTop: "1px solid var(--line)" }}>
-                <h2>Compare all 4 routing strategies side-by-side</h2>
-                <form onSubmit={(e) => void compareAllStrategies(e)} className="form-row">
-                  <Field label="Test prompt across all 4 strategies">
-                    {(id) => (
-                      <input
-                        id={id}
-                        value={simPrompt}
-                        onChange={(e) => setSimPrompt(e.target.value)}
-                        required
-                      />
-                    )}
-                  </Field>
-                  <button className="btn primary" type="submit" disabled={simBusy}>
-                    {simBusy ? "Comparing…" : "Compare 4 Strategies"}
-                  </button>
-                </form>
-                {simResults && (
-                  <Table
-                    caption="Side-by-side strategy comparison"
-                    head={["Strategy", "Selected Model", "Vendor", "Category", "Est. Input / Output ($/1M)", "Decision-1 Rationale"]}
-                  >
-                    {(["microsoft-decision-1", "cost-optimized", "latency-optimized", "quality-first"] as RouterStrategy[]).map((sKey) => {
-                      const d = simResults[sKey];
-                      if (!d) return null;
-                      return (
-                        <tr key={sKey}>
-                          <td><code>{sKey}</code></td>
-                          <td><Badge tone="ok">{d.selected_model}</Badge></td>
-                          <td>{d.vendor}</td>
-                          <td><code>{d.category}</code></td>
-                          <td style={{ fontFamily: "var(--font-mono)", whiteSpace: "nowrap" }}>
-                            ${d.estimated_input_per_million} / ${d.estimated_output_per_million}
-                          </td>
-                          <td className="muted">{d.reason}</td>
+              <details className="gateway-advanced" style={{ borderTop: "1px solid var(--line)", paddingTop: "0.75rem" }}>
+                <summary style={{ fontSize: "0.86rem", color: "var(--ink-dim)" }}>
+                  Advanced: Decision-1 classifier criteria (<code>choice</code> / <code>noul</code> / <code>score</code>), custom category editor &amp; 4-strategy simulator
+                </summary>
+                <div style={{ marginTop: "0.85rem", display: "grid", gap: "1rem" }}>
+                  <div>
+                    <h2>Configured Decision-1 choice classifier categories ({cfg.rules.length})</h2>
+                    <p className="muted">
+                      Each row maps to a <code>ChoiceQuestion.criteria[category]</code> entry evaluated by{" "}
+                      <code>{cfg.decision_endpoint}</code> alongside <code>noul</code> (deep-reasoning boolean) and{" "}
+                      <code>score</code> (0–3 complexity rubric).
+                    </p>
+                    <Table
+                      caption="Decision-1 intent routing rules"
+                      head={["Category ID", "Classifier Criteria Description", "Preferred Model", "Fallback Model", "Signal Keywords"]}
+                    >
+                      {cfg.rules.map((r) => (
+                        <tr key={r.category}>
+                          <td><code>{r.category}</code></td>
+                          <td>{r.description}</td>
+                          <td><Badge tone="ok">{r.preferred_model}</Badge></td>
+                          <td><code>{r.fallback_model}</code></td>
+                          <td>{r.keywords.slice(0, 6).join(", ")}</td>
                         </tr>
-                      );
-                    })}
-                  </Table>
-                )}
-              </div>
+                      ))}
+                    </Table>
+                    <form onSubmit={(e) => void addCustomCategoryRule(e)} className="form-row" style={{ marginTop: "0.75rem" }}>
+                      <Field label="Category key (e.g. legal_compliance)">
+                        {(id) => <input id={id} value={newCategory} onChange={(e) => setNewCategory(e.target.value)} required />}
+                      </Field>
+                      <Field label="Classifier criteria description">
+                        {(id) => <input id={id} value={newDesc} onChange={(e) => setNewDesc(e.target.value)} required />}
+                      </Field>
+                      <Field label="Signal keywords (comma-separated)">
+                        {(id) => <input id={id} value={newKeywords} onChange={(e) => setNewKeywords(e.target.value)} placeholder="audit, regulation, mas" />}
+                      </Field>
+                      <Field label="Primary model">
+                        {(id) => (
+                          <input id={id} value={newPreferred} onChange={(e) => setNewPreferred(e.target.value)} required />
+                        )}
+                      </Field>
+                      <Field label="Fallback model">
+                        {(id) => (
+                          <input id={id} value={newFallback} onChange={(e) => setNewFallback(e.target.value)} required />
+                        )}
+                      </Field>
+                      <button className="btn primary" type="submit" disabled={addingRule}>
+                        {addingRule ? "Saving…" : "Save Category Rule"}
+                      </button>
+                    </form>
+                  </div>
+
+                  <div style={{ paddingTop: "0.75rem", borderTop: "1px solid var(--line)" }}>
+                    <h2>Compare all 4 routing strategies side-by-side</h2>
+                    <form onSubmit={(e) => void compareAllStrategies(e)} className="form-row">
+                      <Field label="Test prompt across all 4 strategies">
+                        {(id) => (
+                          <input
+                            id={id}
+                            value={simPrompt}
+                            onChange={(e) => setSimPrompt(e.target.value)}
+                            required
+                          />
+                        )}
+                      </Field>
+                      <button className="btn primary" type="submit" disabled={simBusy}>
+                        {simBusy ? "Comparing…" : "Compare 4 Strategies"}
+                      </button>
+                    </form>
+                    {simResults && (
+                      <Table
+                        caption="Side-by-side strategy comparison"
+                        head={["Strategy", "Selected Model", "Vendor", "Category", "Est. Input / Output ($/1M)", "Decision-1 Rationale"]}
+                      >
+                        {(["microsoft-decision-1", "cost-optimized", "latency-optimized", "quality-first"] as RouterStrategy[]).map((sKey) => {
+                          const d = simResults[sKey];
+                          if (!d) return null;
+                          return (
+                            <tr key={sKey}>
+                              <td><code>{sKey}</code></td>
+                              <td><Badge tone="ok">{d.selected_model}</Badge></td>
+                              <td>{d.vendor}</td>
+                              <td><code>{d.category}</code></td>
+                              <td style={{ fontFamily: "var(--font-mono)", whiteSpace: "nowrap" }}>
+                                ${d.estimated_input_per_million} / ${d.estimated_output_per_million}
+                              </td>
+                              <td className="muted">{d.reason}</td>
+                            </tr>
+                          );
+                        })}
+                      </Table>
+                    )}
+                  </div>
+                </div>
+              </details>
             </section>
           );
         }}

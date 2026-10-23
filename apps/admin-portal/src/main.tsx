@@ -19,17 +19,17 @@ import {
 } from "@aiflux/ui";
 
 const nav: NavItem[] = [
-  { to: "/budgets", label: "OpCo budgets & FinOps", section: "FinOps & Routing" },
-  { to: "/model-router", label: "Model router & catalog", section: "FinOps & Routing" },
-  { to: "/prices", label: "Rate card & pricing", section: "FinOps & Routing" },
-  { to: "/usage", label: "Showback", section: "FinOps & Routing" },
-  { to: "/content-safety", label: "Content safety", section: "Guardrails & Traffic" },
-  { to: "/settings", label: "Gateway settings", section: "Guardrails & Traffic" },
-  { to: "/safety", label: "Safety events", section: "Guardrails & Traffic" },
-  { to: "/subscriptions", label: "Subscriptions", section: "Tenants & Access" },
-  { to: "/organizations", label: "Organizations", section: "Tenants & Access" },
-  { to: "/local-users", label: "Portal users (DB)", section: "Tenants & Access" },
-  { to: "/members", label: "Entra directory", section: "Tenants & Access" },
+  { to: "/budgets", label: "Credit Quotas", section: "Commercial & FinOps" },
+  { to: "/usage", label: "Usage & Chargeback", section: "Commercial & FinOps" },
+  { to: "/prices", label: "Pricing & Margins", section: "Commercial & FinOps" },
+  { to: "/model-router", label: "Models & Auto-Router", section: "AI Gateway & Routing" },
+  { to: "/settings", label: "Traffic & Rate Limits", section: "AI Gateway & Routing" },
+  { to: "/content-safety", label: "Content Guardrails", section: "AI Gateway & Routing" },
+  { to: "/safety", label: "Guardrail Logs", section: "AI Gateway & Routing" },
+  { to: "/subscriptions", label: "Subscriptions", section: "Customers & Access" },
+  { to: "/organizations", label: "Customer Orgs", section: "Customers & Access" },
+  { to: "/local-users", label: "Portal Accounts", section: "Customers & Access" },
+  { to: "/members", label: "SSO Directory", section: "Customers & Access" },
 ];
 
 createRoot(document.getElementById("root")!).render(
