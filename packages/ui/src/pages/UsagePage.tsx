@@ -20,7 +20,7 @@ function initialViewport(days: number): Viewport {
   return { start: end - days * 24 * 60 * MINUTE_MS, end };
 }
 
-export function UsagePage({ admin = false }: { admin?: boolean }) {
+export function UsagePage({ admin = false, embedded = false }: { admin?: boolean; embedded?: boolean }) {
   const { api } = useSession();
   const [days, setDays] = useState(30);
   const [subscriptionId, setSubscriptionId] = useState("");
@@ -132,15 +132,17 @@ export function UsagePage({ admin = false }: { admin?: boolean }) {
 
   return (
     <>
-      <PageHeader
-        title={admin ? "Cross-organization showback" : "Usage & estimated cost"}
-        subtitle="Costs are estimates based on configured list prices. Actual charges may differ due to Singtel-specific discounts. This is not an invoice."
-        actions={<button className="btn" onClick={() => void exportCsv()} disabled={exporting || !modelsReady}>{exporting ? "Preparing…" : "Export CSV"}</button>}
-      />
+      {!embedded && (
+        <PageHeader
+          title={admin ? "Cross-organization showback" : "Usage & estimated cost"}
+          subtitle="Costs are estimates based on configured list prices. Actual charges may differ due to Singtel-specific discounts. This is not an invoice."
+          actions={<button className="btn" onClick={() => void exportCsv()} disabled={exporting || !modelsReady}>{exporting ? "Preparing…" : "Export CSV"}</button>}
+        />
+      )}
       {exportError && <ErrorState message={exportError} />}
       {models.error && <ErrorState message={`Could not load usage models: ${models.error}`} onRetry={models.reload} />}
       {modelNotice && <p role="status" className="notice">{modelNotice}</p>}
-      <div className="filters">
+      <div className="filters" style={embedded ? { display: "flex", alignItems: "flex-end", justifyContent: "space-between", flexWrap: "wrap", gap: "0.85rem" } : undefined}>
         <Field label="Period">{(id) => (
           <select id={id} value={days} onChange={(e) => { const next = Number(e.target.value); setModelNotice(""); setDays(next); setOffset(0); resetViewport(next); }}>
             {DAY_OPTIONS.map((d) => <option key={d} value={d}>Last {d} day{d > 1 ? "s" : ""}</option>)}
@@ -168,6 +170,13 @@ export function UsagePage({ admin = false }: { admin?: boolean }) {
             {availableModels?.map((name) => <option key={name} value={name}>{name}</option>)}
           </select>
         )}</Field>
+        {embedded && (
+          <div style={{ marginLeft: "auto", paddingBottom: "0.6rem" }}>
+            <button className="btn" onClick={() => void exportCsv()} disabled={exporting || !modelsReady}>
+              {exporting ? "Preparing…" : "Export CSV"}
+            </button>
+          </div>
+        )}
       </div>
       <section className="usage-chart-section" aria-labelledby="usage-chart-heading">
         <div className="usage-chart-head">

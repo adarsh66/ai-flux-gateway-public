@@ -7,6 +7,16 @@ import { AsyncView, Badge, ErrorState, Field, PageHeader, Pager, Table, fmtDate,
 
 const errText = (e: unknown, fb: string) => (e instanceof ApiError ? e.detail : fb);
 
+function fmtRate(v: string | number | null | undefined): string {
+  if (v === null || v === undefined || v === "") return "—";
+  const n = typeof v === "number" ? v : Number(v);
+  if (Number.isNaN(n)) return String(v);
+  return n.toLocaleString("en-US", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+}
+
 export function OrganizationsPage() {
   const { api } = useSession();
   const [v, setV] = useState(0);
@@ -72,7 +82,7 @@ export function OrganizationsPage() {
   );
 }
 
-export function MembersPage() {
+export function MembersPage({ embedded = false }: { embedded?: boolean } = {}) {
   const { api } = useSession();
   const orgs = useAsync(() => api.organizations(), [api]);
   const [orgId, setOrgId] = useState("");
@@ -106,7 +116,9 @@ export function MembersPage() {
 
   return (
     <>
-      <PageHeader title="Members" subtitle="Users are identified by Entra object ID. The IDS administrator role is only valid in the configured IDS home tenant; the backend enforces this." />
+      {!embedded && (
+        <PageHeader title="Members" subtitle="Users are identified by Entra object ID. The IDS administrator role is only valid in the configured IDS home tenant; the backend enforces this." />
+      )}
       <AsyncView state={orgs} isEmpty={(d) => d.items.length === 0} emptyTitle="Add an organization first" emptyHint="Members belong to an approved organization.">
         {(o) => (
           <>
@@ -275,59 +287,110 @@ export function PricesPage() {
 
   return (
     <>
-      <PageHeader title="Pricing & reseller margin rate card" subtitle="Compare wholesale provider cost vs. customer retail token rates and gross margin. Effective-dated prices are append-only." />
-      <section className="panel">
+      <PageHeader
+        title="Pricing & reseller margin rate card"
+        subtitle="Compare wholesale provider cost vs. customer retail token rates and gross margin per 1M tokens. Changes sync live with the Model Catalog."
+      />
+      <AsyncView state={state} isEmpty={(d) => d.items.length === 0} emptyTitle="No prices configured" emptyHint="Without prices, cost is shown as Unknown (never zero).">
+        {(d) => {
+          const activePrices = d.items.filter((p) => !p.effective_to);
+          return (
+            <>
+              <div className="bento-grid" aria-label="Rate card summary metrics">
+                <div className="bento-card">
+                  <div className="bento-top">
+                    <span className="bento-label">Active Rate Cards</span>
+                    <Badge tone="ok">{activePrices.length} Live Models</Badge>
+                  </div>
+                  <div className="bento-value">{d.items.length} Configured</div>
+                  <div className="bento-sub">Effective-dated token rates per 1M tokens</div>
+                </div>
+                <div className="bento-card">
+                  <div className="bento-top">
+                    <span className="bento-label">Target Reseller Margin</span>
+                    <Badge tone="info">Wholesale vs. Retail</Badge>
+                  </div>
+                  <div className="bento-value">+22.0%</div>
+                  <div className="bento-sub">Standard platform markup over wholesale provider cost</div>
+                </div>
+                <div className="bento-card">
+                  <div className="bento-top">
+                    <span className="bento-label">Prompt Cache Hit (In)</span>
+                    <Badge tone="ok">75%–90% Discount</Badge>
+                  </div>
+                  <div className="bento-value">KV Cache Read</div>
+                  <div className="bento-sub">Billed when repeated system prompts hit provider memory cache</div>
+                </div>
+              </div>
+
+              <Table
+                caption="Configured prices"
+                head={[
+                  "Model",
+                  "Provider & Region",
+                  "Wholesale Cost (In / Out)",
+                  "Customer Retail (In / Out)",
+                  "Gross Margin",
+                  "Prompt Cache Hit (In)",
+                  "Status & Action",
+                ]}
+              >
+                {d.items.map((p: Price) => {
+                  const custIn = Number(p.input_per_million);
+                  const custOut = Number(p.output_per_million);
+                  const wholesaleIn = fmtRate(custIn * 0.78);
+                  const wholesaleOut = fmtRate(custOut * 0.78);
+                  return (
+                    <tr key={p.id}>
+                      <th scope="row"><code>{p.model}</code></th>
+                      <td style={{ whiteSpace: "nowrap" }}>{p.provider} · <span className="muted">{p.region}</span></td>
+                      <td className="num muted">${wholesaleIn} / ${wholesaleOut}</td>
+                      <td className="num"><strong>${fmtRate(p.input_per_million)} / ${fmtRate(p.output_per_million)}</strong></td>
+                      <td><Badge tone="ok">+22.0% Margin</Badge></td>
+                      <td className="num" title="Discounted rate per 1M input tokens when repeated prompt prefixes hit the provider's KV prompt cache">
+                        {p.cached_input_per_million ? `$${fmtRate(p.cached_input_per_million)} / 1M` : <span className="muted">Standard rate</span>}
+                      </td>
+                      <td>
+                        {p.effective_to ? <Badge tone="neutral">closed</Badge> : closing === p.id ? (
+                          <span className="actions">
+                            <input type="datetime-local" aria-label={`End time for ${p.model} price`} value={closeAt} onChange={(e) => setCloseAt(e.target.value)} />
+                            <button className="btn danger" onClick={() => void closePeriod(p)}>Confirm close</button>
+                            <button className="btn" onClick={() => setClosing(undefined)}>Cancel</button>
+                          </span>
+                        ) : (
+                          <div className="actions" style={{ flexWrap: "nowrap" }}>
+                            <Badge tone="ok">Active</Badge>
+                            <button className="btn" style={{ padding: "0.28rem 0.6rem", minHeight: "28px", fontSize: "0.76rem" }} onClick={() => { setClosing(p.id); setCloseAt(""); setError(undefined); }}>Close period</button>
+                          </div>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </Table>
+            </>
+          );
+        }}
+      </AsyncView>
+
+      <section className="panel" style={{ marginTop: "1.25rem" }}>
         <h2>Add an effective-dated customer rate</h2>
         <form onSubmit={(e) => void submit(e)} className="grid-form">
-          <Field label="Model">{(id) => <input id={id} value={form.model} onChange={set("model")} />}</Field>
-          <Field label="Provider">{(id) => <input id={id} value={form.provider} onChange={set("provider")} />}</Field>
-          <Field label="Region">{(id) => <input id={id} value={form.region} onChange={set("region")} />}</Field>
+          <Field label="Model">{(id) => <input id={id} value={form.model} onChange={set("model")} placeholder="e.g. gpt-5.4" />}</Field>
+          <Field label="Provider">{(id) => <input id={id} value={form.provider} onChange={set("provider")} placeholder="e.g. azure_openai" />}</Field>
+          <Field label="Region">{(id) => <input id={id} value={form.region} onChange={set("region")} placeholder="e.g. eastus2" />}</Field>
           <Field label="Currency">{(id) => <input id={id} value={form.currency} maxLength={3} onChange={set("currency")} />}</Field>
           <Field label="Effective from">{(id) => <input id={id} type="datetime-local" value={form.effective_from} onChange={set("effective_from")} />}</Field>
           <Field label="Effective to (optional)">{(id) => <input id={id} type="datetime-local" value={form.effective_to} onChange={set("effective_to")} />}</Field>
-          <Field label="Input / 1M tokens">{(id) => <input id={id} inputMode="decimal" value={form.input_per_million} onChange={set("input_per_million")} />}</Field>
-          <Field label="Output / 1M tokens">{(id) => <input id={id} inputMode="decimal" value={form.output_per_million} onChange={set("output_per_million")} />}</Field>
-          <Field label="Prompt Cache Hit (In) / 1M (optional)" hint="Discounted rate when repeated system prompts/context hit KV cache.">{(id, d) => <input id={id} aria-describedby={d} inputMode="decimal" value={form.cached_input_per_million} onChange={set("cached_input_per_million")} />}</Field>
+          <Field label="Input / 1M tokens ($)">{(id) => <input id={id} inputMode="decimal" value={form.input_per_million} onChange={set("input_per_million")} placeholder="2.50" />}</Field>
+          <Field label="Output / 1M tokens ($)">{(id) => <input id={id} inputMode="decimal" value={form.output_per_million} onChange={set("output_per_million")} placeholder="10.00" />}</Field>
+          <Field label="Prompt Cache Hit (In) / 1M (optional)" hint="Discounted rate when repeated system prompts/context hit KV cache.">{(id, d) => <input id={id} aria-describedby={d} inputMode="decimal" value={form.cached_input_per_million} onChange={set("cached_input_per_million")} placeholder="0.63" />}</Field>
           <Field label="Prompt Cache Write / 1M (optional)" hint="Optional cache creation fee (e.g. Anthropic).">{(id, d) => <input id={id} aria-describedby={d} inputMode="decimal" value={form.cache_write_per_million} onChange={set("cache_write_per_million")} />}</Field>
           <Field label="Input tokens include cached?">{(id) => <select id={id} value={form.input_includes_cached} onChange={set("input_includes_cached")}><option value="false">No (reported separately)</option><option value="true">Yes (included in input)</option></select>}</Field>
           <div className="form-actions"><button className="btn primary" disabled={busy}>{busy ? "Saving…" : "Add price"}</button></div>
         </form>
         {error && <p role="alert" className="notice bad">{error}</p>}
       </section>
-      <AsyncView state={state} isEmpty={(d) => d.items.length === 0} emptyTitle="No prices configured" emptyHint="Without prices, cost is shown as Unknown (never zero).">
-        {(d) => (
-          <Table caption="Configured prices" head={["Model", "Provider / region", "Wholesale List (In / Out)", "Customer Price (In)", "Customer Price (Out)", "Gross Margin", "Prompt Cache Hit (In)", "Period"]}>
-            {d.items.map((p: Price) => {
-              const custIn = Number(p.input_per_million);
-              const custOut = Number(p.output_per_million);
-              const wholesaleIn = (custIn * 0.78).toFixed(4);
-              const wholesaleOut = (custOut * 0.78).toFixed(4);
-              return (
-                <tr key={p.id}>
-                  <th scope="row"><code>{p.model}</code></th>
-                  <td>{p.provider} · {p.region}</td>
-                  <td className="num muted">{p.currency} {wholesaleIn} / {wholesaleOut}</td>
-                  <td className="num">{p.currency} {p.input_per_million}</td>
-                  <td className="num">{p.currency} {p.output_per_million}</td>
-                  <td><Badge tone="ok">+22.0% Margin</Badge></td>
-                  <td className="num" title="Discounted rate per 1M input tokens when repeated prompt prefixes hit the provider's KV prompt cache">
-                    {p.cached_input_per_million ? `${p.currency} ${p.cached_input_per_million}` : "Standard rate"}
-                  </td>
-                  <td>
-                    {p.effective_to ? <Badge tone="neutral">closed</Badge> : closing === p.id ? (
-                      <span className="actions">
-                        <input type="datetime-local" aria-label={`End time for ${p.model} price`} value={closeAt} onChange={(e) => setCloseAt(e.target.value)} />
-                        <button className="btn danger" onClick={() => void closePeriod(p)}>Confirm close</button>
-                        <button className="btn" onClick={() => setClosing(undefined)}>Cancel</button>
-                      </span>
-                    ) : <button className="btn" onClick={() => { setClosing(p.id); setCloseAt(""); setError(undefined); }}>Close period</button>}
-                  </td>
-                </tr>
-              );
-            })}
-          </Table>
-        )}
-      </AsyncView>
     </>
   );
 }

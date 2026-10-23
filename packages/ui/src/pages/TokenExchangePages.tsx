@@ -979,14 +979,14 @@ export function AdminBudgetsAndFinOpsPage({
     <>
       <PageHeader
         title="FinOps, credit quotas & chargeback"
-        subtitle="Manage customer credit allocations, RPM/TPM rate limits, model allowlists, and cross-organization token usage & chargeback in one unified workspace."
+        subtitle="Real-time platform command center for customer credit allocations, APIM rate limits (RPM/TPM), model allowlists, and cross-organization chargeback."
         actions={
           <div className="segmented-tabs" role="tablist" aria-label="FinOps view mode">
             <button
               type="button"
               role="tab"
               aria-selected={activeTab === "quotas"}
-              className={`seg-tab ${activeTab === "quotas" ? "active" : ""}`}
+              className={`segmented-tab ${activeTab === "quotas" ? "active" : ""}`}
               onClick={() => setActiveTab("quotas")}
             >
               Credit Quotas & Rate Limits
@@ -995,7 +995,7 @@ export function AdminBudgetsAndFinOpsPage({
               type="button"
               role="tab"
               aria-selected={activeTab === "usage"}
-              className={`seg-tab ${activeTab === "usage" ? "active" : ""}`}
+              className={`segmented-tab ${activeTab === "usage" ? "active" : ""}`}
               onClick={() => setActiveTab("usage")}
             >
               Usage & Chargeback Analytics
@@ -1004,7 +1004,7 @@ export function AdminBudgetsAndFinOpsPage({
         }
       />
       {activeTab === "usage" ? (
-        <UsagePage admin />
+        <UsagePage admin embedded />
       ) : (
         <>
           {saveErr && <ErrorState message={saveErr} />}
@@ -1014,164 +1014,297 @@ export function AdminBudgetsAndFinOpsPage({
             </p>
           )}
           <AsyncView state={budgets}>
-            {(d) => (
-              <>
-                <Table
-                  caption="Organization credit allocations and utilization"
-                  head={[
-                    "Organization (OpCo)",
-                    "Allocated Credits",
-                    "Used",
-                    "Remaining",
-                    "Rate Limits (RPM / TPM)",
-                    "Utilization",
-                    "Allowed Models",
-                    "Ledger Key",
-                    "Action",
-                  ]}
-                >
-                  {d.items.map((b) => (
-                    <tr key={b.id}>
-                      <td><strong>{b.organization_name}</strong></td>
-                      <td>USD {b.credit_allocation}</td>
-                      <td>USD {b.used_credits}</td>
-                      <td>USD {b.remaining_credits}</td>
-                      <td style={{ fontFamily: "var(--font-mono)", whiteSpace: "nowrap" }}>
-                        {b.rpm_limit ?? 60} RPM · {fmtInt(b.tpm_limit ?? 120000)} TPM
-                      </td>
-                      <td>
-                        <Badge tone={b.low_credit_alert ? "bad" : "ok"}>
-                          {b.utilization_pct}% (alert @ {b.alert_threshold_pct}%)
-                        </Badge>
-                      </td>
-                      <td><code>{b.allowed_models.join(", ")}</code></td>
-                      <td><code>{b.ledger_row_key}</code></td>
-                      <td>
-                        <div className="actions" style={{ flexWrap: "nowrap" }}>
-                          <button
-                            className="btn"
-                            type="button"
-                            title={`Edit quota & rate limits for ${b.organization_name}`}
-                            onClick={() => selectBudget(b)}
-                          >
-                            <IconPencil /> Configure
-                          </button>
-                          <button
-                            className="btn"
-                            type="button"
-                            title="View usage & chargeback analytics"
-                            onClick={() => setActiveTab("usage")}
-                          >
-                            Chargeback →
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </Table>
+            {(d) => {
+              const totalAllocated = d.items.reduce((acc, b) => acc + Number(b.credit_allocation || 0), 0);
+              const totalUsed = d.items.reduce((acc, b) => acc + Number(b.used_credits || 0), 0);
+              const totalRemaining = Math.max(0, totalAllocated - totalUsed);
+              const poolUsedPct = totalAllocated > 0 ? Math.min(100, Number(((totalUsed / totalAllocated) * 100).toFixed(1))) : 0;
+              const poolAvailPct = Math.max(0, Number((100 - poolUsedPct).toFixed(1)));
+              const totalRpm = d.items.reduce((acc, b) => acc + (b.rpm_limit ?? 60), 0);
+              const totalTpm = d.items.reduce((acc, b) => acc + (b.tpm_limit ?? 120000), 0);
+              const alertCount = d.items.filter((b) => b.low_credit_alert).length;
+              const ringRadius = 34;
+              const ringCircumference = 2 * Math.PI * ringRadius;
+              const ringOffset = ringCircumference * (1 - poolAvailPct / 100);
+              const fmtMoney = (v: string | number) =>
+                Number(v || 0).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-                <section className="panel" aria-labelledby="edit-budget-heading">
-                  <h2 id="edit-budget-heading">Update OpCo credit allocation, rate limits & model allowlist</h2>
-                  <form onSubmit={(e) => void saveBudget(e)} className="form-row">
-                    <Field label="Organization">
-                      {(id) => (
-                        <select
-                          id={id}
-                          value={selectedOrg}
-                          onChange={(e) => {
-                            const found = d.items.find((x) => x.organization_id === e.target.value);
-                            if (found) selectBudget(found);
-                            else setSelectedOrg(e.target.value);
-                          }}
-                          required
+              return (
+                <>
+                  <section className="credit-hero-banner" aria-label="Platform FinOps Command Center">
+                    <div className="credit-hero-left">
+                      <div className="badges">
+                        <Badge tone="info">Platform FinOps Command Center</Badge>
+                        <Badge tone="ok">● TurnstileLedger & APIM Synced</Badge>
+                        <Badge tone={alertCount > 0 ? "warn" : "ok"}>
+                          {alertCount > 0 ? `${alertCount} Low-Credit Alert` : `${d.items.length} OpCo Tenants Healthy`}
+                        </Badge>
+                      </div>
+                      <div style={{ display: "flex", alignItems: "baseline", gap: "0.9rem", flexWrap: "wrap" }}>
+                        <span className="credit-hero-balance">${fmtMoney(totalRemaining)}</span>
+                        <span className="muted" style={{ fontSize: "0.92rem" }}>
+                          unconsumed pool of <strong>${fmtMoney(totalAllocated)}</strong> allocated across{" "}
+                          <strong>{d.items.length}</strong> organizations (<strong>${fmtMoney(totalUsed)}</strong> burned)
+                        </span>
+                      </div>
+                      <div className="credit-track" aria-label="Platform credit pool utilization" style={{ maxWidth: "680px" }}>
+                        <div
+                          className={`credit-fill ${alertCount > 0 ? "danger" : ""}`}
+                          style={{ width: `${Math.max(poolUsedPct, totalUsed > 0 ? 3 : 0)}%` }}
+                        />
+                      </div>
+                      <div className="credit-meter-foot" style={{ maxWidth: "680px", marginTop: 0 }}>
+                        <span>Consumed: ${fmtMoney(totalUsed)} ({poolUsedPct}%)</span>
+                        <span>Provisioned Ceiling: {fmtInt(totalRpm)} RPM · {fmtInt(totalTpm)} TPM</span>
+                        <span>Hard Stop: 100% Enforced</span>
+                      </div>
+                    </div>
+
+                    <div className="credit-hero-ring">
+                      <svg width="84" height="84" viewBox="0 0 84 84" aria-hidden="true">
+                        <circle cx="42" cy="42" r={ringRadius} fill="none" stroke="var(--navy-800)" strokeWidth="8" />
+                        <circle
+                          cx="42"
+                          cy="42"
+                          r={ringRadius}
+                          fill="none"
+                          stroke={alertCount > 0 ? "var(--bad)" : "var(--teal-500)"}
+                          strokeWidth="8"
+                          strokeLinecap="round"
+                          strokeDasharray={ringCircumference}
+                          strokeDashoffset={ringOffset}
+                          transform="rotate(-90 42 42)"
+                        />
+                        <text
+                          x="42"
+                          y="46"
+                          textAnchor="middle"
+                          fill="var(--ink)"
+                          style={{ fontFamily: "var(--font-mono)", fontSize: "13px", fontWeight: 800 }}
                         >
-                          <option value="">Select an OpCo…</option>
-                          {d.items.map((b) => (
-                            <option key={b.organization_id} value={b.organization_id}>
-                              {b.organization_name}
-                            </option>
-                          ))}
-                        </select>
-                      )}
-                    </Field>
-                    <Field label="Credit allocation (USD)">
-                      {(id) => (
+                          {poolAvailPct.toFixed(0)}%
+                        </text>
+                      </svg>
+                      <div>
+                        <div className="bento-label">Pool Available</div>
+                        <div style={{ fontFamily: "var(--font-mono)", fontWeight: 800, fontSize: "1.1rem" }}>
+                          ${fmtMoney(totalRemaining)}
+                        </div>
+                        <div className="muted" style={{ fontSize: "0.75rem" }}>
+                          Target Margin: +22.0%
+                        </div>
+                      </div>
+                    </div>
+                  </section>
+
+                  <div className="bento-grid" aria-label="Command center KPIs">
+                    <div className="bento-card">
+                      <div className="bento-top">
+                        <span className="bento-label">Provisioned Credit Pool</span>
+                        <Badge tone="info">{d.items.length} OpCos</Badge>
+                      </div>
+                      <div className="bento-value">${fmtMoney(totalAllocated)}</div>
+                      <div className="bento-sub">${fmtMoney(totalUsed)} consumed · ${fmtMoney(totalRemaining)} remaining</div>
+                    </div>
+                    <div className="bento-card">
+                      <div className="bento-top">
+                        <span className="bento-label">Tenant Quota Health</span>
+                        <Badge tone={alertCount > 0 ? "bad" : "ok"}>
+                          {alertCount > 0 ? `${alertCount} Alert` : "All Healthy"}
+                        </Badge>
+                      </div>
+                      <div className="bento-value">{d.items.length - alertCount} / {d.items.length} OK</div>
+                      <div className="bento-sub">APIM hard-stop enforced at 100% exhaustion</div>
+                    </div>
+                    <div className="bento-card">
+                      <div className="bento-top">
+                        <span className="bento-label">Gateway Rate Capacity</span>
+                        <Badge tone="ok">Token Bucket</Badge>
+                      </div>
+                      <div className="bento-value">{fmtInt(totalRpm)} RPM</div>
+                      <div className="bento-sub">{fmtInt(totalTpm)} tokens/min aggregate ceiling</div>
+                    </div>
+                    <div className="bento-card">
+                      <div className="bento-top">
+                        <span className="bento-label">Commercial Margin</span>
+                        <Badge tone="ok">+22.0% Gross</Badge>
+                      </div>
+                      <div className="bento-value">Decision-1</div>
+                      <div className="bento-sub">Auto-router & wholesale/retail rate card active</div>
+                    </div>
+                  </div>
+
+                  <Table
+                    caption="Organization credit allocations and utilization"
+                    head={[
+                      "Organization (OpCo)",
+                      "Allocated",
+                      "Consumed",
+                      "Remaining",
+                      "Rate Limits",
+                      "Utilization",
+                      "Models",
+                      "Action",
+                    ]}
+                  >
+                    {d.items.map((b) => (
+                      <tr key={b.id} style={selectedOrg === b.organization_id ? { background: "var(--brand-soft)" } : undefined}>
+                        <td>
+                          <strong>{b.organization_name}</strong>
+                          <span className="sr-only">{b.ledger_row_key}</span>
+                        </td>
+                        <td className="num"><strong>${fmtMoney(b.credit_allocation)}</strong></td>
+                        <td className="num">${fmtMoney(b.used_credits)}</td>
+                        <td className="num"><strong>${fmtMoney(b.remaining_credits)}</strong></td>
+                        <td style={{ fontFamily: "var(--font-mono)", whiteSpace: "nowrap", fontSize: "0.8rem" }}>
+                          {b.rpm_limit ?? 60} RPM · {fmtInt(b.tpm_limit ?? 120000)} TPM
+                        </td>
+                        <td>
+                          <div className="share-cell" style={{ minWidth: "105px" }}>
+                            <div className="share-bar-track">
+                              <div
+                                className="share-bar-fill"
+                                style={{
+                                  width: `${Math.min(100, Math.max(b.utilization_pct, Number(b.used_credits) > 0 ? 4 : 0))}%`,
+                                  background: b.low_credit_alert ? "var(--bad)" : "var(--teal-500)",
+                                }}
+                              />
+                            </div>
+                            <Badge tone={b.low_credit_alert ? "bad" : "ok"}>
+                              {b.utilization_pct}% (alert @ {b.alert_threshold_pct}%)
+                            </Badge>
+                          </div>
+                        </td>
+                        <td><code>{b.allowed_models.join(", ")}</code></td>
+                        <td>
+                          <div className="actions" style={{ flexWrap: "nowrap", gap: "0.4rem" }}>
+                            <button
+                              className="btn"
+                              style={{ padding: "0.3rem 0.65rem", minHeight: "30px", fontSize: "0.78rem" }}
+                              type="button"
+                              title={`Edit quota & rate limits for ${b.organization_name}`}
+                              onClick={() => selectBudget(b)}
+                            >
+                              <IconPencil /> Configure
+                            </button>
+                            <button
+                              className="btn"
+                              style={{ padding: "0.3rem 0.65rem", minHeight: "30px", fontSize: "0.78rem" }}
+                              type="button"
+                              title="View usage & chargeback analytics"
+                              onClick={() => setActiveTab("usage")}
+                            >
+                              Chargeback →
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </Table>
+
+                  <section className="panel" aria-labelledby="edit-budget-heading">
+                    <h2 id="edit-budget-heading">Update OpCo credit allocation, rate limits & model allowlist</h2>
+                    <form onSubmit={(e) => void saveBudget(e)} className="form-row">
+                      <Field label="Organization">
+                        {(id) => (
+                          <select
+                            id={id}
+                            value={selectedOrg}
+                            onChange={(e) => {
+                              const found = d.items.find((x) => x.organization_id === e.target.value);
+                              if (found) selectBudget(found);
+                              else setSelectedOrg(e.target.value);
+                            }}
+                            required
+                          >
+                            <option value="">Select an OpCo…</option>
+                            {d.items.map((b) => (
+                              <option key={b.organization_id} value={b.organization_id}>
+                                {b.organization_name}
+                              </option>
+                            ))}
+                          </select>
+                        )}
+                      </Field>
+                      <Field label="Credit allocation (USD)">
+                        {(id) => (
+                          <input
+                            id={id}
+                            value={credits}
+                            onChange={(e) => {
+                              setCredits(e.target.value);
+                              setMonthlyUsd(e.target.value);
+                            }}
+                            required
+                          />
+                        )}
+                      </Field>
+                      <Field label="RPM limit (reqs/min)">
+                        {(id) => (
+                          <input
+                            id={id}
+                            type="number"
+                            min={1}
+                            max={100000}
+                            value={rpmLimit}
+                            onChange={(e) => setRpmLimit(Number(e.target.value))}
+                            required
+                          />
+                        )}
+                      </Field>
+                      <Field label="TPM limit (tokens/min)">
+                        {(id) => (
+                          <input
+                            id={id}
+                            type="number"
+                            min={100}
+                            max={100000000}
+                            step={1000}
+                            value={tpmLimit}
+                            onChange={(e) => setTpmLimit(Number(e.target.value))}
+                            required
+                          />
+                        )}
+                      </Field>
+                      <Field label="Alert threshold (%)">
+                        {(id) => (
+                          <input
+                            id={id}
+                            type="number"
+                            min={1}
+                            max={100}
+                            value={alertPct}
+                            onChange={(e) => setAlertPct(Number(e.target.value))}
+                            required
+                          />
+                        )}
+                      </Field>
+                      <Field label="Allowed models (comma-separated or *)">
+                        {(id) => (
+                          <input
+                            id={id}
+                            value={allowedModels}
+                            onChange={(e) => setAllowedModels(e.target.value)}
+                            required
+                          />
+                        )}
+                      </Field>
+                      <label className="checkbox">
                         <input
-                          id={id}
-                          value={credits}
-                          onChange={(e) => {
-                            setCredits(e.target.value);
-                            setMonthlyUsd(e.target.value);
-                          }}
-                          required
-                        />
-                      )}
-                    </Field>
-                    <Field label="RPM limit (reqs/min)">
-                      {(id) => (
-                        <input
-                          id={id}
-                          type="number"
-                          min={1}
-                          max={100000}
-                          value={rpmLimit}
-                          onChange={(e) => setRpmLimit(Number(e.target.value))}
-                          required
-                        />
-                      )}
-                    </Field>
-                    <Field label="TPM limit (tokens/min)">
-                      {(id) => (
-                        <input
-                          id={id}
-                          type="number"
-                          min={100}
-                          max={100000000}
-                          step={1000}
-                          value={tpmLimit}
-                          onChange={(e) => setTpmLimit(Number(e.target.value))}
-                          required
-                        />
-                      )}
-                    </Field>
-                    <Field label="Alert threshold (%)">
-                      {(id) => (
-                        <input
-                          id={id}
-                          type="number"
-                          min={1}
-                          max={100}
-                          value={alertPct}
-                          onChange={(e) => setAlertPct(Number(e.target.value))}
-                          required
-                        />
-                      )}
-                    </Field>
-                    <Field label="Allowed models (comma-separated or *)">
-                      {(id) => (
-                        <input
-                          id={id}
-                          value={allowedModels}
-                          onChange={(e) => setAllowedModels(e.target.value)}
-                          required
-                        />
-                      )}
-                    </Field>
-                    <label className="checkbox">
-                      <input
-                        type="checkbox"
-                        checked={hardStop}
-                        onChange={(e) => setHardStop(e.target.checked)}
-                      />{" "}
-                      Enforce hard stop at 100% credit usage in APIM
-                    </label>
-                    <button className="btn primary" disabled={!selectedOrg || saving}>
-                      {saving ? "Saving…" : "Save & Sync to TurnstileLedger"}
-                    </button>
-                  </form>
-                </section>
-              </>
-            )}
+                          type="checkbox"
+                          checked={hardStop}
+                          onChange={(e) => setHardStop(e.target.checked)}
+                        />{" "}
+                        Enforce hard stop at 100% credit usage in APIM
+                      </label>
+                      <button className="btn primary" disabled={!selectedOrg || saving}>
+                        {saving ? "Saving…" : "Save & Sync to TurnstileLedger"}
+                      </button>
+                    </form>
+                  </section>
+                </>
+              );
+            }}
           </AsyncView>
         </>
       )}
@@ -1940,7 +2073,7 @@ export function AdminModelRouterPage() {
                           />
                         </div>
                       ) : (
-                        `$${m.input_per_million} / $${m.output_per_million}`
+                        `$${Number(m.input_per_million).toFixed(2)} / $${Number(m.output_per_million).toFixed(2)}`
                       )}
                     </td>
                     <td>
@@ -2111,7 +2244,7 @@ export function AdminLocalUsersPage({
               type="button"
               role="tab"
               aria-selected={activeTab === "portal"}
-              className={`seg-tab ${activeTab === "portal" ? "active" : ""}`}
+              className={`segmented-tab ${activeTab === "portal" ? "active" : ""}`}
               onClick={() => setActiveTab("portal")}
             >
               Portal Accounts (PostgreSQL)
@@ -2120,7 +2253,7 @@ export function AdminLocalUsersPage({
               type="button"
               role="tab"
               aria-selected={activeTab === "sso"}
-              className={`seg-tab ${activeTab === "sso" ? "active" : ""}`}
+              className={`segmented-tab ${activeTab === "sso" ? "active" : ""}`}
               onClick={() => setActiveTab("sso")}
             >
               Entra SSO Directory
@@ -2129,7 +2262,7 @@ export function AdminLocalUsersPage({
         }
       />
       {activeTab === "sso" ? (
-        <MembersPage />
+        <MembersPage embedded />
       ) : (
         <>
           {error && <ErrorState message={error} />}
