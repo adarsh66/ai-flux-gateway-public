@@ -1200,7 +1200,41 @@ export function AdminModelRouterPage() {
   const [newKeywords, setNewKeywords] = useState("");
   const [newPreferred, setNewPreferred] = useState("gpt-5.4-mini");
   const [newFallback, setNewFallback] = useState("claude-haiku-4-5");
+  const [editingCategory, setEditingCategory] = useState<string | null>(null);
+  const [advancedOpen, setAdvancedOpen] = useState(false);
   const [addingRule, setAddingRule] = useState(false);
+
+  const modelOptions = (gardenState.data?.items ?? [])
+    .filter((m) => m.id !== "auto")
+    .map((m) => m.id);
+  const selectableModels = modelOptions.length
+    ? modelOptions
+    : ["gpt-5.4-mini", "gpt-5.4", "claude-sonnet-4-5", "claude-haiku-4-5", "DeepSeek-V3.2-Speciale", "singtel-reai-70b", "gemini-2.5-pro"];
+
+  function startEditRule(rule: {
+    category: string;
+    description: string;
+    keywords?: string[];
+    preferred_model: string;
+    fallback_model: string;
+  }) {
+    setEditingCategory(rule.category);
+    setNewCategory(rule.category);
+    setNewDesc(rule.description);
+    setNewKeywords((rule.keywords ?? []).join(", "));
+    setNewPreferred(rule.preferred_model);
+    setNewFallback(rule.fallback_model);
+    setAdvancedOpen(true);
+  }
+
+  function clearRuleForm() {
+    setEditingCategory(null);
+    setNewCategory("");
+    setNewDesc("");
+    setNewKeywords("");
+    setNewPreferred("gpt-5.4-mini");
+    setNewFallback("claude-haiku-4-5");
+  }
 
   async function addCustomCategoryRule(e: FormEvent) {
     e.preventDefault();
@@ -1209,20 +1243,27 @@ export function AdminModelRouterPage() {
     setError(undefined);
     setNotice(undefined);
     try {
+      const targetCat = newCategory.trim();
       const kws = newKeywords
         .split(",")
         .map((s) => s.trim())
         .filter(Boolean);
-      const updatedRules = [
-        ...routerState.data.rules.filter((r) => r.category !== newCategory.trim()),
-        {
-          category: newCategory.trim(),
-          description: newDesc.trim(),
-          keywords: kws.length ? kws : [newCategory.trim()],
-          preferred_model: newPreferred,
-          fallback_model: newFallback,
-        },
-      ];
+      const newRuleObj = {
+        category: targetCat,
+        description: newDesc.trim(),
+        keywords: kws.length ? kws : [targetCat],
+        preferred_model: newPreferred,
+        fallback_model: newFallback,
+      };
+      const existingIdx = routerState.data.rules.findIndex(
+        (r) => r.category === (editingCategory ?? targetCat),
+      );
+      const updatedRules = [...routerState.data.rules];
+      if (existingIdx >= 0) {
+        updatedRules[existingIdx] = newRuleObj;
+      } else {
+        updatedRules.push(newRuleObj);
+      }
       await api.saveAdminModelRouter({
         enabled: routerState.data.enabled,
         strategy: routerState.data.strategy,
@@ -1231,15 +1272,37 @@ export function AdminModelRouterPage() {
         candidate_models: routerState.data.candidate_models,
         rules: updatedRules,
       });
-      setNotice(`Saved Decision-1 classifier category '${newCategory.trim()}' -> ${newPreferred}.`);
-      setNewCategory("");
-      setNewDesc("");
-      setNewKeywords("");
+      setNotice(
+        `${existingIdx >= 0 ? "Updated" : "Added"} Decision-1 classifier rule '${targetCat}' -> ${newPreferred} (fallback: ${newFallback}).`,
+      );
+      clearRuleForm();
       setVersion((v) => v + 1);
     } catch (err) {
-      setError(err instanceof ApiError ? err.detail : "Could not save custom routing category.");
+      setError(err instanceof ApiError ? err.detail : "Could not save routing category.");
     } finally {
       setAddingRule(false);
+    }
+  }
+
+  async function deleteCategoryRule(categoryKey: string) {
+    if (!routerState.data || routerState.data.rules.length <= 1) return;
+    setError(undefined);
+    setNotice(undefined);
+    try {
+      const updatedRules = routerState.data.rules.filter((r) => r.category !== categoryKey);
+      await api.saveAdminModelRouter({
+        enabled: routerState.data.enabled,
+        strategy: routerState.data.strategy,
+        decision_endpoint: routerState.data.decision_endpoint,
+        default_model: routerState.data.default_model,
+        candidate_models: routerState.data.candidate_models,
+        rules: updatedRules,
+      });
+      if (editingCategory === categoryKey) clearRuleForm();
+      setNotice(`Removed Decision-1 classifier category '${categoryKey}'.`);
+      setVersion((v) => v + 1);
+    } catch (err) {
+      setError(err instanceof ApiError ? err.detail : "Could not delete routing category.");
     }
   }
 
@@ -1399,55 +1462,132 @@ export function AdminModelRouterPage() {
               <h2 style={{ marginTop: "0.5rem" }}>
                 Active routing behavior: {activeProfile.title}
               </h2>
-              <Table
-                caption="Decision-1 routing policy matrix"
-                head={[
-                  "Route Category",
-                  "Workload & Prompt Signals",
-                  "Primary Target Model",
-                  "Fallback Model",
-                  "Cost / Latency Profile",
-                ]}
-              >
-                {activeProfile.matrix.map((r) => (
-                  <tr key={r.category}>
-                    <td><code>{r.category}</code></td>
-                    <td>{r.description}</td>
-                    <td><Badge tone="ok">{r.preferred_model}</Badge></td>
-                    <td><code>{r.fallback_model}</code></td>
-                    <td style={{ fontFamily: "var(--font-mono)", fontSize: "0.78rem" }}>{r.target_metric}</td>
-                  </tr>
-                ))}
-              </Table>
+              {cfg.strategy === "microsoft-decision-1" ? (
+                <Table
+                  caption="Decision-1 routing policy matrix"
+                  head={[
+                    "Route Category",
+                    "Workload & Classifier Criteria",
+                    "Primary Target Model",
+                    "Fallback Model",
+                    "Signal Keywords",
+                    "Action",
+                  ]}
+                >
+                  {cfg.rules.map((r) => (
+                    <tr key={r.category}>
+                      <td><code>{r.category}</code></td>
+                      <td>{r.description}</td>
+                      <td><Badge tone="ok">{r.preferred_model}</Badge></td>
+                      <td><code>{r.fallback_model}</code></td>
+                      <td style={{ fontFamily: "var(--font-mono)", fontSize: "0.76rem" }}>
+                        {r.keywords.slice(0, 6).join(", ")}
+                      </td>
+                      <td>
+                        <div className="actions">
+                          <button
+                            type="button"
+                            className="btn"
+                            onClick={() => startEditRule(r)}
+                          >
+                            Edit rule
+                          </button>
+                          {cfg.rules.length > 1 && (
+                            <button
+                              type="button"
+                              className="btn danger"
+                              onClick={() => void deleteCategoryRule(r.category)}
+                            >
+                              Delete
+                            </button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </Table>
+              ) : (
+                <Table
+                  caption="Decision-1 routing policy matrix"
+                  head={[
+                    "Route Category",
+                    "Workload & Prompt Signals",
+                    "Primary Target Model",
+                    "Fallback Model",
+                    "Cost / Latency Profile",
+                  ]}
+                >
+                  {activeProfile.matrix.map((r) => (
+                    <tr key={r.category}>
+                      <td><code>{r.category}</code></td>
+                      <td>{r.description}</td>
+                      <td><Badge tone="ok">{r.preferred_model}</Badge></td>
+                      <td><code>{r.fallback_model}</code></td>
+                      <td style={{ fontFamily: "var(--font-mono)", fontSize: "0.78rem" }}>{r.target_metric}</td>
+                    </tr>
+                  ))}
+                </Table>
+              )}
 
-              <details className="gateway-advanced" style={{ borderTop: "1px solid var(--line)", paddingTop: "0.75rem" }}>
+              <details
+                className="gateway-advanced"
+                open={advancedOpen}
+                onToggle={(e) => setAdvancedOpen((e.currentTarget as HTMLDetailsElement).open)}
+                style={{ borderTop: "1px solid var(--line)", paddingTop: "0.75rem" }}
+              >
                 <summary style={{ fontSize: "0.86rem", color: "var(--ink-dim)" }}>
-                  Advanced: Decision-1 classifier criteria (<code>choice</code> / <code>noul</code> / <code>score</code>), custom category editor &amp; 4-strategy simulator
+                  Advanced: Decision-1 classifier criteria (<code>choice</code> / <code>noul</code> / <code>score</code>), rule editor &amp; 4-strategy simulator
                 </summary>
                 <div style={{ marginTop: "0.85rem", display: "grid", gap: "1rem" }}>
                   <div>
-                    <h2>Configured Decision-1 choice classifier categories ({cfg.rules.length})</h2>
+                    <h2>
+                      {editingCategory
+                        ? `Editing Decision-1 rule: ${editingCategory}`
+                        : `Configured Decision-1 choice classifier categories (${cfg.rules.length})`}
+                    </h2>
                     <p className="muted">
-                      Each row maps to a <code>ChoiceQuestion.criteria[category]</code> entry evaluated by{" "}
-                      <code>{cfg.decision_endpoint}</code> alongside <code>noul</code> (deep-reasoning boolean) and{" "}
-                      <code>score</code> (0–3 complexity rubric).
+                      Click <strong>Edit</strong> on any existing rule below to modify its criteria description, signal keywords, or target models, or fill in the form to add a new category to{" "}
+                      <code>{cfg.decision_endpoint}</code>.
                     </p>
                     <Table
                       caption="Decision-1 intent routing rules"
-                      head={["Category ID", "Classifier Criteria Description", "Preferred Model", "Fallback Model", "Signal Keywords"]}
+                      head={["Category ID", "Classifier Criteria Description", "Preferred Model", "Fallback Model", "Signal Keywords", "Action"]}
                     >
                       {cfg.rules.map((r) => (
-                        <tr key={r.category}>
+                        <tr
+                          key={r.category}
+                          style={editingCategory === r.category ? { background: "var(--brand-soft)" } : undefined}
+                        >
                           <td><code>{r.category}</code></td>
                           <td>{r.description}</td>
                           <td><Badge tone="ok">{r.preferred_model}</Badge></td>
                           <td><code>{r.fallback_model}</code></td>
-                          <td>{r.keywords.slice(0, 6).join(", ")}</td>
+                          <td>{r.keywords.join(", ")}</td>
+                          <td>
+                            <div className="actions">
+                              <button
+                                type="button"
+                                className="btn"
+                                onClick={() => startEditRule(r)}
+                              >
+                                Edit
+                              </button>
+                              {cfg.rules.length > 1 && (
+                                <button
+                                  type="button"
+                                  className="btn danger"
+                                  onClick={() => void deleteCategoryRule(r.category)}
+                                >
+                                  Delete
+                                </button>
+                              )}
+                            </div>
+                          </td>
                         </tr>
                       ))}
                     </Table>
-                    <form onSubmit={(e) => void addCustomCategoryRule(e)} className="form-row" style={{ marginTop: "0.75rem" }}>
-                      <Field label="Category key (e.g. legal_compliance)">
+                    <form onSubmit={(e) => void addCustomCategoryRule(e)} className="form-row" style={{ marginTop: "0.85rem" }}>
+                      <Field label="Category key (e.g. coding_and_math)">
                         {(id) => <input id={id} value={newCategory} onChange={(e) => setNewCategory(e.target.value)} required />}
                       </Field>
                       <Field label="Classifier criteria description">
@@ -1458,17 +1598,32 @@ export function AdminModelRouterPage() {
                       </Field>
                       <Field label="Primary model">
                         {(id) => (
-                          <input id={id} value={newPreferred} onChange={(e) => setNewPreferred(e.target.value)} required />
+                          <select id={id} value={newPreferred} onChange={(e) => setNewPreferred(e.target.value)}>
+                            {selectableModels.map((mId) => (
+                              <option key={mId} value={mId}>{mId}</option>
+                            ))}
+                          </select>
                         )}
                       </Field>
                       <Field label="Fallback model">
                         {(id) => (
-                          <input id={id} value={newFallback} onChange={(e) => setNewFallback(e.target.value)} required />
+                          <select id={id} value={newFallback} onChange={(e) => setNewFallback(e.target.value)}>
+                            {selectableModels.map((mId) => (
+                              <option key={mId} value={mId}>{mId}</option>
+                            ))}
+                          </select>
                         )}
                       </Field>
-                      <button className="btn primary" type="submit" disabled={addingRule}>
-                        {addingRule ? "Saving…" : "Save Category Rule"}
-                      </button>
+                      <div className="actions">
+                        <button className="btn primary" type="submit" disabled={addingRule}>
+                          {addingRule ? "Saving…" : editingCategory ? `Update '${editingCategory}'` : "Add Category Rule"}
+                        </button>
+                        {editingCategory && (
+                          <button className="btn" type="button" onClick={clearRuleForm}>
+                            Cancel Edit
+                          </button>
+                        )}
+                      </div>
                     </form>
                   </div>
 
