@@ -3,6 +3,9 @@ server {
   server_name _;
   root /usr/share/nginx/html;
   server_tokens off;
+  # App Service terminates public HTTPS; never expose the container's :8080
+  # when nginx redirects / to /admin/ (or normalizes a directory URL).
+  absolute_redirect off;
 
   add_header X-Content-Type-Options "nosniff" always;
   add_header X-Frame-Options "DENY" always;
@@ -14,6 +17,20 @@ server {
   # Front Door preserves the /admin prefix; App Service probes may hit either path.
   location = /healthz { access_log off; add_header Content-Type text/plain; return 200 "ok"; }
   location = /admin/healthz { access_log off; add_header Content-Type text/plain; return 200 "ok"; }
+
+  location /api/ {
+    proxy_pass ${CONTROL_ORIGIN};
+    proxy_set_header Host $proxy_host;
+    proxy_ssl_server_name on;
+    proxy_ssl_verify on;
+    # Azure's served chain exceeds nginx's default verification depth of 1.
+    proxy_ssl_verify_depth 5;
+    proxy_ssl_trusted_certificate /etc/ssl/certs/ca-certificates.crt;
+    proxy_connect_timeout 10s;
+    proxy_read_timeout 60s;
+    proxy_buffering off;
+    add_header Cache-Control "no-store" always;
+  }
 
   location /admin/assets/ {
     expires 1y;
