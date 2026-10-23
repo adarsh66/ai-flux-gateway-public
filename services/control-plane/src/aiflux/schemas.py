@@ -413,6 +413,8 @@ class CreditBudgetUpdate(Input):
     monthly_budget_usd: Decimal = Field(ge=0, max_digits=20, decimal_places=4)
     credit_allocation: Decimal = Field(ge=0, max_digits=20, decimal_places=4)
     alert_threshold_pct: int = Field(default=80, ge=1, le=100)
+    rpm_limit: int = Field(default=60, ge=1, le=100000)
+    tpm_limit: int = Field(default=120000, ge=100, le=100000000)
     allowed_models: list[str] = Field(default_factory=lambda: ["*"])
     product_name: str = Field(default="Enterprise AI Gateway", min_length=1, max_length=100)
     channel: str = Field(default="api-gateway", min_length=1, max_length=60)
@@ -432,6 +434,8 @@ class CreditBudgetOutput(BaseModel):
     utilization_pct: float
     low_credit_alert: bool
     alert_threshold_pct: int
+    rpm_limit: int = 60
+    tpm_limit: int = 120000
     allowed_models: list[str]
     product_name: str
     channel: str
@@ -480,6 +484,9 @@ class CreditSummaryOutput(BaseModel):
     remaining_credits: str
     utilization_pct: float
     alert_threshold_pct: int
+    rpm_limit: int = 60
+    tpm_limit: int = 120000
+    allowed_models: list[str] = Field(default_factory=lambda: ["*"])
     low_credit_alert: bool
     hard_stop_enabled: bool
     total_requests: int

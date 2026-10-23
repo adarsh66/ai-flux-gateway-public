@@ -420,6 +420,35 @@ a { color: var(--teal-300); text-decoration: none; }
 .btn.primary:hover:not(:disabled) { background: var(--teal-400); border-color: var(--teal-400); }
 .btn.danger { border-color: var(--bad); color: var(--bad); background: var(--bad-soft); }
 .btn.menu-btn { display: none; }
+.icon-btn {
+  width: 30px;
+  height: 30px;
+  min-height: 30px;
+  padding: 0;
+  border-radius: 7px;
+  border: 1px solid var(--line);
+  background: var(--navy-900);
+  color: var(--ink-dim);
+  display: inline-grid;
+  place-items: center;
+  cursor: pointer;
+  transition: all 0.14s ease;
+}
+.icon-btn:hover:not(:disabled) {
+  background: var(--navy-800);
+  color: var(--ink);
+  border-color: var(--navy-600);
+}
+.icon-btn.primary {
+  background: var(--teal-500);
+  border-color: var(--teal-500);
+  color: var(--brand-fg);
+}
+.icon-btn.danger:hover:not(:disabled) {
+  background: var(--bad-soft);
+  color: var(--bad);
+  border-color: var(--bad);
+}
 .actions { display: flex; gap: .6rem; align-items: center; flex-wrap: wrap; }
 
 .panel, .card, .state, .stat {

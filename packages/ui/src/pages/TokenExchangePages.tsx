@@ -84,6 +84,51 @@ function ShareBar({ pct }: { pct: number }) {
   );
 }
 
+function IconPencil() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
+      <path d="m15 5 4 4" />
+    </svg>
+  );
+}
+
+function IconTrash() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M3 6h18" />
+      <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+      <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+    </svg>
+  );
+}
+
+function IconCheck() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <polyline points="20 6 9 17 4 12" />
+    </svg>
+  );
+}
+
+function IconCancel() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <line x1="18" y1="6" x2="6" y2="18" />
+      <line x1="6" y1="6" x2="18" y2="18" />
+    </svg>
+  );
+}
+
+function IconPlus() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <line x1="12" y1="5" x2="12" y2="19" />
+      <line x1="5" y1="12" x2="19" y2="12" />
+    </svg>
+  );
+}
+
 export function ModelGardenPage() {
   const { api } = useSession();
   const state = useAsync(() => api.modelGarden(), [api]);
@@ -372,6 +417,9 @@ export function CustomerCreditsPage() {
                     <Badge tone="info">{summary.organization_name} · Enterprise Token Exchange Plan</Badge>
                     <Badge tone={summary.low_credit_alert ? "bad" : "ok"}>
                       {summary.low_credit_alert ? "Low Credit Warning" : "Active & Healthy"}
+                    </Badge>
+                    <Badge tone="neutral">
+                      Rate Limit: {summary.rpm_limit ?? 60} RPM · {fmtInt(summary.tpm_limit ?? 120000)} TPM
                     </Badge>
                   </div>
                   <div className="credit-hero-balance">
@@ -865,6 +913,8 @@ export function AdminBudgetsAndFinOpsPage() {
   const [monthlyUsd, setMonthlyUsd] = useState("5000.00");
   const [credits, setCredits] = useState("5000.00");
   const [alertPct, setAlertPct] = useState(80);
+  const [rpmLimit, setRpmLimit] = useState(60);
+  const [tpmLimit, setTpmLimit] = useState(120000);
   const [allowedModels, setAllowedModels] = useState("*");
   const [hardStop, setHardStop] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -876,6 +926,8 @@ export function AdminBudgetsAndFinOpsPage() {
     setMonthlyUsd(b.monthly_budget_usd);
     setCredits(b.credit_allocation);
     setAlertPct(b.alert_threshold_pct);
+    setRpmLimit(b.rpm_limit ?? 60);
+    setTpmLimit(b.tpm_limit ?? 120000);
     setAllowedModels(b.allowed_models.join(", "));
     setHardStop(b.hard_stop_enabled);
   }
@@ -895,13 +947,15 @@ export function AdminBudgetsAndFinOpsPage() {
         monthly_budget_usd: monthlyUsd,
         credit_allocation: credits,
         alert_threshold_pct: alertPct,
+        rpm_limit: rpmLimit,
+        tpm_limit: tpmLimit,
         allowed_models: models.length ? models : ["*"],
         product_name: "Enterprise AI Token Exchange",
         channel: "api-gateway",
         hard_stop_enabled: hardStop,
       });
       setSaveMsg(
-        `Saved budget for ${updated.organization_name} and projected row '${updated.ledger_row_key}' to TurnstileLedger.`,
+        `Saved quota & rate limits (${updated.rpm_limit ?? rpmLimit} RPM / ${fmtInt(updated.tpm_limit ?? tpmLimit)} TPM) for ${updated.organization_name} and projected row '${updated.ledger_row_key}' to TurnstileLedger.`,
       );
       setVersion((v) => v + 1);
     } catch (err) {
@@ -915,7 +969,7 @@ export function AdminBudgetsAndFinOpsPage() {
     <>
       <PageHeader
         title="OpCo credit budgets & FinOps ledger"
-        subtitle="Allocate monthly token credits, configure low-credit alert thresholds, restrict model allowlists, and project limits to TurnstileLedger Azure Table Storage."
+        subtitle="Allocate monthly token credits, configure RPM/TPM rate limits and low-credit alert thresholds, restrict model allowlists, and project limits to TurnstileLedger."
       />
       {saveErr && <ErrorState message={saveErr} />}
       {saveMsg && (
@@ -933,6 +987,7 @@ export function AdminBudgetsAndFinOpsPage() {
                 "Allocated Credits",
                 "Used",
                 "Remaining",
+                "Rate Limits (RPM / TPM)",
                 "Utilization",
                 "Allowed Models",
                 "Ledger Key",
@@ -941,10 +996,13 @@ export function AdminBudgetsAndFinOpsPage() {
             >
               {d.items.map((b) => (
                 <tr key={b.id}>
-                  <td>{b.organization_name}</td>
+                  <td><strong>{b.organization_name}</strong></td>
                   <td>USD {b.credit_allocation}</td>
                   <td>USD {b.used_credits}</td>
                   <td>USD {b.remaining_credits}</td>
+                  <td style={{ fontFamily: "var(--font-mono)", whiteSpace: "nowrap" }}>
+                    {b.rpm_limit ?? 60} RPM · {fmtInt(b.tpm_limit ?? 120000)} TPM
+                  </td>
                   <td>
                     <Badge tone={b.low_credit_alert ? "bad" : "ok"}>
                       {b.utilization_pct}% (alert @ {b.alert_threshold_pct}%)
@@ -956,9 +1014,10 @@ export function AdminBudgetsAndFinOpsPage() {
                     <button
                       className="btn"
                       type="button"
+                      title={`Edit quota & rate limits for ${b.organization_name}`}
                       onClick={() => selectBudget(b)}
                     >
-                      Configure
+                      <IconPencil /> Configure
                     </button>
                   </td>
                 </tr>
@@ -966,7 +1025,7 @@ export function AdminBudgetsAndFinOpsPage() {
             </Table>
 
             <section className="panel" aria-labelledby="edit-budget-heading">
-              <h2 id="edit-budget-heading">Update OpCo credit allocation & model allowlist</h2>
+              <h2 id="edit-budget-heading">Update OpCo credit allocation, rate limits & model allowlist</h2>
               <form onSubmit={(e) => void saveBudget(e)} className="form-row">
                 <Field label="Organization">
                   {(id) => (
@@ -998,6 +1057,33 @@ export function AdminBudgetsAndFinOpsPage() {
                         setCredits(e.target.value);
                         setMonthlyUsd(e.target.value);
                       }}
+                      required
+                    />
+                  )}
+                </Field>
+                <Field label="RPM limit (reqs/min)">
+                  {(id) => (
+                    <input
+                      id={id}
+                      type="number"
+                      min={1}
+                      max={100000}
+                      value={rpmLimit}
+                      onChange={(e) => setRpmLimit(Number(e.target.value))}
+                      required
+                    />
+                  )}
+                </Field>
+                <Field label="TPM limit (tokens/min)">
+                  {(id) => (
+                    <input
+                      id={id}
+                      type="number"
+                      min={100}
+                      max={100000000}
+                      step={1000}
+                      value={tpmLimit}
+                      onChange={(e) => setTpmLimit(Number(e.target.value))}
                       required
                     />
                   )}
@@ -1203,6 +1289,9 @@ export function AdminModelRouterPage() {
   const [editingCategory, setEditingCategory] = useState<string | null>(null);
   const [advancedOpen, setAdvancedOpen] = useState(false);
   const [addingRule, setAddingRule] = useState(false);
+  const [editingModelId, setEditingModelId] = useState<string | null>(null);
+  const [editModelInPrice, setEditModelInPrice] = useState("");
+  const [editModelOutPrice, setEditModelOutPrice] = useState("");
 
   const modelOptions = (gardenState.data?.items ?? [])
     .filter((m) => m.id !== "auto")
@@ -1224,7 +1313,27 @@ export function AdminModelRouterPage() {
     setNewKeywords((rule.keywords ?? []).join(", "));
     setNewPreferred(rule.preferred_model);
     setNewFallback(rule.fallback_model);
-    setAdvancedOpen(true);
+  }
+
+  async function saveInlineModelPrice(item: ModelGardenItem) {
+    setError(undefined);
+    setNotice(undefined);
+    try {
+      const nextUrl = endpointInput[item.id] ?? item.endpoint_url;
+      const updated = await api.saveModelGardenItem({
+        ...item,
+        endpoint_url: nextUrl,
+        input_per_million: editModelInPrice || item.input_per_million,
+        output_per_million: editModelOutPrice || item.output_per_million,
+      });
+      setEditingModelId(null);
+      setNotice(
+        `Synced ${updated.display_name} (${updated.id}) pricing ($${updated.input_per_million} / $${updated.output_per_million} per 1M) across Admin & Customer Catalog.`,
+      );
+      setVersion((v) => v + 1);
+    } catch (err) {
+      setError(err instanceof ApiError ? err.detail : "Could not save model pricing.");
+    }
   }
 
   function clearRuleForm() {
@@ -1462,72 +1571,128 @@ export function AdminModelRouterPage() {
               <h2 style={{ marginTop: "0.5rem" }}>
                 Active routing behavior: {activeProfile.title}
               </h2>
-              {cfg.strategy === "microsoft-decision-1" ? (
-                <Table
-                  caption="Decision-1 routing policy matrix"
-                  head={[
-                    "Route Category",
-                    "Workload & Classifier Criteria",
-                    "Primary Target Model",
-                    "Fallback Model",
-                    "Signal Keywords",
-                    "Action",
-                  ]}
-                >
-                  {cfg.rules.map((r) => (
-                    <tr key={r.category}>
+              <Table
+                caption="Decision-1 routing policy matrix"
+                head={[
+                  "Route Category",
+                  "Workload & Classifier Criteria",
+                  "Primary Target Model",
+                  "Fallback Model",
+                  "Signal Keywords",
+                  "Action",
+                ]}
+              >
+                {cfg.rules.map((r) => {
+                  const isEditing = editingCategory === r.category;
+                  return (
+                    <tr key={r.category} style={isEditing ? { background: "var(--brand-soft)" } : undefined}>
                       <td><code>{r.category}</code></td>
-                      <td>{r.description}</td>
-                      <td><Badge tone="ok">{r.preferred_model}</Badge></td>
-                      <td><code>{r.fallback_model}</code></td>
-                      <td style={{ fontFamily: "var(--font-mono)", fontSize: "0.76rem" }}>
-                        {r.keywords.slice(0, 6).join(", ")}
+                      <td>
+                        {isEditing ? (
+                          <input
+                            aria-label="Classifier criteria description"
+                            value={newDesc}
+                            onChange={(e) => setNewDesc(e.target.value)}
+                          />
+                        ) : (
+                          r.description
+                        )}
                       </td>
                       <td>
-                        <div className="actions">
-                          <button
-                            type="button"
-                            className="btn"
-                            onClick={() => startEditRule(r)}
+                        {isEditing ? (
+                          <select
+                            aria-label="Primary model"
+                            value={newPreferred}
+                            onChange={(e) => setNewPreferred(e.target.value)}
                           >
-                            Edit rule
-                          </button>
-                          {cfg.rules.length > 1 && (
-                            <button
-                              type="button"
-                              className="btn danger"
-                              onClick={() => void deleteCategoryRule(r.category)}
-                            >
-                              Delete
-                            </button>
+                            {selectableModels.map((mId) => (
+                              <option key={mId} value={mId}>{mId}</option>
+                            ))}
+                          </select>
+                        ) : (
+                          <Badge tone="ok">{r.preferred_model}</Badge>
+                        )}
+                      </td>
+                      <td>
+                        {isEditing ? (
+                          <select
+                            aria-label="Fallback model"
+                            value={newFallback}
+                            onChange={(e) => setNewFallback(e.target.value)}
+                          >
+                            {selectableModels.map((mId) => (
+                              <option key={mId} value={mId}>{mId}</option>
+                            ))}
+                          </select>
+                        ) : (
+                          <code>{r.fallback_model}</code>
+                        )}
+                      </td>
+                      <td style={{ fontFamily: "var(--font-mono)", fontSize: "0.76rem" }}>
+                        {isEditing ? (
+                          <input
+                            aria-label="Signal keywords"
+                            value={newKeywords}
+                            onChange={(e) => setNewKeywords(e.target.value)}
+                          />
+                        ) : (
+                          r.keywords.slice(0, 6).join(", ")
+                        )}
+                      </td>
+                      <td>
+                        <div className="actions" style={{ flexWrap: "nowrap" }}>
+                          {isEditing ? (
+                            <>
+                              <button
+                                type="button"
+                                className="icon-btn primary"
+                                aria-label={`Save ${r.category}`}
+                                title="Save changes"
+                                disabled={addingRule}
+                                onClick={(e) => void addCustomCategoryRule(e as unknown as FormEvent)}
+                              >
+                                <IconCheck />
+                              </button>
+                              <button
+                                type="button"
+                                className="icon-btn"
+                                aria-label="Cancel inline edit"
+                                title="Cancel"
+                                onClick={clearRuleForm}
+                              >
+                                <IconCancel />
+                              </button>
+                            </>
+                          ) : (
+                            <>
+                              <button
+                                type="button"
+                                className="icon-btn"
+                                aria-label={`Edit ${r.category}`}
+                                title={`Edit ${r.category} inline`}
+                                onClick={() => startEditRule(r)}
+                              >
+                                <IconPencil />
+                              </button>
+                              {cfg.rules.length > 1 && (
+                                <button
+                                  type="button"
+                                  className="icon-btn danger"
+                                  aria-label={`Delete ${r.category}`}
+                                  title={`Delete ${r.category}`}
+                                  onClick={() => void deleteCategoryRule(r.category)}
+                                >
+                                  <IconTrash />
+                                </button>
+                              )}
+                            </>
                           )}
                         </div>
                       </td>
                     </tr>
-                  ))}
-                </Table>
-              ) : (
-                <Table
-                  caption="Decision-1 routing policy matrix"
-                  head={[
-                    "Route Category",
-                    "Workload & Prompt Signals",
-                    "Primary Target Model",
-                    "Fallback Model",
-                    "Cost / Latency Profile",
-                  ]}
-                >
-                  {activeProfile.matrix.map((r) => (
-                    <tr key={r.category}>
-                      <td><code>{r.category}</code></td>
-                      <td>{r.description}</td>
-                      <td><Badge tone="ok">{r.preferred_model}</Badge></td>
-                      <td><code>{r.fallback_model}</code></td>
-                      <td style={{ fontFamily: "var(--font-mono)", fontSize: "0.78rem" }}>{r.target_metric}</td>
-                    </tr>
-                  ))}
-                </Table>
-              )}
+                  );
+                })}
+              </Table>
 
               <details
                 className="gateway-advanced"
@@ -1564,21 +1729,23 @@ export function AdminModelRouterPage() {
                           <td><code>{r.fallback_model}</code></td>
                           <td>{r.keywords.join(", ")}</td>
                           <td>
-                            <div className="actions">
+                            <div className="actions" style={{ flexWrap: "nowrap" }}>
                               <button
                                 type="button"
-                                className="btn"
+                                className="icon-btn"
+                                title={`Edit ${r.category}`}
                                 onClick={() => startEditRule(r)}
                               >
-                                Edit
+                                <IconPencil />
                               </button>
                               {cfg.rules.length > 1 && (
                                 <button
                                   type="button"
-                                  className="btn danger"
+                                  className="icon-btn danger"
+                                  title={`Delete ${r.category}`}
                                   onClick={() => void deleteCategoryRule(r.category)}
                                 >
-                                  Delete
+                                  <IconTrash />
                                 </button>
                               )}
                             </div>
@@ -1616,11 +1783,11 @@ export function AdminModelRouterPage() {
                       </Field>
                       <div className="actions">
                         <button className="btn primary" type="submit" disabled={addingRule}>
-                          {addingRule ? "Saving…" : editingCategory ? `Update '${editingCategory}'` : "Add Category Rule"}
+                          <IconPlus /> {addingRule ? "Saving…" : editingCategory ? `Update '${editingCategory}'` : "Add Category Rule"}
                         </button>
                         {editingCategory && (
                           <button className="btn" type="button" onClick={clearRuleForm}>
-                            Cancel Edit
+                            <IconCancel /> Cancel
                           </button>
                         )}
                       </div>
@@ -1693,53 +1860,112 @@ export function AdminModelRouterPage() {
                 "Action",
               ]}
             >
-              {garden.items.map((m) => (
-                <tr key={m.id}>
-                  <td>
-                    <div className="vendor-header">
-                      <div className="vendor-mark sm">
-                        <VendorLogo vendor={m.vendor} size={15} />
+              {garden.items.map((m) => {
+                const isEditingModel = editingModelId === m.id;
+                return (
+                  <tr key={m.id} style={isEditingModel ? { background: "var(--brand-soft)" } : undefined}>
+                    <td>
+                      <div className="vendor-header">
+                        <div className="vendor-mark sm">
+                          <VendorLogo vendor={m.vendor} size={15} />
+                        </div>
+                        <code>{m.id}</code>
                       </div>
-                      <code>{m.id}</code>
-                    </div>
-                  </td>
-                  <td><strong>{m.display_name}</strong></td>
-                  <td>{m.vendor}</td>
-                  <td style={{ fontFamily: "var(--font-mono)", whiteSpace: "nowrap" }}>
-                    ${m.input_per_million} / ${m.output_per_million}
-                  </td>
-                  <td>
-                    <input
-                      aria-label={`Endpoint URL for ${m.id}`}
-                      value={endpointInput[m.id] ?? m.endpoint_url}
-                      placeholder="https://endpoint/v1/chat/completions"
-                      onChange={(e) =>
-                        setEndpointInput((prev) => ({ ...prev, [m.id]: e.target.value }))
-                      }
-                    />
-                  </td>
-                  <td>
-                    {m.coming_soon ? (
-                      <Badge tone="warn">Coming soon</Badge>
-                    ) : m.enabled ? (
-                      <Badge tone="ok">Active</Badge>
-                    ) : (
-                      <Badge tone="bad">Disabled</Badge>
-                    )}
-                  </td>
-                  <td>
-                    <button
-                      className={m.coming_soon || !m.enabled ? "btn primary" : "btn"}
-                      style={{ whiteSpace: "nowrap" }}
-                      type="button"
-                      aria-label={m.coming_soon || !m.enabled ? `Activate ${m.id}` : `Disable ${m.id}`}
-                      onClick={() => void toggleModelEndpoint(m)}
-                    >
-                      {m.coming_soon || !m.enabled ? "Activate" : "Disable"}
-                    </button>
-                  </td>
-                </tr>
-              ))}
+                    </td>
+                    <td><strong>{m.display_name}</strong></td>
+                    <td>{m.vendor}</td>
+                    <td style={{ fontFamily: "var(--font-mono)", whiteSpace: "nowrap" }}>
+                      {isEditingModel ? (
+                        <div className="actions" style={{ flexWrap: "nowrap" }}>
+                          <input
+                            aria-label={`Input price for ${m.id}`}
+                            style={{ width: "80px" }}
+                            value={editModelInPrice}
+                            onChange={(e) => setEditModelInPrice(e.target.value)}
+                          />
+                          <span>/</span>
+                          <input
+                            aria-label={`Output price for ${m.id}`}
+                            style={{ width: "80px" }}
+                            value={editModelOutPrice}
+                            onChange={(e) => setEditModelOutPrice(e.target.value)}
+                          />
+                        </div>
+                      ) : (
+                        `$${m.input_per_million} / $${m.output_per_million}`
+                      )}
+                    </td>
+                    <td>
+                      <input
+                        aria-label={`Endpoint URL for ${m.id}`}
+                        value={endpointInput[m.id] ?? m.endpoint_url}
+                        placeholder="https://endpoint/v1/chat/completions"
+                        onChange={(e) =>
+                          setEndpointInput((prev) => ({ ...prev, [m.id]: e.target.value }))
+                        }
+                      />
+                    </td>
+                    <td>
+                      {m.coming_soon ? (
+                        <Badge tone="warn">Coming soon</Badge>
+                      ) : m.enabled ? (
+                        <Badge tone="ok">Active</Badge>
+                      ) : (
+                        <Badge tone="bad">Disabled</Badge>
+                      )}
+                    </td>
+                    <td>
+                      <div className="actions" style={{ flexWrap: "nowrap" }}>
+                        {isEditingModel ? (
+                          <>
+                            <button
+                              type="button"
+                              className="icon-btn primary"
+                              title="Save pricing & endpoint"
+                              aria-label={`Save pricing for ${m.id}`}
+                              onClick={() => void saveInlineModelPrice(m)}
+                            >
+                              <IconCheck />
+                            </button>
+                            <button
+                              type="button"
+                              className="icon-btn"
+                              title="Cancel"
+                              aria-label="Cancel price edit"
+                              onClick={() => setEditingModelId(null)}
+                            >
+                              <IconCancel />
+                            </button>
+                          </>
+                        ) : (
+                          <button
+                            type="button"
+                            className="icon-btn"
+                            title={`Edit ${m.id} pricing inline`}
+                            aria-label={`Edit pricing for ${m.id}`}
+                            onClick={() => {
+                              setEditingModelId(m.id);
+                              setEditModelInPrice(m.input_per_million);
+                              setEditModelOutPrice(m.output_per_million);
+                            }}
+                          >
+                            <IconPencil />
+                          </button>
+                        )}
+                        <button
+                          className={m.coming_soon || !m.enabled ? "btn primary" : "btn"}
+                          style={{ whiteSpace: "nowrap" }}
+                          type="button"
+                          aria-label={m.coming_soon || !m.enabled ? `Activate ${m.id}` : `Disable ${m.id}`}
+                          onClick={() => void toggleModelEndpoint(m)}
+                        >
+                          {m.coming_soon || !m.enabled ? "Activate" : "Disable"}
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
             </Table>
           </section>
         )}

@@ -184,6 +184,8 @@ class CreditBudget(Base):
     monthly_budget_usd: Mapped[Decimal] = mapped_column(Numeric(20, 4), default=Decimal("5000.0000"))
     credit_allocation: Mapped[Decimal] = mapped_column(Numeric(20, 4), default=Decimal("5000.0000"))
     alert_threshold_pct: Mapped[int] = mapped_column(Integer, default=80)
+    rpm_limit: Mapped[int] = mapped_column(Integer, default=60)
+    tpm_limit: Mapped[int] = mapped_column(Integer, default=120000)
     allowed_models_json: Mapped[str] = mapped_column(Text, default='["*"]')
     product_name: Mapped[str] = mapped_column(String(100), default="Enterprise AI Gateway")
     channel: Mapped[str] = mapped_column(String(60), default="api-gateway")

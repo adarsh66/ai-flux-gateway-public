@@ -9,7 +9,7 @@ from sqlalchemy import BigInteger, DateTime, Float, case, cast, func, literal_co
 from sqlalchemy.orm import Session
 from sqlalchemy.sql import ColumnElement, Select
 
-from aiflux.models import IngestionState, ModelPrice, UsageRecord
+from aiflux.models import IngestionState, ManagedModelEndpoint, ModelPrice, UsageRecord
 from aiflux.schemas import PriceCreate
 
 
@@ -40,6 +40,13 @@ def create_price(db: Session, payload: PriceCreate, *, idempotent: bool = False)
             raise ValueError("Price periods must not overlap")
     row = ModelPrice(**values)
     db.add(row)
+    endpoint = db.get(ManagedModelEndpoint, payload.model)
+    if endpoint is not None and payload.effective_to is None:
+        endpoint.input_per_million = payload.input_per_million
+        endpoint.output_per_million = payload.output_per_million
+        endpoint.cached_input_per_million = payload.cached_input_per_million
+        endpoint.currency = payload.currency
+        endpoint.updated_at = datetime.now(UTC)
     db.flush()
     return row, True
 

@@ -294,7 +294,9 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     def models(principal: User, db: Db) -> dict:
         if not settings.catalog_configured:
             if settings.local_auth_enabled:
-                garden = list_model_garden(db, include_disabled=False)
+                garden = list_model_garden(
+                    db, include_disabled=False, organization_id=principal.organization_id
+                )
                 items = [
                     {
                         "id": m.id,
@@ -821,7 +823,9 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
     @app.get("/api/model-garden", response_model=Page[ModelGardenItemOutput])
     def customer_model_garden(principal: User, db: Db) -> dict:
-        items = list_model_garden(db, include_disabled=False)
+        items = list_model_garden(
+            db, include_disabled=False, organization_id=principal.organization_id
+        )
         return {"items": items, "total": len(items)}
 
     @app.get("/api/admin/model-garden", response_model=Page[ModelGardenItemOutput])
@@ -909,7 +913,9 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     def model_router_decide(
         payload: RouterDecisionRequest, principal: User, db: Db
     ) -> RouterDecisionOutput:
-        return decide_model_route(db, settings, payload)
+        return decide_model_route(
+            db, settings, payload, organization_id=principal.organization_id
+        )
 
     @app.post("/api/playground/chat", response_model=PlaygroundChatResponse)
     def playground_chat(
