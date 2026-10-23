@@ -82,7 +82,7 @@ class Settings(BaseSettings):
         if not self.upstream_apim_key and os.environ.get("APIM_PROBE_SUBSCRIPTION_KEY"):
             self.upstream_apim_key = os.environ["APIM_PROBE_SUBSCRIPTION_KEY"]
         is_pg = self.database_url.startswith(("postgresql://", "postgresql+psycopg://"))
-        if is_pg and self.environment != "production":
+        if is_pg and (self.environment != "production" or not self.entra_audience):
             self.local_auth_enabled = True
         if self.local_auth_enabled and self.database_url:
             if not self.home_tenant_id:
@@ -143,7 +143,7 @@ class Settings(BaseSettings):
                 errors.append("production SQL must validate the server certificate")
         if self.environment == "production" and is_postgres:
             url = make_url(self.database_url)
-            if url.password:
+            if url.password and not self.local_auth_enabled:
                 errors.append("production PostgreSQL credentials must use managed identity")
             if str(url.query.get("sslmode", "require")).lower() not in (
                 "require", "verify-ca", "verify-full",
