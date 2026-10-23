@@ -1243,6 +1243,11 @@ def render_turnstile_exchange_policy(db: Session, settings: Settings) -> Turnsti
 
 
 def ensure_local_users_seeded(db: Session, settings: Settings) -> None:
+    if settings.environment == "production":
+        if settings.identity_errors():
+            raise ValueError("Production identity/local-auth configuration is incomplete")
+        # Production schema and accounts are provisioned separately, never by runtime callers.
+        return
     Base.metadata.create_all(db.get_bind(), checkfirst=True)
     home_tid = settings.home_tenant_id or "00000000-0000-0000-0000-000000000001"
     home_org = db.scalar(select(Organization).where(Organization.tenant_id == home_tid))
@@ -1282,8 +1287,9 @@ def ensure_local_users_seeded(db: Session, settings: Settings) -> None:
 
     admin_accounts = [
         (settings.bootstrap_admin_email.lower(), settings.bootstrap_admin_password, "IDS Platform Admin"),
-        ("admin@turnstile.local", "turnstile-admin", "Platform Admin"),
     ]
+    if settings.environment != "production":
+        admin_accounts.append(("admin@turnstile.local", "turnstile-admin", "Platform Admin"))
     for email, pwd, dname in admin_accounts:
         if db.scalar(select(LocalUser).where(func.lower(LocalUser.email) == email)) is None:
             db.add(
@@ -1304,9 +1310,12 @@ def ensure_local_users_seeded(db: Session, settings: Settings) -> None:
             settings.bootstrap_customer_password,
             "Caldova Lead Developer",
         ),
-        ("customer@caldova.com", settings.bootstrap_customer_password, "Caldova Operations"),
-        ("customer@opco.local", "turnstile-customer", "Caldova Developer"),
     ]
+    if settings.environment != "production":
+        customer_accounts.extend([
+            ("customer@caldova.com", settings.bootstrap_customer_password, "Caldova Operations"),
+            ("customer@opco.local", "turnstile-customer", "Caldova Developer"),
+        ])
     for email, pwd, dname in customer_accounts:
         if db.scalar(select(LocalUser).where(func.lower(LocalUser.email) == email)) is None:
             db.add(

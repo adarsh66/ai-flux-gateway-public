@@ -9,8 +9,12 @@ from aiflux.models import Member, Organization
 
 
 def configure_bootstrap(settings: Settings, engine: Engine) -> None:
-    if settings.identity_errors() or not settings.bootstrap_object_id:
+    production_local_auth = settings.environment == "production" and settings.local_auth_enabled
+    if settings.identity_errors() or (not production_local_auth and not settings.bootstrap_object_id):
         raise SystemExit("Set database, audience, home tenant and bootstrap object ID before bootstrap")
+    if production_local_auth:
+        # Local accounts and memberships must already have been seeded by the operator.
+        return
     tenant = str(UUID(settings.home_tenant_id))
     object_id = str(UUID(settings.bootstrap_object_id))
     with Session(engine) as db:
@@ -37,7 +41,8 @@ def configure_bootstrap(settings: Settings, engine: Engine) -> None:
 
 def main() -> None:
     settings = get_settings()
-    if settings.identity_errors() or not settings.bootstrap_object_id:
+    production_local_auth = settings.environment == "production" and settings.local_auth_enabled
+    if settings.identity_errors() or (not production_local_auth and not settings.bootstrap_object_id):
         raise SystemExit("Set database, audience, home tenant and bootstrap object ID before bootstrap")
     configure_bootstrap(settings, engine_for(settings.database_url))
 
