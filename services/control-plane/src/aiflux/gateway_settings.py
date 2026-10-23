@@ -12,10 +12,11 @@ from aiflux.apim import ApimClient, ApimError
 from aiflux.auth import Principal
 from aiflux.config import Settings
 from aiflux.managed_controls import render_managed, safety_relaxed, validate_configuration
-from aiflux.models import GatewaySettings, GatewaySettingsRevision
+from aiflux.models import GatewaySettings, GatewaySettingsRevision, Team, TeamSubscription
 from aiflux.schemas import (
     GatewayCapabilities,
     GatewayConfiguration,
+    GatewayLimits,
     GatewayRevisionOutput,
     GatewayScope,
     GatewaySettingsOutput,
@@ -109,10 +110,105 @@ def render_revision(scope: GatewayScope, row: GatewaySettingsRevision) -> str:
     return render_fragment(scope, config)
 
 
+def _ensure_local_gateway_seeded(db: Session, settings: Settings, key: GatewayScope) -> None:
+    if not (settings.local_auth_enabled and settings.environment != "testing"):
+        return
+    subs = db.scalars(select(TeamSubscription)).all()
+    dirty = False
+    for sub in subs:
+        if not sub.team_id:
+            team = db.scalar(
+                select(Team).where(
+                    Team.organization_id == sub.organization_id,
+                    Team.name == (sub.team or "General"),
+                )
+            )
+            if team is None:
+                team = Team(organization_id=sub.organization_id, name=sub.team or "General")
+                db.add(team)
+                db.flush()
+            sub.team_id = team.id
+            dirty = True
+    head = db.get(GatewaySettings, key)
+    scopes = sorted(set(settings.gateway_settings_scopes)) or [key]
+    if head is None:
+        default_cfg = ManagedGatewayConfiguration(
+            schema_version=2,
+            defaults=GatewayLimits(
+                rpm=min(60, settings.gateway_max_rpm),
+                tpm=2048,
+                token_quota=100000,
+                quota_period="Daily",
+                concurrency=4,
+                request_quota=1000,
+                request_quota_period="Daily",
+            ),
+            teams=[],
+            subscriptions=[],
+            safety=SafetyConfiguration(
+                profile="Standard",
+                hate=4,
+                violence=4,
+                sexual=4,
+                self_harm=4,
+                prompt_attack=True,
+                protected_material=True,
+                input_filtering=True,
+                output_filtering=True,
+            ),
+        )
+        bindings = [
+            {
+                "organization_id": s.organization_id,
+                "team_id": s.team_id or "",
+                "subscription_id": s.id,
+            }
+            for s in subs
+            if s.team_id
+        ]
+        rendered = render_managed(default_cfg, bindings)  # type: ignore[arg-type]
+        frag_hash = fingerprint(rendered)
+        bases = {s: {"hash": frag_hash, "etag": '"local-v1"'} for s in scopes}
+        for s in scopes:
+            ApimClient._local_fragments[s] = (rendered, '"local-v1"')
+        db.add(GatewaySettings(scope=key, version=1, published_version=1))
+        db.add(
+            GatewaySettingsRevision(
+                scope=key,
+                version=1,
+                reason="Initial Microsoft Foundry Guardrails & Gateway baseline",
+                object_id="system-bootstrap",
+                state="published",
+                configuration=json.dumps(
+                    {
+                        "configuration": default_cfg.model_dump(mode="json"),
+                        "bindings": bindings,
+                        "bases": bases,
+                        "desired_hash": frag_hash,
+                    },
+                    separators=(",", ":"),
+                ),
+                base_hash=frag_hash,
+                base_etag='"local-v1"',
+            )
+        )
+        db.commit()
+    else:
+        if dirty:
+            db.commit()
+        rev = revision_at(db, key, head.version)
+        rendered = render_revision(key, rev)
+        for s in scopes:
+            if s not in ApimClient._local_fragments:
+                ApimClient._local_fragments[s] = (rendered, rev.base_etag or '"local-v1"')
+
+
 def settings_output(
     db: Session, scope: GatewayScope, settings: Settings | None = None,
 ) -> GatewaySettingsOutput:
     key = canonical_scope(settings, scope) if settings else scope
+    if settings is not None:
+        _ensure_local_gateway_seeded(db, settings, key)
     head = db.get(GatewaySettings, key)
     ceiling = min(max_tpm(item) for item in settings.gateway_settings_scopes) if (
         settings and settings.gateway_controls_v2_enabled

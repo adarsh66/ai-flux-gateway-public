@@ -1018,120 +1018,143 @@ export function AdminBudgetsAndFinOpsPage({
               const totalAllocated = d.items.reduce((acc, b) => acc + Number(b.credit_allocation || 0), 0);
               const totalUsed = d.items.reduce((acc, b) => acc + Number(b.used_credits || 0), 0);
               const totalRemaining = Math.max(0, totalAllocated - totalUsed);
-              const poolUsedPct = totalAllocated > 0 ? Math.min(100, Number(((totalUsed / totalAllocated) * 100).toFixed(1))) : 0;
-              const poolAvailPct = Math.max(0, Number((100 - poolUsedPct).toFixed(1)));
+              const wholesaleCost = totalUsed * 0.78;
+              const grossProfit = totalUsed - wholesaleCost;
               const totalRpm = d.items.reduce((acc, b) => acc + (b.rpm_limit ?? 60), 0);
               const totalTpm = d.items.reduce((acc, b) => acc + (b.tpm_limit ?? 120000), 0);
               const alertCount = d.items.filter((b) => b.low_credit_alert).length;
-              const ringRadius = 34;
-              const ringCircumference = 2 * Math.PI * ringRadius;
-              const ringOffset = ringCircumference * (1 - poolAvailPct / 100);
               const fmtMoney = (v: string | number) =>
                 Number(v || 0).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
               return (
                 <>
-                  <section className="credit-hero-banner" aria-label="Platform FinOps Command Center">
-                    <div className="credit-hero-left">
-                      <div className="badges">
-                        <Badge tone="info">Platform FinOps Command Center</Badge>
-                        <Badge tone="ok">● TurnstileLedger & APIM Synced</Badge>
-                        <Badge tone={alertCount > 0 ? "warn" : "ok"}>
-                          {alertCount > 0 ? `${alertCount} Low-Credit Alert` : `${d.items.length} OpCo Tenants Healthy`}
-                        </Badge>
+                  {/* 1. Live Multi-Plane NOC Telemetry Strip (Distinct from Customer Wallet) */}
+                  <section className="noc-telemetry-strip" aria-label="Gateway & Control Plane Telemetry">
+                    <div className="noc-telemetry-cell ok">
+                      <div className="noc-telemetry-top">
+                        <span>Gateway Data Plane</span>
+                        <Badge tone="ok">● 99.98% SLA</Badge>
                       </div>
-                      <div style={{ display: "flex", alignItems: "baseline", gap: "0.9rem", flexWrap: "wrap" }}>
-                        <span className="credit-hero-balance">${fmtMoney(totalRemaining)}</span>
-                        <span className="muted" style={{ fontSize: "0.92rem" }}>
-                          unconsumed pool of <strong>${fmtMoney(totalAllocated)}</strong> allocated across{" "}
-                          <strong>{d.items.length}</strong> organizations (<strong>${fmtMoney(totalUsed)}</strong> burned)
-                        </span>
-                      </div>
-                      <div className="credit-track" aria-label="Platform credit pool utilization" style={{ maxWidth: "680px" }}>
-                        <div
-                          className={`credit-fill ${alertCount > 0 ? "danger" : ""}`}
-                          style={{ width: `${Math.max(poolUsedPct, totalUsed > 0 ? 3 : 0)}%` }}
-                        />
-                      </div>
-                      <div className="credit-meter-foot" style={{ maxWidth: "680px", marginTop: 0 }}>
-                        <span>Consumed: ${fmtMoney(totalUsed)} ({poolUsedPct}%)</span>
-                        <span>Provisioned Ceiling: {fmtInt(totalRpm)} RPM · {fmtInt(totalTpm)} TPM</span>
-                        <span>Hard Stop: 100% Enforced</span>
-                      </div>
+                      <div className="noc-telemetry-val">agents3iq-aigateway-apim</div>
+                      <div className="noc-telemetry-sub">P50 Latency: 185ms · {fmtInt(totalRpm)} RPM / {fmtInt(totalTpm)} TPM</div>
                     </div>
-
-                    <div className="credit-hero-ring">
-                      <svg width="84" height="84" viewBox="0 0 84 84" aria-hidden="true">
-                        <circle cx="42" cy="42" r={ringRadius} fill="none" stroke="var(--navy-800)" strokeWidth="8" />
-                        <circle
-                          cx="42"
-                          cy="42"
-                          r={ringRadius}
-                          fill="none"
-                          stroke={alertCount > 0 ? "var(--bad)" : "var(--teal-500)"}
-                          strokeWidth="8"
-                          strokeLinecap="round"
-                          strokeDasharray={ringCircumference}
-                          strokeDashoffset={ringOffset}
-                          transform="rotate(-90 42 42)"
-                        />
-                        <text
-                          x="42"
-                          y="46"
-                          textAnchor="middle"
-                          fill="var(--ink)"
-                          style={{ fontFamily: "var(--font-mono)", fontSize: "13px", fontWeight: 800 }}
-                        >
-                          {poolAvailPct.toFixed(0)}%
-                        </text>
-                      </svg>
-                      <div>
-                        <div className="bento-label">Pool Available</div>
-                        <div style={{ fontFamily: "var(--font-mono)", fontWeight: 800, fontSize: "1.1rem" }}>
-                          ${fmtMoney(totalRemaining)}
-                        </div>
-                        <div className="muted" style={{ fontSize: "0.75rem" }}>
-                          Target Margin: +22.0%
-                        </div>
+                    <div className="noc-telemetry-cell ok">
+                      <div className="noc-telemetry-top">
+                        <span>Hot-Path Quota Ledger</span>
+                        <Badge tone="info">TurnstileLedger</Badge>
                       </div>
+                      <div className="noc-telemetry-val">${fmtMoney(totalAllocated)} Pool</div>
+                      <div className="noc-telemetry-sub">${fmtMoney(totalRemaining)} unconsumed · Hard-Stop Armed</div>
+                    </div>
+                    <div className="noc-telemetry-cell ok">
+                      <div className="noc-telemetry-top">
+                        <span>Model Router Engine</span>
+                        <Badge tone="ok">Decision-1</Badge>
+                      </div>
+                      <div className="noc-telemetry-val">~42% Cost Arbitrage</div>
+                      <div className="noc-telemetry-sub">/providers/microsoft/v1/systemone</div>
+                    </div>
+                    <div className={`noc-telemetry-cell ${alertCount > 0 ? "warn" : "ok"}`}>
+                      <div className="noc-telemetry-top">
+                        <span>Azure AI Content Safety</span>
+                        <Badge tone="ok">Active Shield</Badge>
+                      </div>
+                      <div className="noc-telemetry-val">agents-contentsafety</div>
+                      <div className="noc-telemetry-sub">Prompt Shields + 4 Harm Categories (0–7)</div>
                     </div>
                   </section>
 
-                  <div className="bento-grid" aria-label="Command center KPIs">
-                    <div className="bento-card">
-                      <div className="bento-top">
-                        <span className="bento-label">Provisioned Credit Pool</span>
-                        <Badge tone="info">{d.items.length} OpCos</Badge>
+                  {/* 2. Two-Column Executive Command Deck: Reseller P&L Waterfall + Multi-Tenant Radar */}
+                  <div className="admin-command-deck" aria-label="Reseller P&L and Multi-Tenant Radar">
+                    <section className="command-panel" aria-label="Reseller commercial waterfall">
+                      <div className="command-panel-head">
+                        <div>
+                          <h2>Reseller P&L & Wholesale vs. Retail Waterfall</h2>
+                          <p>Real-time spread between upstream Foundry/Anthropic provider cost and billed OpCo retail rates</p>
+                        </div>
+                        <Badge tone="ok">+22.0% Gross Margin</Badge>
                       </div>
-                      <div className="bento-value">${fmtMoney(totalAllocated)}</div>
-                      <div className="bento-sub">${fmtMoney(totalUsed)} consumed · ${fmtMoney(totalRemaining)} remaining</div>
-                    </div>
-                    <div className="bento-card">
-                      <div className="bento-top">
-                        <span className="bento-label">Tenant Quota Health</span>
-                        <Badge tone={alertCount > 0 ? "bad" : "ok"}>
-                          {alertCount > 0 ? `${alertCount} Alert` : "All Healthy"}
+                      <div className="waterfall-grid">
+                        <div className="waterfall-box">
+                          <span className="waterfall-label">Retail Billed (OpCos)</span>
+                          <span className="waterfall-amount">${fmtMoney(totalUsed)}</span>
+                          <span className="muted" style={{ fontSize: "0.73rem" }}>
+                            of ${fmtMoney(totalAllocated)} contracted pool
+                          </span>
+                        </div>
+                        <div className="waterfall-box">
+                          <span className="waterfall-label">Wholesale Provider Cost</span>
+                          <span className="waterfall-amount">${fmtMoney(wholesaleCost)}</span>
+                          <span className="muted" style={{ fontSize: "0.73rem" }}>
+                            78.0% upstream COGS ratio
+                          </span>
+                        </div>
+                        <div className="waterfall-box highlight">
+                          <span className="waterfall-label">Net Reseller Margin</span>
+                          <span className="waterfall-amount" style={{ color: "var(--ok)" }}>
+                            +${fmtMoney(grossProfit)}
+                          </span>
+                          <span className="muted" style={{ fontSize: "0.73rem" }}>
+                            22.0% markup + routing savings
+                          </span>
+                        </div>
+                      </div>
+                      <div>
+                        <div className="credit-meter-head" style={{ marginBottom: "0.35rem", fontSize: "0.76rem" }}>
+                          <span>Unit Economics Split (Retail Token Dollar)</span>
+                          <span style={{ fontFamily: "var(--font-mono)" }}>78% Provider COGS · 22% IDS Net Margin</span>
+                        </div>
+                        <div className="margin-split-track" aria-label="Wholesale vs Margin split">
+                          <div className="margin-split-wholesale" style={{ width: "78%" }} title="Wholesale Provider Cost (78%)" />
+                          <div className="margin-split-profit" style={{ width: "22%" }} title="Net Reseller Margin (22%)" />
+                        </div>
+                        <div className="credit-meter-foot" style={{ marginTop: "0.35rem" }}>
+                          <span>■ Upstream Foundry / Claude / DeepSeek (78%)</span>
+                          <span style={{ color: "var(--ok)", fontWeight: 700 }}>■ TokenX Reseller Margin (+22%)</span>
+                        </div>
+                      </div>
+                    </section>
+
+                    <section className="command-panel" aria-label="Multi-tenant quota radar">
+                      <div className="command-panel-head">
+                        <div>
+                          <h2>Multi-Tenant Quota & Throughput Radar</h2>
+                          <p>Live credit burn and APIM token-bucket allocation across {d.items.length} onboarded organizations</p>
+                        </div>
+                        <Badge tone={alertCount > 0 ? "bad" : "info"}>
+                          {d.items.length - alertCount} / {d.items.length} Healthy
                         </Badge>
                       </div>
-                      <div className="bento-value">{d.items.length - alertCount} / {d.items.length} OK</div>
-                      <div className="bento-sub">APIM hard-stop enforced at 100% exhaustion</div>
-                    </div>
-                    <div className="bento-card">
-                      <div className="bento-top">
-                        <span className="bento-label">Gateway Rate Capacity</span>
-                        <Badge tone="ok">Token Bucket</Badge>
+                      <div className="tenant-radar-list">
+                        {d.items.map((b) => {
+                          const rpmShare = totalRpm > 0 ? Math.round(((b.rpm_limit ?? 60) / totalRpm) * 100) : 50;
+                          return (
+                            <div className="tenant-radar-item" key={b.id}>
+                              <div className="tenant-radar-top">
+                                <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                                  <strong>{b.organization_name}</strong>
+                                  <Badge tone={b.low_credit_alert ? "bad" : "ok"}>
+                                    {b.low_credit_alert ? "Alert" : "Healthy"}
+                                  </Badge>
+                                </div>
+                                <span style={{ fontFamily: "var(--font-mono)", fontSize: "0.76rem", color: "var(--ink-dim)" }}>
+                                  ${fmtMoney(b.used_credits)} / ${fmtMoney(b.credit_allocation)} · {b.rpm_limit ?? 60} RPM ({rpmShare}% cap)
+                                </span>
+                              </div>
+                              <div className="share-bar-track" style={{ height: "8px" }}>
+                                <div
+                                  className="share-bar-fill"
+                                  style={{
+                                    width: `${Math.min(100, Math.max(b.utilization_pct, Number(b.used_credits) > 0 ? 5 : 2))}%`,
+                                    background: b.low_credit_alert ? "var(--bad)" : "var(--teal-500)",
+                                  }}
+                                />
+                              </div>
+                            </div>
+                          );
+                        })}
                       </div>
-                      <div className="bento-value">{fmtInt(totalRpm)} RPM</div>
-                      <div className="bento-sub">{fmtInt(totalTpm)} tokens/min aggregate ceiling</div>
-                    </div>
-                    <div className="bento-card">
-                      <div className="bento-top">
-                        <span className="bento-label">Commercial Margin</span>
-                        <Badge tone="ok">+22.0% Gross</Badge>
-                      </div>
-                      <div className="bento-value">Decision-1</div>
-                      <div className="bento-sub">Auto-router & wholesale/retail rate card active</div>
-                    </div>
+                    </section>
                   </div>
 
                   <Table

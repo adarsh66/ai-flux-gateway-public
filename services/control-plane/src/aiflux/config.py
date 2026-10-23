@@ -64,6 +64,8 @@ class Settings(BaseSettings):
     bootstrap_customer_org: str = "Caldova"
     upstream_apim_url: str = ""
     upstream_apim_key: str = ""
+    content_safety_endpoint: str = "https://agents-contentsafety.cognitiveservices.azure.com"
+    content_safety_key: str = ""
 
     @model_validator(mode="after")
     def populate_turnstile_env_fallbacks(self) -> "Settings":
@@ -87,6 +89,13 @@ class Settings(BaseSettings):
                 self.home_tenant_id = "00000000-0000-0000-0000-000000000001"
             if not self.entra_audience:
                 self.entra_audience = "local://turnstile-postgres-auth"
+            if self.environment != "testing" and not self.gateway_settings_scopes:
+                self.gateway_settings_scopes = ["dev-openai", "dev-unified"]
+                self.gateway_controls_v2_enabled = True
+                self.gateway_protected_material_available = True
+                self.gateway_safety_relaxation_allowed = True
+                self.gateway_enforcement_enabled = True
+                self.gateway_max_rpm = max(self.gateway_max_rpm, 600)
         return self
 
     def identity_errors(self) -> list[str]:

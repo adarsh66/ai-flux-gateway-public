@@ -301,11 +301,11 @@ def _ensure_credit_budget_columns(db: Session) -> None:
     for col_name, default_val in (("rpm_limit", 60), ("tpm_limit", 120000)):
         if col_name not in cols:
             try:
-                db.execute(
-                    text(
-                        f"ALTER TABLE credit_budgets ADD COLUMN {col_name} INTEGER DEFAULT {default_val} NOT NULL"
-                    )
+                ddl = (
+                    f"ALTER TABLE credit_budgets ADD COLUMN {col_name} "
+                    f"INTEGER DEFAULT {default_val} NOT NULL"
                 )
+                db.execute(text(ddl))
                 db.commit()
             except Exception:
                 db.rollback()
@@ -989,15 +989,130 @@ _UNSAFE_PATTERNS: list[tuple[str, re.Pattern[str]]] = [
     ("hate", re.compile(r"(hate speech slur)", re.I)),
 ]
 
+_cs_token_cache: tuple[str, float] = ("", 0.0)
 
-def _evaluate_content_safety(text_input: str) -> tuple[Literal["passed", "blocked"], dict[str, int], str]:
+
+def _get_content_safety_bearer() -> str:
+    global _cs_token_cache
+    now_ts = time.time()
+    if _cs_token_cache[0] and _cs_token_cache[1] > now_ts + 120:
+        return _cs_token_cache[0]
+    try:
+        from azure.identity import DefaultAzureCredential
+
+        tok = DefaultAzureCredential().get_token("https://cognitiveservices.azure.com/.default")
+        _cs_token_cache = (tok.token, float(tok.expires_on))
+        return tok.token
+    except Exception:
+        return ""
+
+
+def _active_safety_thresholds(db: Session | None) -> dict[str, Any]:
+    defaults: dict[str, Any] = {
+        "hate": 4,
+        "violence": 4,
+        "sexual": 4,
+        "self_harm": 4,
+        "prompt_attack": True,
+        "protected_material": True,
+        "input_filtering": True,
+        "output_filtering": True,
+    }
+    if db is None:
+        return defaults
+    try:
+        from aiflux.models import GatewaySettings, GatewaySettingsRevision
+
+        head = db.scalar(select(GatewaySettings).order_by(GatewaySettings.version.desc()))
+        if head and head.version:
+            rev = db.scalar(
+                select(GatewaySettingsRevision).where(
+                    GatewaySettingsRevision.scope == head.scope,
+                    GatewaySettingsRevision.version == (head.published_version or head.version),
+                )
+            )
+            if rev:
+                stored = json.loads(rev.configuration)
+                cfg = stored.get("configuration", stored)
+                safety = cfg.get("safety")
+                if isinstance(safety, dict):
+                    defaults.update(safety)
+    except Exception:
+        pass
+    return defaults
+
+
+def _evaluate_content_safety(
+    text_input: str,
+    db: Session | None = None,
+    settings: Settings | None = None,
+) -> tuple[Literal["passed", "blocked"], dict[str, int], str]:
     scores = {"hate": 0, "violence": 0, "sexual": 0, "self_harm": 0, "prompt_attack": 0}
     triggered_category = ""
-    for category, pattern in _UNSAFE_PATTERNS:
-        if pattern.search(text_input):
-            scores[category] = 6
-            triggered_category = category
-            break
+    thresholds = _active_safety_thresholds(db)
+    if not thresholds.get("input_filtering", True):
+        return "passed", scores, ""
+
+    # 1. Live Azure AI Content Safety inspection (agents-contentsafety.cognitiveservices.azure.com)
+    if settings and settings.content_safety_endpoint and settings.environment != "testing":
+        base_cs = settings.content_safety_endpoint.rstrip("/")
+        headers: dict[str, str] = {"Content-Type": "application/json"}
+        if settings.content_safety_key:
+            headers["Ocp-Apim-Subscription-Key"] = settings.content_safety_key
+        else:
+            bearer = _get_content_safety_bearer()
+            if bearer:
+                headers["Authorization"] = f"Bearer {bearer}"
+        if "Ocp-Apim-Subscription-Key" in headers or "Authorization" in headers:
+            try:
+                resp = httpx.post(
+                    f"{base_cs}/contentsafety/text:analyze?api-version=2024-09-01",
+                    headers=headers,
+                    json={
+                        "text": text_input[:4000],
+                        "categories": ["Hate", "SelfHarm", "Sexual", "Violence"],
+                        "outputType": "EightSeverityLevels",
+                    },
+                    timeout=5.0,
+                )
+                if resp.status_code == 200:
+                    cat_map = {
+                        "Hate": "hate",
+                        "SelfHarm": "self_harm",
+                        "Sexual": "sexual",
+                        "Violence": "violence",
+                    }
+                    for item in resp.json().get("categoriesAnalysis", []):
+                        key = cat_map.get(item.get("category", ""))
+                        sev = int(item.get("severity") or 0)
+                        if key:
+                            scores[key] = sev
+                            limit = max(1, int(thresholds.get(key, 4)))
+                            if sev >= limit and not triggered_category:
+                                triggered_category = key
+                if thresholds.get("prompt_attack", True) and not triggered_category:
+                    sh_resp = httpx.post(
+                        f"{base_cs}/contentsafety/text:shieldPrompt?api-version=2024-09-01",
+                        headers=headers,
+                        json={"userPrompt": text_input[:4000], "documents": []},
+                        timeout=5.0,
+                    )
+                    if sh_resp.status_code == 200:
+                        if sh_resp.json().get("userPromptAnalysis", {}).get("attackDetected"):
+                            scores["prompt_attack"] = 6
+                            triggered_category = "prompt_attack"
+            except httpx.HTTPError:
+                pass
+
+    # 2. Deterministic guardrail fallback (ensures offline/test determinism)
+    if not triggered_category:
+        for category, pattern in _UNSAFE_PATTERNS:
+            if category == "prompt_attack" and not thresholds.get("prompt_attack", True):
+                continue
+            if pattern.search(text_input):
+                scores[category] = 6
+                triggered_category = category
+                break
     status: Literal["passed", "blocked"] = "blocked" if triggered_category else "passed"
     return status, scores, triggered_category
 
@@ -1062,7 +1177,9 @@ def run_playground_chat(
     if "*" not in allowed and selected_model_id not in allowed and requested_model not in allowed:
         raise HTTPException(403, f"Model '{selected_model_id}' is not in this organization's allowlist")
 
-    safety_status, safety_scores, triggered_cat = _evaluate_content_safety(combined_prompt)
+    safety_status, safety_scores, triggered_cat = _evaluate_content_safety(
+        combined_prompt, db=db, settings=settings
+    )
     now = datetime.now(UTC)
     if safety_status == "blocked":
         db.add(
@@ -1240,6 +1357,8 @@ def render_turnstile_exchange_policy(db: Session, settings: Settings) -> Turnsti
         '{"error":{"code":"credit_budget_exhausted",'
         '"message":"Monthly OpCo token credit allocation has been reached."}}'
     )
+    safety_cfg = _active_safety_thresholds(db)
+    shield_str = "true" if safety_cfg.get("prompt_attack", True) else "false"
     lines = [
         "<policies>",
         "  <inbound>",
@@ -1272,12 +1391,12 @@ def render_turnstile_exchange_policy(db: Session, settings: Settings) -> Turnsti
         "      </when>",
         "    </choose>",
         "    <!-- 2. Azure AI Content Safety Guardrail (Foundry Content Safety + Prompt Shields) -->",
-        '    <llm-content-safety backend-id="foundry-content-safety" shield-prompt="true">',
+        f'    <llm-content-safety backend-id="foundry-content-safety" shield-prompt="{shield_str}">',
         '      <categories output-type="EightSeverityLevels">',
-        '        <category name="Hate" threshold="1" />',
-        '        <category name="Violence" threshold="1" />',
-        '        <category name="Sexual" threshold="1" />',
-        '        <category name="SelfHarm" threshold="1" />',
+        f'        <category name="Hate" threshold="{safety_cfg.get("hate", 4)}" />',
+        f'        <category name="Violence" threshold="{safety_cfg.get("violence", 4)}" />',
+        f'        <category name="Sexual" threshold="{safety_cfg.get("sexual", 4)}" />',
+        f'        <category name="SelfHarm" threshold="{safety_cfg.get("self_harm", 4)}" />',
         "      </categories>",
         "    </llm-content-safety>",
         "    <!-- 3. Microsoft Decision-1 (model = auto) Dynamic Model Router -->",
