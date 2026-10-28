@@ -1,0 +1,139 @@
+{
+  "at_utc": "2026-10-27T06:57:10.627555+00:00",
+  "image": "pocidstokenexacr.azurecr.io/aiflux-ingestion@sha256:d2bdae4edbd2faf0f6c5a5b28c83882e36222767f88de9625071b251d4114c0b",
+  "run_id": "cm1v",
+  "image_plan_sha256": "34cfcd4883bbfe6848b6a35c443bf56189d2770241149597ea5e3d95e753e6b3",
+  "image_applied_at_utc": "2026-10-27T06:44:19.604498+00:00",
+  "host_plan_sha256": "ea9b870207abadb7efa6dcaf7e6b71bf762cf7cc90979bd56fb60fde9355e31c",
+  "cutoff": "2026-10-27T06:06:02.045288+00:00",
+  "host_enabled": true,
+  "catalog_configured": true,
+  "timer_disabled": true,
+  "all_settings_preserved": true,
+  "other_three_pins_preserved": true,
+  "security": {
+    "state_default_action": "Deny",
+    "state_ips": [
+      "167.103.65.36",
+      "167.103.66.248",
+      "167.103.66.93"
+    ],
+    "postgres_public": "Disabled",
+    "postgres_firewall_rules": 0
+  },
+  "scanner": {
+    "at_utc": "2026-10-27T06:33:49.085732+00:00",
+    "scanner": "checkov==3.2.495",
+    "exit_code": 0,
+    "dockerfile_sha256": "2d98e1fea30b29e4e49ac17346a3a0c5f6e556adc18d67ce6a4fbed2baf9b1ea",
+    "summary": {
+      "passed": 96,
+      "failed": 0,
+      "skipped": 1,
+      "parsing_errors": 0,
+      "resource_count": 1,
+      "checkov_version": "3.2.495"
+    },
+    "failed_checks": [],
+    "skipped_checks": [
+      {
+        "check_id": "CKV_DOCKER_3",
+        "check_name": "Ensure that a user for the container has been created",
+        "suppress_comment": "Scoped compatibility exception preserving the existing pinned Functions base runtime user; non-root startup for this exact base is not verified. See docs/finops-functions-container-security-20261027.md. No new privileges or SSH."
+      }
+    ],
+    "remote_policy_downloads": false,
+    "dependencies_upgraded": false
+  },
+  "host_keys_read": 0,
+  "manual_timer_invocations": 0,
+  "new_runners": 0,
+  "database_writes": 0,
+  "scheduled_successes_verified": 0,
+  "configured_image_verified": true,
+  "running_image_independently_verified": false,
+  "site": {
+    "enabled": true,
+    "state": "Running",
+    "availabilityState": "Normal"
+  },
+  "functions": [
+    {
+      "name": "ingestion_ready",
+      "disabled": false
+    },
+    {
+      "name": "ingest_usage",
+      "disabled": true
+    }
+  ],
+  "host": {
+    "state": "Running",
+    "version": "4.1055.150.0"
+  },
+  "runtime_readiness": {
+    "status": 401,
+    "error_type": "HTTPError"
+  },
+  "post_image_telemetry": {
+    "partial": true,
+    "tables": [
+      {
+        "name": "PrimaryResult",
+        "columns": [
+          {
+            "name": "records",
+            "type": "long"
+          },
+          {
+            "name": "scheduled_started",
+            "type": "long"
+          },
+          {
+            "name": "successes",
+            "type": "long"
+          },
+          {
+            "name": "failures",
+            "type": "long"
+          },
+          {
+            "name": "storage_errors",
+            "type": "long"
+          },
+          {
+            "name": "database_errors",
+            "type": "long"
+          },
+          {
+            "name": "import_errors",
+            "type": "long"
+          },
+          {
+            "name": "configuration_errors",
+            "type": "long"
+          },
+          {
+            "name": "runtime_readiness_records",
+            "type": "long"
+          }
+        ],
+        "rows": [
+          [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ]
+        ]
+      }
+    ]
+  },
+  "ready_for_timer": false,
+  "reason": "runtime_MI_database_and_host_storage_readiness_not_verified"
+}

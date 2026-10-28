@@ -1,0 +1,17 @@
+{
+  "at_utc": "2026-10-27T07:03:09.767536+00:00",
+  "host_keys_read": 0,
+  "manual_timer_invocations": 0,
+  "status": 200,
+  "bytes": 14194,
+  "content_type": "application/octet-stream",
+  "expected_digest_seen": true,
+  "ready_results": [],
+  "fixed_failure_counts": {
+    "http_binding_error": 0,
+    "database_error": 0,
+    "import_error": 0,
+    "ready_executed": 0,
+    "ready_failed": 0
+  }
+}

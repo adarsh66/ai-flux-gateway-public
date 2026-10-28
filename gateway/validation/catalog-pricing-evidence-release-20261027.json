@@ -1,0 +1,14 @@
+{
+  "at": "2026-10-27T13:22:16.529476+00:00",
+  "plan_sha256": "22f98df2060057cc5527ad5f6fd80307f2a9256232d19447dec3d8f4d1ee8929",
+  "image": "pocidstokenexacr.azurecr.io/aiflux-api@sha256:b47ba73081698e5cb29e50cbe6f415752703fdd8f1122015a53638c59fea7899",
+  "sources_sha256": "f6ad3516c9dddfa81387ac975a80749ea2bd7bdb65f4a5c025be0132925ae1b7",
+  "manifest_sha256": "0aec80e69631e8cfccfde7844f6d83379df2e551283dd323809e9ae764573b15",
+  "protected_equal_except_one_api_image": true,
+  "all_four_appsettings_hashes_unchanged": true,
+  "unchanged_images": {
+    "admin": "DOCKER|pocidstokenexacr.azurecr.io/aiflux-admin@sha256:8950baf1fa8c5e8b0762c3b1069251706fe043dbca9c060b31c77092ba9f6ca0",
+    "customer": "DOCKER|pocidstokenexacr.azurecr.io/aiflux-customer@sha256:072fe85e23168d20081894357ac87aa036e14363eb031e796e68686f4d357594",
+    "ingestion": "DOCKER|pocidstokenexacr.azurecr.io/aiflux-ingestion@sha256:d2bdae4edbd2faf0f6c5a5b28c83882e36222767f88de9625071b251d4114c0b"
+  }
+}

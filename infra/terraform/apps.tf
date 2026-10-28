@@ -212,7 +212,7 @@ resource "azurerm_linux_function_app" "ingestion" {
   app_settings = merge(local.control_settings, {
     AIFLUX_DATABASE_URL                       = local.database_urls["ingestion"]
     AIFLUX_CATALOG_PATH                       = var.ingestion_container_image != "" ? "/home/site/wwwroot/gateway/catalog/dev-models.json" : "/home/site/wwwroot/gateway/catalog/models.json"
-    AIFLUX_CATALOG_CONFIGURED                 = tostring(var.ingestion_enabled && var.dev_catalog_accepted)
+    AIFLUX_CATALOG_CONFIGURED                 = tostring(var.ingestion_enabled && (var.dev_catalog_accepted || var.ingestion_catalog_accepted))
     AIFLUX_INGESTION_START_AT                 = var.ingestion_start_at
     "AzureWebJobs.ingest_usage.Disabled"      = tostring(!var.ingestion_timer_enabled)
     WEBSITES_ENABLE_APP_SERVICE_STORAGE       = var.ingestion_container_image == "" ? "true" : "false"
@@ -272,7 +272,7 @@ resource "azurerm_linux_function_app" "ingestion" {
       error_message = "The ingestion timer requires an enabled, verified Function."
     }
     precondition {
-      condition     = !var.ingestion_enabled || (var.dev_catalog_accepted && var.ingestion_container_image != "" && var.ingestion_start_at != "")
+      condition     = !var.ingestion_enabled || ((var.dev_catalog_accepted || var.ingestion_catalog_accepted) && var.ingestion_container_image != "" && var.ingestion_start_at != "")
       error_message = "Ingestion requires a verified immutable image, accepted dev catalog and explicit activation cutoff."
     }
   }

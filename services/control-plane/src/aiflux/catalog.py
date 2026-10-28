@@ -10,6 +10,7 @@ class BackendEntry(BaseModel):
     region: str = Field(min_length=1)
     model: str = ""
     provider: str = ""
+    url: str = ""
 
 
 class ModelEntry(BaseModel):

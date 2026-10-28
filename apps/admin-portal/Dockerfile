@@ -27,4 +27,5 @@ COPY apps/admin-portal/nginx.conf.template /etc/nginx/templates/default.conf.tem
 COPY --from=build /repo/apps/admin-portal/dist /usr/share/nginx/html/admin
 EXPOSE 8080
 USER 101
+RUN GATEWAY_ORIGIN=https://poc-ids-token-ex-apim.azure-api.net CONTROL_ORIGIN=https://poc-ids-token-ex-api.azurewebsites.net /docker-entrypoint.sh nginx -t
 HEALTHCHECK CMD wget --spider -q http://127.0.0.1:8080/healthz || exit 1

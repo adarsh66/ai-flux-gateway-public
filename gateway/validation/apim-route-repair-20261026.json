@@ -1,0 +1,93 @@
+{
+  "checked_at": "2026-10-26T04:25:19.545241+00:00",
+  "observed_through": "2026-10-26T04:28:35.513251+00:00",
+  "project_id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.CognitiveServices/accounts/poc-ids-token-ex-foundry/projects/poc-ids-token-ex-foundry-project",
+  "project_endpoint": "https://poc-ids-token-ex-foundry.services.ai.azure.com/api/projects/poc-ids-token-ex-foundry-project",
+  "complete": true,
+  "connection_ids": [],
+  "openai_endpoint": "https://poc-ids-token-ex-foundry.openai.azure.com/",
+  "subscription": {
+    "state": "active",
+    "scope": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.ApiManagement/service/poc-ids-token-ex-apim/products/aiflux"
+  },
+  "gateway_inference_role_verified": true,
+  "gateway_inference_verified": false,
+  "token_controls_verified": false,
+  "safety_pii_verified": false,
+  "budget_quota_verified": false,
+  "fragment_hashes": {},
+  "legacy_policy_baseline_verified": true,
+  "baseline": {
+    "format": "rawxml",
+    "global_sha256": "fc043b134fe3d3cc1cada5472ec975240da4441ea6982776d077e64dba2a8171",
+    "dev_v1_sha256": "a51f2fd903ab277257649d16d19eeb74c839a83ae39dc3f158c91d25e3e9cbfd",
+    "v1_sha256": "a51f2fd903ab277257649d16d19eeb74c839a83ae39dc3f158c91d25e3e9cbfd",
+    "global_dev_flags": [false, false],
+    "api_ids": ["aiflux-native-validation-pending", "aiflux-dev-openai"],
+    "product_ids": ["aiflux"],
+    "backend_ids": [],
+    "policy_fragment_ids": []
+  },
+  "deployments": [
+    {
+      "id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.CognitiveServices/accounts/poc-ids-token-ex-foundry/deployments/gpt-6.1-sol",
+      "name": "gpt-6.1-sol", "model_name": "gpt-6.1-sol", "version": "2026-09-29",
+      "format": "OpenAI", "state": "Succeeded", "deployment_state": null, "capacity": 5000, "chat": true
+    },
+    {
+      "id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.CognitiveServices/accounts/poc-ids-token-ex-foundry/deployments/gpt-5.6-luna",
+      "name": "gpt-5.6-luna", "model_name": "gpt-5.6-luna", "version": "2026-07-09",
+      "format": "OpenAI", "state": "Succeeded", "deployment_state": null, "capacity": 5000, "chat": true
+    },
+    {
+      "id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.CognitiveServices/accounts/poc-ids-token-ex-foundry/deployments/DeepSeek-V4-Flash",
+      "name": "DeepSeek-V4-Flash", "model_name": "DeepSeek-V4-Flash", "version": "2026-04-23",
+      "format": "DeepSeek", "state": "Succeeded", "deployment_state": null, "capacity": 2500, "chat": true
+    },
+    {
+      "id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.CognitiveServices/accounts/poc-ids-token-ex-foundry/deployments/Decision-1",
+      "name": "Decision-1", "model_name": "Microsoft-Decision-1", "version": "1",
+      "format": "Microsoft", "state": "Succeeded", "deployment_state": null, "capacity": 250, "chat": false
+    }
+  ],
+  "authorized_default_configuration": {
+    "authorization": "user-corrected-project-conservative-defaults-20261026",
+    "deployment_name": "gpt-5.6-luna",
+    "model_version": "2026-07-09",
+    "rpm": 1,
+    "tpm": 1000,
+    "daily_token_quota": 10000,
+    "max_completion_tokens": 32,
+    "backend_retries": 0,
+    "safety_threshold": 0,
+    "safety_output_type": "EightSeverityLevels",
+    "prompt_shield": true,
+    "input_redacted_output_safety_required": true,
+    "pii_required": true,
+    "fail_closed": true,
+    "budget_mode": "bounded-token-quota-not-monetary-ledger",
+    "cheapest_model_verified": false,
+    "model_terms_accepted": false,
+    "safety_tests_passed": false,
+    "gateway_inference_verified": false
+  },
+  "current_direct_probe": {
+    "checked_at": "2026-10-26T04:28:35.513251+00:00",
+    "http_status": 404,
+    "max_completion_tokens": 32,
+    "client_retries": 0,
+    "assistant_text_verified": false,
+    "allowed_origin_returned": false,
+    "browser_submission_performed": false
+  },
+  "notes": [
+    "Sanitized operator evidence only, not an accepted route or Terraform variable input.",
+    "Account/project/deployments/connections, APIM APIs/products/backends/fragments read successfully with no remaining pages.",
+    "Corrected project and parent account replace the superseded IDS-AI-Token evidence.",
+    "Fresh gateway identity role query including inheritance confirms Cognitive Services User on the correct parent and safety account; no new grant requested.",
+    "Safety/PII and budget/quota fields false mean not verified, not a claim that deployed services are unavailable.",
+    "One current subscription-key route probe returned 404; secret retrieved and held only in memory, never emitted. No successful backend inference or cloud mutation.",
+    "Threshold 0 is valid most restrictive configuration but blocks severity 0 benign content; it cannot attest usable-chat acceptance.",
+    "No legal acceptance, cheapest-model price ranking, monetary budget enforcement or live safety/quota success is inferred from defaults."
+  ]
+}

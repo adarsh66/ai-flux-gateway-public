@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="24" time="3.127" timestamp="2026-10-27T19:25:24.835532+08:00" hostname="ST-L1011878"><testcase classname="tests.unit.test_display_pricing" name="test_manifest_exact_current_eleven_and_sources" time="0.004" /><testcase classname="tests.unit.test_display_pricing" name="test_glm_in_total_details_and_no_recorded_write" time="0.241" /><testcase classname="tests.unit.test_display_pricing" name="test_unsafe_usage_stays_unestimated[override0]" time="0.094" /><testcase classname="tests.unit.test_display_pricing" name="test_unsafe_usage_stays_unestimated[override1]" time="0.096" /><testcase classname="tests.unit.test_display_pricing" name="test_unsafe_usage_stays_unestimated[override2]" time="0.094" /><testcase classname="tests.unit.test_display_pricing" name="test_unsafe_usage_stays_unestimated[override3]" time="0.095" /><testcase classname="tests.unit.test_display_pricing" name="test_unsafe_usage_stays_unestimated[override4]" time="0.106" /><testcase classname="tests.unit.test_display_pricing" name="test_unsafe_usage_stays_unestimated[override5]" time="0.161" /><testcase classname="tests.unit.test_display_pricing" name="test_unsafe_usage_stays_unestimated[override6]" time="0.085" /><testcase classname="tests.unit.test_display_pricing" name="test_unsafe_usage_stays_unestimated[override7]" time="0.110" /><testcase classname="tests.unit.test_display_pricing" name="test_unsafe_usage_stays_unestimated[override8]" time="0.118" /><testcase classname="tests.unit.test_display_pricing" name="test_unsafe_usage_stays_unestimated[override9]" time="0.141" /><testcase classname="tests.unit.test_display_pricing" name="test_unsafe_usage_stays_unestimated[override10]" time="0.141" /><testcase classname="tests.unit.test_display_pricing" name="test_unsafe_usage_stays_unestimated[override11]" time="0.092" /><testcase classname="tests.unit.test_display_pricing" name="test_unsafe_usage_stays_unestimated[override12]" time="0.113" /><testcase classname="tests.unit.test_display_pricing" name="test_unsafe_usage_stays_unestimated[override13]" time="0.089" /><testcase classname="tests.unit.test_display_pricing" name="test_unsafe_usage_stays_unestimated[override14]" time="0.080" /><testcase classname="tests.unit.test_display_pricing" name="test_cache_measured_zero_discount_and_missing_not_zero" time="0.063" /><testcase classname="tests.unit.test_display_pricing" name="test_scope_summary_model_subscription_csv_reconcile" time="0.264"><failure message="ValueError: too many values to unpack (expected 4)">db = &lt;sqlalchemy.orm.session.Session object at 0x00000273DE85E4E0&gt;
+
+    def test_scope_summary_model_subscription_csv_reconcile(db):
+        usage(db)
+        usage(db, "other", organization_id="other", subscription_id="other")
+        usage(db, "tiny", input_tokens=1, output_tokens=0)
+        start, end = NOW - timedelta(minutes=1), NOW + timedelta(minutes=1)
+        response = usage_response(db, "org", 1, None, 0, 1, start=start, end=end)
+        assert response["summary"]["requests"] == 2 and len(response["items"]) == 1
+        records = list(csv.DictReader(io.StringIO(usage_csv(db, "org", 1, None, start=start, end=end))))
+        amount = Decimal(response["summary"]["estimated_cost_usd"])
+        assert amount == sum(Decimal(r["estimated_cost_usd"]) for r in records)
+        for group in (UsageRecord.model, UsageRecord.subscription_id, UsageRecord.organization_id):
+&gt;           grouped = estimate_summary(db, [UsageRecord.organization_id == "org"], group)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\unit\test_display_pricing.py:107: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+db = &lt;sqlalchemy.orm.session.Session object at 0x00000273DE85E4E0&gt;
+conditions = [&lt;sqlalchemy.sql.elements.BinaryExpression object at 0x00000273DEBC3E30&gt;]
+groups = (&lt;sqlalchemy.orm.attributes.InstrumentedAttribute object at 0x00000273DE11C040&gt;,)
+amount = &lt;sqlalchemy.sql.elements.Case object at 0x00000273DE7D7550&gt;
+approximate = &lt;sqlalchemy.sql.elements.Case object at 0x00000273DE7D7A50&gt;
+query = &lt;sqlalchemy.sql.selectable.Select object at 0x00000273DE9C75B0&gt;
+
+    def estimate_summary(db: Session, conditions: list, *groups) -&gt; list[dict[str, Any]]:
+        amount, approximate = estimate_expressions()
+        query = select(*groups, func.count(), func.count(amount), func.sum(amount), func.sum(approximate)).where(*conditions)
+        if groups:
+            query = query.group_by(*groups)
+        results = []
+        for row in db.execute(query):
+&gt;           total, estimated, cost, approx = row[-5:]
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           ValueError: too many values to unpack (expected 4)
+
+services\control-plane\src\aiflux\display_pricing.py:97: ValueError</failure></testcase><testcase classname="tests.unit.test_display_pricing" name="test_half_open_window_and_no_data" time="0.125" /><testcase classname="tests.unit.test_display_pricing" name="test_short_context_only" time="0.072" /><testcase classname="tests.unit.test_display_pricing" name="test_sql_is_portable_and_read_only[dialect0]" time="0.032" /><testcase classname="tests.unit.test_display_pricing" name="test_sql_is_portable_and_read_only[dialect1]" time="0.034" /><testcase classname="tests.unit.test_display_pricing" name="test_sql_is_portable_and_read_only[dialect2]" time="0.039" /></testsuite></testsuites>

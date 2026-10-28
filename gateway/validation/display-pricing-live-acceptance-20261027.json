@@ -1,0 +1,190 @@
+{
+  "date": "2026-10-27",
+  "status": "APPLIED_CUSTOMER_USAGE_PASS_OVERALL_ACCEPTANCE_BLOCKED",
+  "observed_from": "2026-10-27T12:36:18.170Z",
+  "observed_through": "2026-10-27T12:37:29.037Z",
+  "scope": "Final live acceptance and documentation only; no build/apply/restart/configuration/resource writes, inference, usage generation, auth-storage reads or token/header/key/password extraction.",
+  "release": {
+    "applied_at": "2026-10-27T12:19:09Z",
+    "applied_at_source": "Existing approved execution checkpoint supplied for final acceptance; not replayed",
+    "verified_at": "2026-10-27T12:21:58.422419+00:00",
+    "plan_sha256": "3bb86f17090387efcb6bc65dec8eea2727d0677609f694057933cddcc6b7e8a4",
+    "manifest_sha256": "0aec80e69631e8cfccfde7844f6d83379df2e551283dd323809e9ae764573b15",
+    "protected_equal_except_three_images": true,
+    "ingester_unchanged": true,
+    "image_digests": {
+      "api": "sha256:04ba655c24a87d30f3a47dbf091d2df03f52b2172f8d80b00f9eada7273eeb44",
+      "admin": "sha256:8950baf1fa8c5e8b0762c3b1069251706fe043dbca9c060b31c77092ba9f6ca0",
+      "customer": "sha256:072fe85e23168d20081894357ac87aa036e14363eb031e796e68686f4d357594"
+    },
+    "proof": "gateway/validation/pricing-runtime-release-20261027.json",
+    "activation_readback": "gateway/validation/pricing-activation-readback-20261027.json",
+    "activation_readback_limitations": "Configured images match, sites Running and instances READY. Container details non-JSON; API/customer log reads 504. Do not infer running digest from these reads alone."
+  },
+  "method": {
+    "authentication": "Existing customer sessions, ordinary UI reload/navigation/Refresh telemetry; no credential inspection",
+    "capture": "Response waiter installed before UI fetch; only allowlisted aggregate/measurement/pricing fields retained",
+    "window_control": "Temporary browser request routing changed only usage GET start/end to exact pre-release boundaries; forwarded URLs confirmed. UI chart viewport was not changed to these exact boundaries.",
+    "routing_overrides_removed": true,
+    "expected_calculation": "Independent BigInt integer arithmetic from captured eligible successful measured rows and manifest input/output rates; per-row rounding to 12 decimal places then sum. Missing cache details use standard-input approximation as disclosed.",
+    "pre_release_comparison": "gateway/validation/pricing-before-acceptance-20261027.json"
+  },
+  "customers": {
+    "Contoso": {
+      "captured_at": "2026-10-27T12:36:53.438Z",
+      "http_status": 200,
+      "start": "2026-09-27T11:42:00.000Z",
+      "end": "2026-10-27T11:42:00.000Z",
+      "days": 30,
+      "subscriptions": "all_owned",
+      "models": "all",
+      "requests": 7,
+      "input_tokens": 61,
+      "output_tokens": 445,
+      "total_tokens": 506,
+      "missing_token_requests": 0,
+      "failed_requests": 3,
+      "counts_match_exact_pre_release_window": true,
+      "estimated_cost_usd": "0.001787028571",
+      "expected_estimated_cost_usd": "0.001787028571",
+      "expected_matches_api": true,
+      "rendered_estimated_cost": "USD 0.00178703",
+      "pricing_revision": "poc-public-20261027-v1",
+      "estimated_requests": 4,
+      "unestimated_requests": 3,
+      "approximate_requests": 2,
+      "known_cost": null,
+      "rendered_recorded_cost": "Unknown",
+      "tbc_wording_in_usage": false,
+      "expected_by_model_usd": {
+        "glm-5.3": "0.001763428571",
+        "gpt-5.6-luna": "0.000023600000"
+      },
+      "eligible_input_output_pairs": {
+        "glm-5.3": [[15, 367], [30, 61]],
+        "gpt-5.6-luna": [[9, 5], [7, 12]]
+      },
+      "gaps": "Three unattributed HTTP 403 rows with zero measured tokens remain unestimated. Two GLM rows lack cache detail; standard-input approximation disclosed. TTFT unavailable."
+    },
+    "Caldova": {
+      "captured_at": "2026-10-27T12:36:35.060Z",
+      "http_status": 200,
+      "start": "2026-09-27T11:45:00.000Z",
+      "end": "2026-10-27T11:45:00.000Z",
+      "days": 30,
+      "subscriptions": "all_owned",
+      "models": "all",
+      "requests": 21,
+      "input_tokens": 1087,
+      "output_tokens": 1739,
+      "total_tokens": 2826,
+      "missing_token_requests": 0,
+      "failed_requests": 1,
+      "counts_match_exact_pre_release_window": true,
+      "estimated_cost_usd": "0.007271089999",
+      "expected_estimated_cost_usd": "0.007271089999",
+      "expected_matches_api": true,
+      "rendered_estimated_cost": "USD 0.00727109",
+      "pricing_revision": "poc-public-20261027-v1",
+      "estimated_requests": 19,
+      "unestimated_requests": 2,
+      "approximate_requests": 10,
+      "known_cost": null,
+      "rendered_recorded_cost": "Unknown",
+      "tbc_wording_in_usage": false,
+      "expected_by_model_usd": {
+        "gpt-5.6-luna": "0.000128800000",
+        "glm-5.3": "0.005795999999",
+        "gpt-4o": "0.000235000000",
+        "Kimi-K2.7-Code": "0.000324950000",
+        "grok-4-1-fast-reasoning": "0.000101300000",
+        "DeepSeek-V4-Flash": "0.000033790000",
+        "gpt-6.1-sol": "0.000530000000",
+        "grok-4.3": "0.000121250000"
+      },
+      "eligible_input_output_pairs": {
+        "gpt-5.6-luna": [[7, 12], [7, 12], [50, 20], [7, 12], [7, 12], [7, 12], [7, 12]],
+        "glm-5.3": [[88, 988], [17, 431]],
+        "gpt-4o": [[74, 5]],
+        "Kimi-K2.7-Code": [[81, 62]],
+        "grok-4-1-fast-reasoning": [[188, 12], [236, 21]],
+        "DeepSeek-V4-Flash": [[5, 10], [5, 9], [39, 29]],
+        "gpt-6.1-sol": [[11, 29], [54, 11]],
+        "grok-4.3": [[57, 20]]
+      },
+      "gaps": "HTTP 403 mini row (41 input/20 output) and status-missing Sol row (99 input/0 output) remain unestimated but measured tokens are retained. Ten standard-input approximations disclosed; Grok Fast cached measurements do not supply missing cache-write details. TTFT unavailable."
+    }
+  },
+  "ingestion": {
+    "source": "Authenticated customer usage summary.health; no resource/configuration operations",
+    "status": "healthy",
+    "last_query_success_at": "2026-10-27T12:35:00.200654Z",
+    "watermark": "2026-10-27T12:30:00.200654Z",
+    "pre_release_last_query_success_at": "2026-10-27T11:40:00.255336Z",
+    "pre_release_watermark": "2026-10-27T11:35:00.255336Z",
+    "scheduled_progress_observed": true,
+    "observed_lag_seconds": [395, 414],
+    "stale_after_seconds": 900,
+    "timer_configuration_freshly_read": false,
+    "timer_configuration_preservation_evidence": "Existing protected release verification, not a new ARM read"
+  },
+  "catalog": {
+    "captured_at": "2026-10-27T12:37:29.037Z",
+    "endpoint": "/api/model-garden",
+    "http_status": 200,
+    "total": 11,
+    "status": "FAIL_ALL_DISPLAY_PRICES_NULL",
+    "display_price_non_null_count": 0,
+    "rendered_input_output": "Unknown — not free for all 11 models",
+    "rendered_pricing_source_links": 0,
+    "rendered_tbc_badges": 0,
+    "items": [
+      {"alias":"gpt-5.6-luna","vendor":"OpenAI","catalog_region":"southeastasia","display_price":null},
+      {"alias":"gpt-5.4-mini","vendor":"OpenAI","catalog_region":"eastus2","display_price":null},
+      {"alias":"DeepSeek-V4-Flash","vendor":"DeepSeek","catalog_region":"southeastasia","display_price":null},
+      {"alias":"DeepSeek-V4-Pro","vendor":"DeepSeek","catalog_region":"southeastasia","display_price":null},
+      {"alias":"glm-5.3","vendor":"ModelArts","catalog_region":"unknown","display_price":null},
+      {"alias":"gpt-4o","vendor":"OpenAI","catalog_region":"southeastasia","display_price":null},
+      {"alias":"gpt-6.1-sol","vendor":"OpenAI","catalog_region":"southeastasia","display_price":null},
+      {"alias":"grok-4-1-fast-reasoning","vendor":"xAI","catalog_region":"southeastasia","display_price":null},
+      {"alias":"grok-4-20-reasoning","vendor":"xAI","catalog_region":"southeastasia","display_price":null},
+      {"alias":"grok-4.3","vendor":"xAI","catalog_region":"southeastasia","display_price":null},
+      {"alias":"Kimi-K2.7-Code","vendor":"MoonshotAI","catalog_region":"southeastasia","display_price":null}
+    ],
+    "source_grounded_cause": "list_model_garden calls catalog_price(row.id, row.vendor, row.region). Exact lookup cannot match persisted catalog southeastasia/eastus2/unknown regions to manifest eastus/ap-southeast-1. Usage scopes do match and estimate successfully.",
+    "manifest_source_links_present_in_source_not_live_catalog": [
+      "https://azure.microsoft.com/en-us/pricing/details/cognitive-services/openai-service/",
+      "https://azure.microsoft.com/en-us/pricing/details/ai-foundry-models/deepseek/",
+      "https://azure.microsoft.com/en-us/pricing/details/ai-foundry-models/kimi/",
+      "https://azure.microsoft.com/en-us/pricing/details/ai-foundry-models/grok/",
+      "https://bigmodel.cn/pricing"
+    ]
+  },
+  "admin": {
+    "captured_at": "2026-10-27T12:36:59.839Z",
+    "method": "Existing admin page normal reload followed by Refresh telemetry; no auth inspection or bypass",
+    "endpoint": "/api/admin/usage/models",
+    "http_status": 401,
+    "detail": "Invalid access token",
+    "organization_options": ["All organizations"],
+    "same_org_same_utc_totals_match_customer": null,
+    "status": "BLOCKED_VALID_ADMIN_UI_SIGN_IN_REQUIRED"
+  },
+  "tests": {
+    "rerun_for_documentation_only_changes": false,
+    "earlier_backend_checkpoint": 115,
+    "existing_backend_passed": 117,
+    "existing_backend_failures": 0,
+    "existing_backend_errors": 0,
+    "backend_proof": "gateway/validation/display-pricing-backend-tests-20261027.xml",
+    "existing_native_linux_portal_tests_passed": 107,
+    "existing_native_linux_typechecks_and_portal_builds_passed": true,
+    "existing_dependency_audit": {"moderate":1,"high":1,"critical":2},
+    "limitations": "Existing passing regressions do not establish live catalog correctness or admin equality. No clean vulnerability-scan claim."
+  },
+  "required_follow_up": [
+    "Separately authorize a catalog projection correction grounded in accepted deployment scope; do not mutate enforcement economics or silently relax exact-scope validation.",
+    "Valid admin UI sign-in, then same-organization same-UTC-window reconciliation with customer totals.",
+    "Repeat failed catalog acceptance after an independently approved correction; do not rebuild or reapply this already-applied release."
+  ]
+}

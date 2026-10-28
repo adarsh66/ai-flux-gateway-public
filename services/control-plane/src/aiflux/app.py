@@ -20,9 +20,11 @@ from aiflux.auth import Principal, TokenVerifier, get_admin, get_principal
 from aiflux.catalog import Catalog
 from aiflux.config import Settings, get_settings
 from aiflux.db import engine_for, get_db
+from aiflux.external_inventory import AcceptedInventory
 from aiflux.finops import (
     aware,
     create_price,
+    ingestion_health,
     model_token_response,
     usage_csv,
     usage_models,
@@ -66,6 +68,7 @@ from aiflux.schemas import (
     GatewaySettingsUpdate,
     GatewayTarget,
     IdentityOutput,
+    IngestionHealth,
     KeyRequest,
     LocalLoginRequest,
     LocalLoginResponse,
@@ -290,11 +293,24 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         )
         return {"items": [revision_output(row) for row in rows], "total": total}
 
+    @app.get("/api/model-deployments")
+    def model_deployments(principal: User) -> dict:
+        inventory = AcceptedInventory.load(settings)
+        items = inventory.discovery()
+        return {"items": items, "total": len(items), "verified_at": inventory.verified_at.isoformat(),
+                "auto_enabled": False, "pricing_note": "Unknown prices are not free; no monetary-ledger guarantee."}
+
+    @app.post("/api/admin/model-deployments/sync")
+    def sync_model_deployments(principal: Admin, db: Db) -> dict:
+        from aiflux.model_inventory_sync import sync_verified_models
+        return sync_verified_models(db, settings, principal)
+
     @app.get("/api/models", response_model=Page[CatalogOutput])
     def models(principal: User, db: Db) -> dict:
+        inventory = AcceptedInventory.load(settings)
         if not settings.catalog_configured:
             if settings.local_auth_enabled:
-                garden = list_model_garden(db, include_disabled=False)
+                garden = list_model_garden(db, settings, include_disabled=False)
                 items = [
                     {
                         "id": m.id,
@@ -313,6 +329,13 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         except (OSError, ValueError, ValidationError) as exc:
             log.error("Catalog configuration invalid type=%s", type(exc).__name__)
             raise HTTPException(503, "Model catalog is unavailable") from exc
+        for model in catalog.models:
+            route = inventory.route(model.id)
+            if route is not None:
+                model.capabilities = [cap for cap in model.capabilities if cap in route.capabilities]
+                model.max_completion_tokens = min(
+                    model.max_completion_tokens or route.max_completion_tokens, route.max_completion_tokens
+                )
         if settings.gateway_max_completion_tokens is not None:
             for model in catalog.models:
                 if model.max_completion_tokens is not None:
@@ -324,7 +347,9 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                 include={"id", "provider", "capabilities", "enabled", "placeholder", "max_completion_tokens"}
             )
             for model in catalog.models
-            if model.enabled or model.placeholder
+            if model.enabled and not model.placeholder and "chat" in model.capabilities
+            and inventory.matches_catalog_model(model)
+            and (model.id != "auto" or get_router_config_output(db, settings).enabled)
         ]
         return {"items": items, "total": len(items)}
 
@@ -424,7 +449,11 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             log.warning("Subscription gateway access pending subscription=%s reason=%s", row.id, message)
         result = admin_subscription_output(db, row)
         if message:
-            result.update(gateway_access="pending", gateway_message=message)
+            result.update(
+                gateway_access="ready" if settings.gateway_controls_poc_enabled else "pending",
+                gateway_message=("Default product access available; optional overrides pending. " + message)
+                if settings.gateway_controls_poc_enabled else message,
+            )
         return result
 
     @app.get("/api/admin/subscriptions", response_model=Page[AdminSubscriptionOutput])
@@ -481,10 +510,13 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         offset: int,
         limit: int,
         model: str | None = None,
+        start: datetime | None = None,
+        end: datetime | None = None,
     ) -> dict:
         check_usage_subscription(db, organization_id, subscription_id)
+        start, end = usage_viewport(days, start, end)
         return usage_response(
-            db, organization_id, days, str(subscription_id) if subscription_id else None, offset, limit, model
+            db, organization_id, days, str(subscription_id) if subscription_id else None, offset, limit, model, start, end
         )
 
     @app.get("/api/usage", response_model=UsagePage)
@@ -496,8 +528,22 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         offset: int = Query(0, ge=0),
         limit: int = Query(50, ge=1, le=100),
         model: str | None = None,
+        start: datetime | None = None,
+        end: datetime | None = None,
     ) -> dict:
-        return usage(db, principal.organization_id, days, subscription_id, offset, limit, model)
+        return usage(db, principal.organization_id, days, subscription_id, offset, limit, model, start, end)
+
+    @app.get("/api/usage/health", response_model=IngestionHealth)
+    def customer_usage_health(principal: User, db: Db, subscription_id: UUID | None = None) -> dict:
+        check_usage_subscription(db, principal.organization_id, subscription_id)
+        return ingestion_health(db, principal.organization_id, str(subscription_id) if subscription_id else None)
+
+    @app.get("/api/admin/usage/health", response_model=IngestionHealth)
+    def admin_usage_health(principal: Admin, db: Db, organization_id: UUID | None = None,
+                           subscription_id: UUID | None = None) -> dict:
+        org = str(organization_id) if organization_id else None
+        check_usage_subscription(db, org, subscription_id)
+        return ingestion_health(db, org, str(subscription_id) if subscription_id else None)
 
     @app.get("/api/usage/models", response_model=Page[str])
     def customer_usage_models(
@@ -527,7 +573,6 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         days: int, start: datetime | None, end: datetime | None,
     ) -> tuple[datetime, datetime]:
         now = datetime.now(UTC)
-        period_start = (now - timedelta(days=days)).replace(second=0, microsecond=0)
         period_end = now.replace(second=0, microsecond=0) + timedelta(minutes=1)
         if (start is None) != (end is None):
             raise HTTPException(422, "Specify both start and end for a chart viewport")
@@ -535,7 +580,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             if start.tzinfo is None or end.tzinfo is None:
                 raise HTTPException(422, "Chart timestamps must include a timezone")
             start, end = aware(start), aware(end)
-            if not period_start <= start < end <= period_end:
+            if not (now - timedelta(days=366) <= start < end <= period_end
+                    and end - start <= timedelta(days=days)):
                 raise HTTPException(422, "Chart viewport must be inside the selected period")
         else:
             start, end = now - timedelta(days=days), now
@@ -577,13 +623,38 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         start: datetime | None = None,
         end: datetime | None = None,
         model: str | None = None,
+        granularity: str = Query("auto", pattern="^(auto|hour|day)$"),
     ) -> dict:
         check_usage_subscription(db, principal.organization_id, subscription_id)
         start, end = usage_viewport(days, start, end)
-        return model_token_response(
-            db, principal.organization_id, str(subscription_id) if subscription_id else None,
-            start, end, model,
-        )
+        try:
+            return model_token_response(
+                db, principal.organization_id, str(subscription_id) if subscription_id else None,
+                start, end, model, granularity,
+            )
+        except ValueError as exc:
+            raise HTTPException(422, str(exc)) from exc
+
+    @app.get("/api/admin/usage/model-tokens", response_model=ModelTokenSeries)
+    def admin_model_tokens(
+        principal: Admin,
+        db: Db,
+        days: int = Query(30, ge=1, le=366),
+        organization_id: UUID | None = None,
+        subscription_id: UUID | None = None,
+        start: datetime | None = None,
+        end: datetime | None = None,
+        model: str | None = None,
+        granularity: str = Query("auto", pattern="^(auto|hour|day)$"),
+    ) -> dict:
+        org = str(organization_id) if organization_id else None
+        check_usage_subscription(db, org, subscription_id)
+        start, end = usage_viewport(days, start, end)
+        try:
+            return model_token_response(db, org, str(subscription_id) if subscription_id else None,
+                                        start, end, model, granularity)
+        except ValueError as exc:
+            raise HTTPException(422, str(exc)) from exc
 
     @app.get("/api/admin/usage/timeseries", response_model=UsageSeries)
     def admin_usage_series(
@@ -602,10 +673,12 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
     def export(
         db: Session, org: str | None, days: int, subscription_id: UUID | None, model: str | None,
+        start: datetime | None = None, end: datetime | None = None,
     ) -> Response:
         check_usage_subscription(db, org, subscription_id)
+        start, end = usage_viewport(days, start, end)
         try:
-            content = usage_csv(db, org, days, str(subscription_id) if subscription_id else None, model)
+            content = usage_csv(db, org, days, str(subscription_id) if subscription_id else None, model, start, end)
         except ValueError as exc:
             raise HTTPException(413, str(exc)) from exc
         return Response(
@@ -623,8 +696,10 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         days: int = Query(30, ge=1, le=366),
         subscription_id: UUID | None = None,
         model: str | None = None,
+        start: datetime | None = None,
+        end: datetime | None = None,
     ) -> Response:
-        return export(db, principal.organization_id, days, subscription_id, model)
+        return export(db, principal.organization_id, days, subscription_id, model, start, end)
 
     @app.get("/api/admin/usage", response_model=UsagePage)
     def admin_usage(
@@ -636,9 +711,11 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         offset: int = Query(0, ge=0),
         limit: int = Query(50, ge=1, le=100),
         model: str | None = None,
+        start: datetime | None = None,
+        end: datetime | None = None,
     ) -> dict:
         return usage(
-            db, str(organization_id) if organization_id else None, days, subscription_id, offset, limit, model
+            db, str(organization_id) if organization_id else None, days, subscription_id, offset, limit, model, start, end
         )
 
     @app.get("/api/admin/usage/export")
@@ -649,8 +726,10 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         organization_id: UUID | None = None,
         subscription_id: UUID | None = None,
         model: str | None = None,
+        start: datetime | None = None,
+        end: datetime | None = None,
     ) -> Response:
-        return export(db, str(organization_id) if organization_id else None, days, subscription_id, model)
+        return export(db, str(organization_id) if organization_id else None, days, subscription_id, model, start, end)
 
     @app.get("/api/admin/organizations", response_model=Page[OrganizationOutput])
     def organizations(principal: Admin, db: Db) -> dict:
@@ -821,12 +900,12 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
     @app.get("/api/model-garden", response_model=Page[ModelGardenItemOutput])
     def customer_model_garden(principal: User, db: Db) -> dict:
-        items = list_model_garden(db, include_disabled=False)
+        items = list_model_garden(db, settings, include_disabled=False)
         return {"items": items, "total": len(items)}
 
     @app.get("/api/admin/model-garden", response_model=Page[ModelGardenItemOutput])
     def admin_model_garden(principal: Admin, db: Db) -> dict:
-        items = list_model_garden(db, include_disabled=True)
+        items = list_model_garden(db, settings, include_disabled=True)
         return {"items": items, "total": len(items)}
 
     @app.post("/api/admin/model-garden", response_model=ModelGardenItemOutput)
@@ -836,7 +915,9 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     ) -> ModelGardenItemOutput:
         if model_id is not None and payload.id != model_id:
             raise HTTPException(422, "Path model_id must match payload id")
-        return upsert_model_garden_item(db, principal, payload)
+        AcceptedInventory.load(settings)
+        upsert_model_garden_item(db, principal, payload)
+        return next(item for item in list_model_garden(db, settings) if item.id == payload.id)
 
     @app.get("/api/credits/summary", response_model=CreditSummaryOutput)
     def customer_credits_summary(

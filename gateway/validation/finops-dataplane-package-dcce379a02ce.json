@@ -1,0 +1,166 @@
+{
+  "owner_nonce": "dcce379a02ce",
+  "security_scan": {
+    "at_utc": "2026-10-27T07:38:47.683618+00:00",
+    "scanner": "checkov==3.2.495",
+    "exit_code": 0,
+    "cloud_operations": false,
+    "remote_policy_downloads": false,
+    "api_key_forwarded": false,
+    "artifacts_sha256": {
+      "network.arm.json": "41b50db963388b3371c2a23f95c0919577fc7d31ff9c959cd677609fad1d653a",
+      "Dockerfile": "e60e520b5a13588a35926d774d5905f246669d6ba25157660bf0fdb30d5989d0",
+      "ingestion.unbound.arm.json": "6a4c6f81fc214f9c0d7855bf0273d586cf095d92142538e7c7e62e982cd470a1"
+    },
+    "security_gate_passed": true,
+    "frameworks": [
+      {
+        "check_type": "arm",
+        "summary": {
+          "passed": 3,
+          "failed": 0,
+          "skipped": 0,
+          "parsing_errors": 0,
+          "resource_count": 5,
+          "checkov_version": "3.2.495"
+        },
+        "failures": []
+      },
+      {
+        "check_type": "dockerfile",
+        "summary": {
+          "passed": 64,
+          "failed": 0,
+          "skipped": 0,
+          "parsing_errors": 0,
+          "resource_count": 1,
+          "checkov_version": "3.2.495"
+        },
+        "failures": []
+      }
+    ]
+  },
+  "image_dependency_lock": {
+    "lock_sha256": "3fface3100c84890a06fc6cd0450fee5e48c128e199bd477052e34865c1dfa25",
+    "wheels": {
+      "azure_core-1.41.0-py3-none-any.whl": {
+        "sha256": "522b4011e8180b1a3dcd2024396a4e7fe9ac37fb8597db47163d230b5efe892d",
+        "bytes": 220920
+      },
+      "azure_data_tables-12.6.0-py3-none-any.whl": {
+        "sha256": "9869620765142d7caec7a6adca733f617ddcd006a810876f0cf95eea4f5b9692",
+        "bytes": 132235
+      },
+      "azure_identity-1.23.0-py3-none-any.whl": {
+        "sha256": "dbbeb64b8e5eaa81c44c565f264b519ff2de7ff0e02271c49f3cb492762a50b0",
+        "bytes": 186097
+      },
+      "azure_monitor_query-1.4.0-py3-none-any.whl": {
+        "sha256": "5e3783d52d334049dc6e50d6b38e36285e8b826ca343158a698495d3f57ed86d",
+        "bytes": 162423
+      },
+      "azure_storage_blob-12.25.1-py3-none-any.whl": {
+        "sha256": "1f337aab12e918ec3f1b638baada97550673911c4ceed892acc8e4e891b74167",
+        "bytes": 406990
+      },
+      "azure_storage_queue-12.12.0-py3-none-any.whl": {
+        "sha256": "9305f724e0df6a93e3645bf075b5a7e3fc0a1eb1ee47c85912c7aff6b6fd490d",
+        "bytes": 182385
+      },
+      "certifi-2026.10.23-py3-none-any.whl": {
+        "sha256": "e9b54de76e530bb6cf0ccd036787103acb58fd42ba930ea8bf948ddbaa2f61d1",
+        "bytes": 135082
+      },
+      "cffi-2.1.1-cp313-cp313-manylinux2014_x86_64.manylinux_2_17_x86_64.whl": {
+        "sha256": "a931079504ecc49efed7744c476a5c343a92fabf66dec2db95edb1b2fdc770e2",
+        "bytes": 221824
+      },
+      "charset_normalizer-3.5.2-cp313-cp313-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl": {
+        "sha256": "7218e8f32b0956cfcd048fd42d9d5779809745ca1d86113ca56f66e7ae1549c4",
+        "bytes": 254660
+      },
+      "cryptography-50.0.2-cp311-abi3-manylinux2014_x86_64.manylinux_2_17_x86_64.whl": {
+        "sha256": "630ebfea3bf689d075f82316324ff7433dc447fe6bc1bfc76524b74b4a9567d2",
+        "bytes": 4719841
+      },
+      "greenlet-3.5.6-cp313-cp313-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl": {
+        "sha256": "f98e8215e172f567ce80eeaed9107fb4d32b6c44f26983d9b8334658136a205a",
+        "bytes": 623779
+      },
+      "idna-3.20-py3-none-any.whl": {
+        "sha256": "ab7ae7122974553370f0bdb919e1a960b2cd1bc1ef0276416d896db81c14582c",
+        "bytes": 69583
+      },
+      "isodate-0.7.2-py3-none-any.whl": {
+        "sha256": "28009937d8031054830160fce6d409ed342816b543597cece116d966c6d99e15",
+        "bytes": 22320
+      },
+      "msal-1.39.0-py3-none-any.whl": {
+        "sha256": "2d2577886906cd7293850dffa2da29119966c213bfc6ec0cecf8bf7621e1ca77",
+        "bytes": 131629
+      },
+      "msal_extensions-1.3.1-py3-none-any.whl": {
+        "sha256": "96d3de4d034504e969ac5e85bae8106c8373b5c6568e4c8fa7af2eca9dbe6bca",
+        "bytes": 20583
+      },
+      "multidict-7.2.1-cp313-cp313-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl": {
+        "sha256": "cd69c99affd1b4debc1f9a53058ea6e3a9b34f2e733840bb45891666cd8ede0a",
+        "bytes": 516056
+      },
+      "propcache-0.5.4-cp313-cp313-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl": {
+        "sha256": "f85915e00dcb1cd9f2f890ead064ed40a27df06f0db65be427b29482ae357572",
+        "bytes": 234316
+      },
+      "psycopg-3.2.9-py3-none-any.whl": {
+        "sha256": "01a8dadccdaac2123c916208c96e06631641c0566b22005493f09663c7a8d3b6",
+        "bytes": 202705
+      },
+      "psycopg_binary-3.2.9-cp313-cp313-manylinux_2_17_x86_64.manylinux2014_x86_64.whl": {
+        "sha256": "7fc2915949e5c1ea27a851f7a472a7da7d0a40d679f0a31e42f1022f3c562e87",
+        "bytes": 4437423
+      },
+      "pycparser-3.12-py3-none-any.whl": {
+        "sha256": "a076f3f489b39b43ed13563a1dafe42447445bec2e294154ec5c57fcdda4c85e",
+        "bytes": 62600
+      },
+      "pyjwt-2.15.1-py3-none-any.whl": {
+        "sha256": "42d59d631f7768a1028a64c7ff581a9bf7519804daf91fc5b6c56e30eec5e193",
+        "bytes": 33860
+      },
+      "requests-2.34.2-py3-none-any.whl": {
+        "sha256": "2a0d60c172f83ac6ab31e4554906c0f3b3588d37b5cb939b1c061f4907e278e0",
+        "bytes": 73075
+      },
+      "sqlalchemy-2.0.41-cp313-cp313-manylinux_2_17_x86_64.manylinux2014_x86_64.whl": {
+        "sha256": "dc56c9788617b8964ad02e8fcfeed4001c1f8ba91a9e1f31483c0dffb207002a",
+        "bytes": 3230045
+      },
+      "typing_extensions-4.16.0-py3-none-any.whl": {
+        "sha256": "481caa481374e813c1b176ada14e97f1f67a4539ce9cfeb3f350d78d6370c2e8",
+        "bytes": 45571
+      },
+      "tzdata-2026.5-py2.py3-none-any.whl": {
+        "sha256": "b683bd1b6659ddcd810ff02ad09ba821d4bf1065072805063eb35c49617905ac",
+        "bytes": 347996
+      },
+      "urllib3-2.8.0-py3-none-any.whl": {
+        "sha256": "0cf3cae568d36aa9576b28dfb35f11328f1cb974ca7647d9475ebb86c75ac6e3",
+        "bytes": 135717
+      },
+      "yarl-1.25.1-cp313-cp313-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl": {
+        "sha256": "be80550d9bfe83d9b62398a37081a90434e6df2d978ec345c3d2820de6beddab",
+        "bytes": 117012
+      }
+    }
+  },
+  "image_package": {
+    "context": ".deployment/finops-runner/dcce379a02ce/image-context",
+    "files_sha256": {
+      "Dockerfile": "e60e520b5a13588a35926d774d5905f246669d6ba25157660bf0fdb30d5989d0",
+      "requirements.txt": "da58c2e90bc54813e20d45e0a9355433e4ccf7d030b25fbd3715b42af900d7cb",
+      "entrypoint.py": "e7f1a396ba9da3b5cf6736df791759eaef3cb81ab2e96f02833646a071dc47c0",
+      "linux_contract.py": "d2e093a8914efa7d3ace9c9e38b0714b80b25ec86439fb2f16a4af96d0b3afda",
+      "finops_private_probe.py": "6bfd2eb9c0be2da9e40cd9a800f717c4cb04ba712a7a2404b8a0bbfdce7e59b9"
+    }
+  }
+}

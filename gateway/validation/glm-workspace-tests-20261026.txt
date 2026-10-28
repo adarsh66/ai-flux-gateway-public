@@ -1,0 +1,54 @@
+﻿**********************
+Windows PowerShell transcript start
+Start time: 20261026230758
+Username: SINGTEL\P4032099
+RunAs User: SINGTEL\P4032099
+Configuration Name: 
+Machine: ST-L1011878 (Microsoft Windows NT 10.0.26200.0)
+Host Application: C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -Command & ./scripts/deployment/verify_glm_workspace.ps1
+Process ID: 33992
+PSVersion: 5.1.26100.9444
+PSEdition: Desktop
+PSCompatibleVersions: 1.0, 2.0, 3.0, 4.0, 5.0, 5.1.26100.9444
+BuildVersion: 10.0.26100.9444
+CLRVersion: 4.0.30319.42000
+WSManStackVersion: 3.0
+PSRemotingProtocolVersion: 2.3
+SerializationVersion: 1.1.0.1
+**********************
+Transcript started, output file is C:\LocalWorkspace\ai-flux-gateway-public/gateway/validation/glm-workspace-tests-20261026.txt
+Verification UTC: 2026-10-26T15:07:58.5782969Z
+
+
+
+
+
+
+
+
+TypeScript apps/admin-portal exit: 0
+
+TypeScript apps/customer-portal exit: 0
+
+TypeScript packages/ui exit: 0
+
+
+{
+    "utc":  "2026-10-26T15:10:50.7348019Z",
+    "python":  0,
+    "terraform_validate":  0,
+    "terraform_external_mock":  0,
+    "terraform_default_mock":  0,
+    "terraform_fmt":  0,
+    "typescript":  {
+                       "apps/customer-portal":  0,
+                       "packages/ui":  0,
+                       "apps/admin-portal":  0
+                   },
+    "external_ui":  1,
+    "scoped_diff_check":  0
+}
+**********************
+Windows PowerShell transcript end
+End time: 20261026231050
+**********************

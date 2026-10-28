@@ -1,0 +1,1141 @@
+{
+  "at_utc": "2026-10-28T00:10:36.344869+00:00",
+  "cloud_writes": 0,
+  "protected": {
+    "runtime": {
+      "sites": {
+        "api": {
+          "image": "DOCKER|pocidstokenexacr.azurecr.io/aiflux-api@sha256:b47ba73081698e5cb29e50cbe6f415752703fdd8f1122015a53638c59fea7899",
+          "protected": {
+            "publicNetworkAccess": "Disabled",
+            "virtualNetworkSubnetId": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Network/virtualNetworks/poc-ids-token-ex-vnet/subnets/poc-ids-token-ex-app-service-integration",
+            "keyVaultReferenceIdentity": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.ManagedIdentity/userAssignedIdentities/poc-ids-token-ex-api-identity",
+            "httpsOnly": true,
+            "enabled": true,
+            "clientCertEnabled": false,
+            "clientCertMode": "Required",
+            "outboundVnetRouting": null,
+            "vnetRouteAllEnabled": true,
+            "identity": {
+              "type": "UserAssigned",
+              "userAssignedIdentities": {
+                "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourcegroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.ManagedIdentity/userAssignedIdentities/poc-ids-token-ex-api-identity": {
+                  "principalId": "4e7b70ed-9868-47ba-9b61-304f1e1fdd89",
+                  "clientId": "f0b3046c-dbf8-4d37-a4cf-65f2c7e6b4c1"
+                }
+              }
+            },
+            "web": {
+              "acrUseManagedIdentityCreds": true,
+              "acrUserManagedIdentityID": "f0b3046c-dbf8-4d37-a4cf-65f2c7e6b4c1",
+              "alwaysOn": true,
+              "appCommandLine": "",
+              "vnetRouteAllEnabled": true,
+              "publicNetworkAccess": "Disabled",
+              "ipSecurityRestrictions": [
+                {
+                  "ipAddress": "Any",
+                  "action": "Deny",
+                  "priority": 2147483647,
+                  "name": "Deny all",
+                  "description": "Deny all access"
+                }
+              ],
+              "ipSecurityRestrictionsDefaultAction": "Deny",
+              "scmIpSecurityRestrictions": [
+                {
+                  "ipAddress": "Any",
+                  "action": "Deny",
+                  "priority": 2147483647,
+                  "name": "Deny all",
+                  "description": "Deny all access"
+                }
+              ],
+              "scmIpSecurityRestrictionsDefaultAction": "Deny",
+              "scmIpSecurityRestrictionsUseMain": true,
+              "minTlsVersion": "1.2",
+              "scmMinTlsVersion": "1.2",
+              "ftpsState": "Disabled",
+              "healthCheckPath": "/health",
+              "httpLoggingEnabled": false,
+              "webJobsEnabled": false,
+              "pythonVersion": "",
+              "remoteDebuggingEnabled": false
+            }
+          }
+        },
+        "admin": {
+          "image": "DOCKER|pocidstokenexacr.azurecr.io/aiflux-admin@sha256:8950baf1fa8c5e8b0762c3b1069251706fe043dbca9c060b31c77092ba9f6ca0",
+          "protected": {
+            "publicNetworkAccess": "Enabled",
+            "virtualNetworkSubnetId": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Network/virtualNetworks/poc-ids-token-ex-vnet/subnets/poc-ids-token-ex-app-service-integration",
+            "keyVaultReferenceIdentity": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.ManagedIdentity/userAssignedIdentities/poc-ids-token-ex-admin-identity",
+            "httpsOnly": true,
+            "enabled": true,
+            "clientCertEnabled": false,
+            "clientCertMode": "Required",
+            "outboundVnetRouting": null,
+            "vnetRouteAllEnabled": true,
+            "identity": {
+              "type": "UserAssigned",
+              "userAssignedIdentities": {
+                "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourcegroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.ManagedIdentity/userAssignedIdentities/poc-ids-token-ex-admin-identity": {
+                  "principalId": "e717101e-1ffa-4ff8-874e-e07faaa7da86",
+                  "clientId": "3143ef2e-4a97-40cf-9a8c-2880d697f64b"
+                }
+              }
+            },
+            "web": {
+              "acrUseManagedIdentityCreds": true,
+              "acrUserManagedIdentityID": "3143ef2e-4a97-40cf-9a8c-2880d697f64b",
+              "alwaysOn": true,
+              "appCommandLine": "",
+              "vnetRouteAllEnabled": true,
+              "publicNetworkAccess": "Enabled",
+              "ipSecurityRestrictions": [
+                {
+                  "ipAddress": "167.103.66.93/32",
+                  "action": "Allow",
+                  "tag": "Default",
+                  "priority": 100,
+                  "name": "MyIP"
+                },
+                {
+                  "ipAddress": "Any",
+                  "action": "Allow",
+                  "priority": 2147483647,
+                  "name": "Allow all",
+                  "description": "Allow all access"
+                }
+              ],
+              "ipSecurityRestrictionsDefaultAction": "Allow",
+              "scmIpSecurityRestrictions": [
+                {
+                  "ipAddress": "Any",
+                  "action": "Allow",
+                  "priority": 2147483647,
+                  "name": "Allow all",
+                  "description": "Allow all access"
+                }
+              ],
+              "scmIpSecurityRestrictionsDefaultAction": "Allow",
+              "scmIpSecurityRestrictionsUseMain": false,
+              "minTlsVersion": "1.2",
+              "scmMinTlsVersion": "1.2",
+              "ftpsState": "Disabled",
+              "healthCheckPath": "/healthz",
+              "httpLoggingEnabled": false,
+              "webJobsEnabled": false,
+              "pythonVersion": "",
+              "remoteDebuggingEnabled": false
+            }
+          }
+        },
+        "customer": {
+          "image": "DOCKER|pocidstokenexacr.azurecr.io/aiflux-customer@sha256:072fe85e23168d20081894357ac87aa036e14363eb031e796e68686f4d357594",
+          "protected": {
+            "publicNetworkAccess": "Enabled",
+            "virtualNetworkSubnetId": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Network/virtualNetworks/poc-ids-token-ex-vnet/subnets/poc-ids-token-ex-app-service-integration",
+            "keyVaultReferenceIdentity": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.ManagedIdentity/userAssignedIdentities/poc-ids-token-ex-customer-identity",
+            "httpsOnly": true,
+            "enabled": true,
+            "clientCertEnabled": false,
+            "clientCertMode": "Required",
+            "outboundVnetRouting": null,
+            "vnetRouteAllEnabled": true,
+            "identity": {
+              "type": "UserAssigned",
+              "userAssignedIdentities": {
+                "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourcegroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.ManagedIdentity/userAssignedIdentities/poc-ids-token-ex-customer-identity": {
+                  "principalId": "fef60be5-f8ef-4330-8c22-a692b122856a",
+                  "clientId": "229200b4-fe7a-4aec-a215-57516d4a5145"
+                }
+              }
+            },
+            "web": {
+              "acrUseManagedIdentityCreds": true,
+              "acrUserManagedIdentityID": "229200b4-fe7a-4aec-a215-57516d4a5145",
+              "alwaysOn": true,
+              "appCommandLine": "",
+              "vnetRouteAllEnabled": true,
+              "publicNetworkAccess": "Enabled",
+              "ipSecurityRestrictions": [
+                {
+                  "ipAddress": "Any",
+                  "action": "Allow",
+                  "priority": 2147483647,
+                  "name": "Allow all",
+                  "description": "Allow all access"
+                }
+              ],
+              "ipSecurityRestrictionsDefaultAction": "Allow",
+              "scmIpSecurityRestrictions": [
+                {
+                  "ipAddress": "Any",
+                  "action": "Deny",
+                  "priority": 2147483647,
+                  "name": "Deny all",
+                  "description": "Deny all access"
+                }
+              ],
+              "scmIpSecurityRestrictionsDefaultAction": "Deny",
+              "scmIpSecurityRestrictionsUseMain": false,
+              "minTlsVersion": "1.2",
+              "scmMinTlsVersion": "1.2",
+              "ftpsState": "Disabled",
+              "healthCheckPath": "/healthz",
+              "httpLoggingEnabled": false,
+              "webJobsEnabled": false,
+              "pythonVersion": "",
+              "remoteDebuggingEnabled": false
+            }
+          }
+        },
+        "ingestion": {
+          "image": "DOCKER|pocidstokenexacr.azurecr.io/aiflux-ingestion@sha256:d2bdae4edbd2faf0f6c5a5b28c83882e36222767f88de9625071b251d4114c0b",
+          "protected": {
+            "publicNetworkAccess": "Disabled",
+            "virtualNetworkSubnetId": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Network/virtualNetworks/poc-ids-token-ex-vnet/subnets/poc-ids-token-ex-app-service-integration",
+            "keyVaultReferenceIdentity": "SystemAssigned",
+            "httpsOnly": true,
+            "enabled": true,
+            "clientCertEnabled": false,
+            "clientCertMode": "Optional",
+            "outboundVnetRouting": null,
+            "vnetRouteAllEnabled": false,
+            "identity": {
+              "type": "UserAssigned",
+              "userAssignedIdentities": {
+                "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourcegroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.ManagedIdentity/userAssignedIdentities/poc-ids-token-ex-ingestion-identity": {
+                  "principalId": "edbfc3e2-a8e5-4652-9bb0-311233756d42",
+                  "clientId": "e1d25c87-9df1-4225-9744-ce22121cf462"
+                }
+              }
+            },
+            "web": {
+              "acrUseManagedIdentityCreds": true,
+              "acrUserManagedIdentityID": "e1d25c87-9df1-4225-9744-ce22121cf462",
+              "alwaysOn": true,
+              "appCommandLine": "",
+              "vnetRouteAllEnabled": false,
+              "publicNetworkAccess": "Disabled",
+              "ipSecurityRestrictions": [
+                {
+                  "ipAddress": "Any",
+                  "action": "Deny",
+                  "priority": 2147483647,
+                  "name": "Deny all",
+                  "description": "Deny all access"
+                }
+              ],
+              "ipSecurityRestrictionsDefaultAction": "Deny",
+              "scmIpSecurityRestrictions": [
+                {
+                  "ipAddress": "Any",
+                  "action": "Deny",
+                  "priority": 2147483647,
+                  "name": "Deny all",
+                  "description": "Deny all access"
+                }
+              ],
+              "scmIpSecurityRestrictionsDefaultAction": "Deny",
+              "scmIpSecurityRestrictionsUseMain": true,
+              "minTlsVersion": "1.2",
+              "scmMinTlsVersion": "1.2",
+              "ftpsState": "Disabled",
+              "healthCheckPath": null,
+              "httpLoggingEnabled": false,
+              "webJobsEnabled": false,
+              "pythonVersion": "",
+              "remoteDebuggingEnabled": false
+            }
+          }
+        }
+      },
+      "vault": {
+        "network": null,
+        "authConfig": null,
+        "publicNetworkAccess": "Enabled",
+        "networkAcls": {
+          "bypass": "AzureServices",
+          "defaultAction": "Deny",
+          "ipRules": [
+            {
+              "value": "167.103.66.114/32"
+            },
+            {
+              "value": "167.103.66.93/32"
+            }
+          ],
+          "virtualNetworkRules": []
+        },
+        "privateEndpointConnections": [
+          {
+            "id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.KeyVault/vaults/pocidstokenexkv/privateEndpointConnections/poc-ids-token-ex-vault",
+            "properties": {
+              "provisioningState": "Succeeded",
+              "privateEndpoint": {
+                "id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Network/privateEndpoints/poc-ids-token-ex-vault-pe"
+              },
+              "privateLinkServiceConnectionState": {
+                "status": "Approved",
+                "actionsRequired": "None"
+              }
+            }
+          }
+        ],
+        "enableRbacAuthorization": true
+      },
+      "postgres": {
+        "network": {
+          "publicNetworkAccess": "Disabled"
+        },
+        "authConfig": {
+          "activeDirectoryAuth": "Enabled",
+          "passwordAuth": "Disabled",
+          "tenantId": "beb276ac-6e9f-498e-8e31-019ee666decd"
+        },
+        "publicNetworkAccess": null,
+        "networkAcls": null,
+        "privateEndpointConnections": [
+          {
+            "properties": {
+              "privateEndpoint": {
+                "id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Network/privateEndpoints/poc-ids-token-ex-postgres-pe"
+              },
+              "privateLinkServiceConnectionState": {
+                "status": "Approved",
+                "description": "Auto-Approved",
+                "actionsRequired": "None"
+              },
+              "groupIds": [
+                "postgresqlServer"
+              ],
+              "provisioningState": "Succeeded"
+            },
+            "id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.DBforPostgreSQL/flexibleServers/poc-ids-token-ex-pg/privateEndpointConnections/poc-ids-token-ex-postgres-pe.df8763bf-8f7a-4b36-8f21-a33f51ea5509",
+            "name": "poc-ids-token-ex-postgres-pe.df8763bf-8f7a-4b36-8f21-a33f51ea5509",
+            "type": "Microsoft.DBforPostgreSQL/flexibleServers/privateEndpointConnections"
+          }
+        ],
+        "enableRbacAuthorization": null
+      },
+      "postgresRules": [],
+      "roleAssignments": [
+        [
+          "/providers/Microsoft.Authorization/roleAssignments/4b0d4434-ea80-4734-8133-15cdaf69bde2",
+          "3f3193f2-f5a7-497a-b3b7-c47e3c7dd593",
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/providers/Microsoft.Authorization/roleDefinitions/18d7d88d-d35e-4fb5-a5c3-7773c20a72d9",
+          "/",
+          null
+        ],
+        [
+          "/providers/Microsoft.Authorization/roleAssignments/dc5b329c-4ddf-49d2-94fc-cce0cca7efb0",
+          "52b25d7a-7e7a-4752-8fe5-2028f06afc8a",
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/providers/Microsoft.Authorization/roleDefinitions/18d7d88d-d35e-4fb5-a5c3-7773c20a72d9",
+          "/",
+          null
+        ],
+        [
+          "/providers/Microsoft.Authorization/roleAssignments/fa691262-e04e-4eef-abfe-0ac2a0da46ff",
+          "83f78ae7-5443-43d4-9681-52334bfe0ece",
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/providers/Microsoft.Authorization/roleDefinitions/acdd72a7-3385-48ef-bd42-f606fba81ae7",
+          "/",
+          null
+        ],
+        [
+          "/providers/Microsoft.Management/managementGroups/beb276ac-6e9f-498e-8e31-019ee666decd/providers/Microsoft.Authorization/roleAssignments/5e3ecfc8-482c-6dad-184c-191d19b5b9e1",
+          "f2daabbe-4603-438c-be3d-d89d6fc9e713",
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/providers/Microsoft.Authorization/roleDefinitions/c2796051-c484-32b3-da31-7121b0348735",
+          "/providers/Microsoft.Management/managementGroups/beb276ac-6e9f-498e-8e31-019ee666decd",
+          null
+        ],
+        [
+          "/providers/Microsoft.Management/managementGroups/beb276ac-6e9f-498e-8e31-019ee666decd/providers/Microsoft.Authorization/roleAssignments/63d92f58-aa68-d974-22bf-e0623074c9f4",
+          "f2daabbe-4603-438c-be3d-d89d6fc9e713",
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/providers/Microsoft.Authorization/roleDefinitions/c12c1c16-33a1-487b-954d-41c89c60f349",
+          "/providers/Microsoft.Management/managementGroups/beb276ac-6e9f-498e-8e31-019ee666decd",
+          null
+        ],
+        [
+          "/providers/Microsoft.Management/managementGroups/beb276ac-6e9f-498e-8e31-019ee666decd/providers/Microsoft.Authorization/roleAssignments/e50c8ca2-6423-47d8-0fb8-e49819e89559",
+          "f2daabbe-4603-438c-be3d-d89d6fc9e713",
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/providers/Microsoft.Authorization/roleDefinitions/acdd72a7-3385-48ef-bd42-f606fba81ae7",
+          "/providers/Microsoft.Management/managementGroups/beb276ac-6e9f-498e-8e31-019ee666decd",
+          null
+        ],
+        [
+          "/providers/Microsoft.Management/managementGroups/singtel-sg-sandboxes/providers/Microsoft.Authorization/roleAssignments/730336a4-c1da-4743-a0b0-16a5cb4a9f4b",
+          "8007e9e0-255b-4770-b071-e40148e75d3b",
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/providers/Microsoft.Authorization/roleDefinitions/8e3af657-a8ff-443c-a75c-2fe8c4bcb635",
+          "/providers/Microsoft.Management/managementGroups/singtel-sg-sandboxes",
+          null
+        ],
+        [
+          "/providers/Microsoft.Management/managementGroups/singtel-sg/providers/Microsoft.Authorization/roleAssignments/11ca3378-80cb-45b2-87f1-a8114d676829",
+          "1650df21-0902-43b6-b344-77730395f09b",
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/providers/Microsoft.Authorization/roleDefinitions/acdd72a7-3385-48ef-bd42-f606fba81ae7",
+          "/providers/Microsoft.Management/managementGroups/singtel-sg",
+          null
+        ],
+        [
+          "/providers/Microsoft.Management/managementGroups/singtel-sg/providers/Microsoft.Authorization/roleAssignments/1b1dc99e-e8ac-3ad7-a393-54dfef721f6c",
+          "e49c837c-d741-422a-be43-adfcb747591d",
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/providers/Microsoft.Authorization/roleDefinitions/acdd72a7-3385-48ef-bd42-f606fba81ae7",
+          "/providers/Microsoft.Management/managementGroups/singtel-sg",
+          null
+        ],
+        [
+          "/providers/Microsoft.Management/managementGroups/singtel-sg/providers/Microsoft.Authorization/roleAssignments/1c09a54f-1cf3-4bd0-b599-856474604434",
+          "c544b739-4f2b-41cc-9661-fd19dc959f33",
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/providers/Microsoft.Authorization/roleDefinitions/7c10d2a9-a255-532c-b6fd-c97e046f0016",
+          "/providers/Microsoft.Management/managementGroups/singtel-sg",
+          null
+        ],
+        [
+          "/providers/Microsoft.Management/managementGroups/singtel-sg/providers/Microsoft.Authorization/roleAssignments/25842e0c-6351-a809-7eed-f20bc10df783",
+          "e2db2e6c-3d9e-49c6-957d-dd5f330ba170",
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/providers/Microsoft.Authorization/roleDefinitions/acdd72a7-3385-48ef-bd42-f606fba81ae7",
+          "/providers/Microsoft.Management/managementGroups/singtel-sg",
+          null
+        ],
+        [
+          "/providers/Microsoft.Management/managementGroups/singtel-sg/providers/Microsoft.Authorization/roleAssignments/35ca9437-a00e-d926-ddc2-5e5ab85c6857",
+          "88fe15fc-94fe-4d66-9c95-cf2f7ab0d5b0",
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/providers/Microsoft.Authorization/roleDefinitions/acdd72a7-3385-48ef-bd42-f606fba81ae7",
+          "/providers/Microsoft.Management/managementGroups/singtel-sg",
+          null
+        ],
+        [
+          "/providers/Microsoft.Management/managementGroups/singtel-sg/providers/Microsoft.Authorization/roleAssignments/43861364-7be9-a9f3-a715-767e2ed5dce6",
+          "3f9826d9-e401-40e6-bf53-e50571cdcfcd",
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/providers/Microsoft.Authorization/roleDefinitions/acdd72a7-3385-48ef-bd42-f606fba81ae7",
+          "/providers/Microsoft.Management/managementGroups/singtel-sg",
+          null
+        ],
+        [
+          "/providers/Microsoft.Management/managementGroups/singtel-sg/providers/Microsoft.Authorization/roleAssignments/4e22a29a-481f-41ef-b2e1-aaa9ad9e3739",
+          "b05fa3af-c6e3-4735-a2e1-fb44066adbe9",
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/providers/Microsoft.Authorization/roleDefinitions/cfd33db0-3dd1-45e3-aa9d-cdbdf3b6f24e",
+          "/providers/Microsoft.Management/managementGroups/singtel-sg",
+          null
+        ],
+        [
+          "/providers/Microsoft.Management/managementGroups/singtel-sg/providers/Microsoft.Authorization/roleAssignments/50cf5ac2-5973-4075-a0d0-e50f0199736d",
+          "0afb3e66-a9ea-4d92-8a0e-be5377e03569",
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/providers/Microsoft.Authorization/roleDefinitions/39bc4728-0917-49c7-9d2c-d95423bc2eb4",
+          "/providers/Microsoft.Management/managementGroups/singtel-sg",
+          null
+        ],
+        [
+          "/providers/Microsoft.Management/managementGroups/singtel-sg/providers/Microsoft.Authorization/roleAssignments/51f287f0-8061-4f4b-9dab-8a5449495ff4",
+          "8007e9e0-255b-4770-b071-e40148e75d3b",
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/providers/Microsoft.Authorization/roleDefinitions/8e3af657-a8ff-443c-a75c-2fe8c4bcb635",
+          "/providers/Microsoft.Management/managementGroups/singtel-sg",
+          null
+        ],
+        [
+          "/providers/Microsoft.Management/managementGroups/singtel-sg/providers/Microsoft.Authorization/roleAssignments/554c685b-61b3-4ecf-8a07-a728dd68eb32",
+          "bdeda441-4be9-4904-8b04-342c7eec4ee9",
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/providers/Microsoft.Authorization/roleDefinitions/8e3af657-a8ff-443c-a75c-2fe8c4bcb635",
+          "/providers/Microsoft.Management/managementGroups/singtel-sg",
+          null
+        ],
+        [
+          "/providers/Microsoft.Management/managementGroups/singtel-sg/providers/Microsoft.Authorization/roleAssignments/5c314cdf-d933-5f17-9109-52ed8016484e",
+          "4dbca1ae-1b05-48d7-933f-064c1acb87df",
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/providers/Microsoft.Authorization/roleDefinitions/9b56310b-3de8-5495-b0c9-7304335aa6b8",
+          "/providers/Microsoft.Management/managementGroups/singtel-sg",
+          null
+        ],
+        [
+          "/providers/Microsoft.Management/managementGroups/singtel-sg/providers/Microsoft.Authorization/roleAssignments/6962f035-195f-442a-a4c0-ed64e955334c",
+          "e4929880-62b5-4457-9ef8-4dfa8cd32d09",
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/providers/Microsoft.Authorization/roleDefinitions/acdd72a7-3385-48ef-bd42-f606fba81ae7",
+          "/providers/Microsoft.Management/managementGroups/singtel-sg",
+          null
+        ],
+        [
+          "/providers/Microsoft.Management/managementGroups/singtel-sg/providers/Microsoft.Authorization/roleAssignments/75b4d41e-bfa4-49be-99e0-47211edc7cc9",
+          "a43f6a26-23e1-4e89-bc66-24c3f7cca7ff",
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/providers/Microsoft.Authorization/roleDefinitions/82b7184b-846e-5a52-a1d8-ae55b4790dd6",
+          "/providers/Microsoft.Management/managementGroups/singtel-sg",
+          null
+        ],
+        [
+          "/providers/Microsoft.Management/managementGroups/singtel-sg/providers/Microsoft.Authorization/roleAssignments/7f065c0d-ec22-205a-51b9-83ffda1dc532",
+          "e2db2e6c-3d9e-49c6-957d-dd5f330ba170",
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/providers/Microsoft.Authorization/roleDefinitions/fa23ad8b-c56e-40d8-ac0c-ce449e1d2c64",
+          "/providers/Microsoft.Management/managementGroups/singtel-sg",
+          null
+        ],
+        [
+          "/providers/Microsoft.Management/managementGroups/singtel-sg/providers/Microsoft.Authorization/roleAssignments/97f8fe70-79d6-24eb-2cb2-0b91ed70adab",
+          "ddd4cee2-8748-482e-8e7b-ab1f2846aada",
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/providers/Microsoft.Authorization/roleDefinitions/4abbcc35-e782-43d8-92c5-2d3f1bd2253f",
+          "/providers/Microsoft.Management/managementGroups/singtel-sg",
+          null
+        ],
+        [
+          "/providers/Microsoft.Management/managementGroups/singtel-sg/providers/Microsoft.Authorization/roleAssignments/a5dbbf01-6a67-5727-bfe0-63c05257c451",
+          "4dbca1ae-1b05-48d7-933f-064c1acb87df",
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/providers/Microsoft.Authorization/roleDefinitions/acdd72a7-3385-48ef-bd42-f606fba81ae7",
+          "/providers/Microsoft.Management/managementGroups/singtel-sg",
+          null
+        ],
+        [
+          "/providers/Microsoft.Management/managementGroups/singtel-sg/providers/Microsoft.Authorization/roleAssignments/a95b2f05-9777-f6d4-527a-65bb0c35c82f",
+          "b07c1f51-85e6-4f7d-86eb-871ff9bf16f2",
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/providers/Microsoft.Authorization/roleDefinitions/acdd72a7-3385-48ef-bd42-f606fba81ae7",
+          "/providers/Microsoft.Management/managementGroups/singtel-sg",
+          null
+        ],
+        [
+          "/providers/Microsoft.Management/managementGroups/singtel-sg/providers/Microsoft.Authorization/roleAssignments/b6597535-da96-475e-b441-2913e30529ef",
+          "3f9826d9-e401-40e6-bf53-e50571cdcfcd",
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/providers/Microsoft.Authorization/roleDefinitions/cfd33db0-3dd1-45e3-aa9d-cdbdf3b6f24e",
+          "/providers/Microsoft.Management/managementGroups/singtel-sg",
+          null
+        ],
+        [
+          "/providers/Microsoft.Management/managementGroups/singtel-sg/providers/Microsoft.Authorization/roleAssignments/c2867d59-a3e6-4959-9375-580e5ee9f0ab",
+          "b05fa3af-c6e3-4735-a2e1-fb44066adbe9",
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/providers/Microsoft.Authorization/roleDefinitions/a7117784-d510-486b-947e-000d41068311",
+          "/providers/Microsoft.Management/managementGroups/singtel-sg",
+          null
+        ],
+        [
+          "/providers/Microsoft.Management/managementGroups/singtel-sg/providers/Microsoft.Authorization/roleAssignments/cc6a34d6-9ba6-7392-b56b-ff31c48afa41",
+          "e2db2e6c-3d9e-49c6-957d-dd5f330ba170",
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/providers/Microsoft.Authorization/roleDefinitions/72fafb9e-0641-4937-9268-a91bfd8191a3",
+          "/providers/Microsoft.Management/managementGroups/singtel-sg",
+          null
+        ],
+        [
+          "/providers/Microsoft.Management/managementGroups/singtel-sg/providers/Microsoft.Authorization/roleAssignments/ce5dabc2-105f-ee51-b1d1-ddb04e669bfc",
+          "65d4bc88-11f9-481b-b90f-4d1a7ba5efea",
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/providers/Microsoft.Authorization/roleDefinitions/acdd72a7-3385-48ef-bd42-f606fba81ae7",
+          "/providers/Microsoft.Management/managementGroups/singtel-sg",
+          null
+        ],
+        [
+          "/providers/Microsoft.Management/managementGroups/singtel-sg/providers/Microsoft.Authorization/roleAssignments/d23c8d66-fa0a-7a77-e0d0-26bd9fb530bd",
+          "2bd7cbd5-ae03-4bdb-8fa0-c9e2336c1716",
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/providers/Microsoft.Authorization/roleDefinitions/8e3af657-a8ff-443c-a75c-2fe8c4bcb635",
+          "/providers/Microsoft.Management/managementGroups/singtel-sg",
+          null
+        ],
+        [
+          "/providers/Microsoft.Management/managementGroups/singtel-sg/providers/Microsoft.Authorization/roleAssignments/df3ed2b9-c093-075a-953f-de92e6d6208f",
+          "6ac7a003-c495-49da-b73b-8e05a9cfb86b",
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/providers/Microsoft.Authorization/roleDefinitions/f7b75c60-3036-4b75-91c3-6b41c27c1689",
+          "/providers/Microsoft.Management/managementGroups/singtel-sg",
+          null
+        ],
+        [
+          "/providers/Microsoft.Management/managementGroups/singtel-sg/providers/Microsoft.Authorization/roleAssignments/e9fea54c-6191-4194-a6b7-0c6172f8e3b4",
+          "7780472e-8dd4-4901-aa59-6cdbb2f393f4",
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/providers/Microsoft.Authorization/roleDefinitions/39bc4728-0917-49c7-9d2c-d95423bc2eb4",
+          "/providers/Microsoft.Management/managementGroups/singtel-sg",
+          null
+        ],
+        [
+          "/providers/Microsoft.Management/managementGroups/singtel-sg/providers/Microsoft.Authorization/roleAssignments/ec4336e1-9e1c-4425-ac6a-e31cf48eb428",
+          "b05fa3af-c6e3-4735-a2e1-fb44066adbe9",
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/providers/Microsoft.Authorization/roleDefinitions/acdd72a7-3385-48ef-bd42-f606fba81ae7",
+          "/providers/Microsoft.Management/managementGroups/singtel-sg",
+          null
+        ],
+        [
+          "/providers/Microsoft.Management/managementGroups/singtel-sg/providers/Microsoft.Authorization/roleAssignments/fad5f73c-d41e-5ffe-f54a-fd3996a99ad3",
+          "ddd4cee2-8748-482e-8e7b-ab1f2846aada",
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/providers/Microsoft.Authorization/roleDefinitions/acdd72a7-3385-48ef-bd42-f606fba81ae7",
+          "/providers/Microsoft.Management/managementGroups/singtel-sg",
+          null
+        ],
+        [
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/providers/Microsoft.Authorization/roleAssignments/245988cf-7c81-43e7-823f-f3dece7c2676",
+          "dd928302-055b-4516-9b8e-b06ae823057b",
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/providers/Microsoft.Authorization/roleDefinitions/b24988ac-6180-42a0-ab88-20f7382dd24c",
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52",
+          null
+        ],
+        [
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/providers/Microsoft.Authorization/roleAssignments/4f690561-a742-4c27-92e4-dbbc11caf62f",
+          "18e5eded-888f-47d1-9590-334c4d987ff7",
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/providers/Microsoft.Authorization/roleDefinitions/8e3af657-a8ff-443c-a75c-2fe8c4bcb635",
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52",
+          null
+        ],
+        [
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/providers/Microsoft.Authorization/roleAssignments/7bed2170-cd65-4caf-adba-22344145817f",
+          "d4d7491d-311c-423e-a1d2-feb2713383a8",
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/providers/Microsoft.Authorization/roleDefinitions/b24988ac-6180-42a0-ab88-20f7382dd24c",
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52",
+          null
+        ],
+        [
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/providers/Microsoft.Authorization/roleAssignments/87b746d3-0b21-4ac6-a327-f7cdbbffd139",
+          "8007e9e0-255b-4770-b071-e40148e75d3b",
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/providers/Microsoft.Authorization/roleDefinitions/8e3af657-a8ff-443c-a75c-2fe8c4bcb635",
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52",
+          null
+        ],
+        [
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/providers/Microsoft.Authorization/roleAssignments/dcfc9da9-0c1f-4dce-9625-5d8c6eb8f049",
+          "bdeda441-4be9-4904-8b04-342c7eec4ee9",
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/providers/Microsoft.Authorization/roleDefinitions/8e3af657-a8ff-443c-a75c-2fe8c4bcb635",
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52",
+          null
+        ],
+        [
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/providers/Microsoft.Authorization/roleAssignments/f47ba982-c3df-45a1-8e35-aa7ab17c26b4",
+          "316eb55d-464e-4853-a551-a341ad22391f",
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/providers/Microsoft.Authorization/roleDefinitions/b24988ac-6180-42a0-ab88-20f7382dd24c",
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52",
+          null
+        ],
+        [
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.ApiManagement/service/poc-ids-token-ex-apim/providers/Microsoft.Authorization/roleAssignments/796ed394-f2c5-4344-a578-faf4e50cfdcf",
+          "4e7b70ed-9868-47ba-9b61-304f1e1fdd89",
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/providers/Microsoft.Authorization/roleDefinitions/fa10dd61-c879-43e6-b259-384d4d29d452",
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.ApiManagement/service/poc-ids-token-ex-apim",
+          null
+        ],
+        [
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Authorization/roleAssignments/274b4a68-99e2-4552-abf8-8c9b3e3c915f",
+          "dd928302-055b-4516-9b8e-b06ae823057b",
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/providers/Microsoft.Authorization/roleDefinitions/ba92f5b4-2d11-453d-a403-e96b0029c9fe",
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC",
+          null
+        ],
+        [
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Authorization/roleAssignments/c9f12a8a-4618-476e-9b93-50d9c202802c",
+          "d4d7491d-311c-423e-a1d2-feb2713383a8",
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/providers/Microsoft.Authorization/roleDefinitions/ba92f5b4-2d11-453d-a403-e96b0029c9fe",
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC",
+          null
+        ],
+        [
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.CognitiveServices/accounts/poc-ids-token-ex-foundry/providers/Microsoft.Authorization/roleAssignments/3314027c-3549-4f4b-88dd-8f6356028cad",
+          "bcf69911-f34e-4f33-acd8-a36f164db811",
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/providers/Microsoft.Authorization/roleDefinitions/a97b65f3-24c7-4388-baec-2e87135dc908",
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.CognitiveServices/accounts/poc-ids-token-ex-foundry",
+          null
+        ],
+        [
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.CognitiveServices/accounts/poc-ids-token-ex-safety/providers/Microsoft.Authorization/roleAssignments/8822a5de-1e7a-4125-be3c-e0dd228a1e80",
+          "bcf69911-f34e-4f33-acd8-a36f164db811",
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/providers/Microsoft.Authorization/roleDefinitions/a97b65f3-24c7-4388-baec-2e87135dc908",
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.CognitiveServices/accounts/poc-ids-token-ex-safety",
+          null
+        ],
+        [
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.ContainerRegistry/registries/pocidstokenexacr/providers/Microsoft.Authorization/roleAssignments/09909ab0-f370-47ac-824f-a3103b4ca5b5",
+          "e717101e-1ffa-4ff8-874e-e07faaa7da86",
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/providers/Microsoft.Authorization/roleDefinitions/7f951dda-4ed3-4680-a7ca-43fe172d538d",
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.ContainerRegistry/registries/pocidstokenexacr",
+          null
+        ],
+        [
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.ContainerRegistry/registries/pocidstokenexacr/providers/Microsoft.Authorization/roleAssignments/3bb77fa7-2e12-43ba-adc6-ecc702eca2eb",
+          "edbfc3e2-a8e5-4652-9bb0-311233756d42",
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/providers/Microsoft.Authorization/roleDefinitions/7f951dda-4ed3-4680-a7ca-43fe172d538d",
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.ContainerRegistry/registries/pocidstokenexacr",
+          null
+        ],
+        [
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.ContainerRegistry/registries/pocidstokenexacr/providers/Microsoft.Authorization/roleAssignments/5b09047c-5e88-49fb-b07c-698907605d75",
+          "fef60be5-f8ef-4330-8c22-a692b122856a",
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/providers/Microsoft.Authorization/roleDefinitions/7f951dda-4ed3-4680-a7ca-43fe172d538d",
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.ContainerRegistry/registries/pocidstokenexacr",
+          null
+        ],
+        [
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.ContainerRegistry/registries/pocidstokenexacr/providers/Microsoft.Authorization/roleAssignments/85edb4dd-4bd5-46eb-ba6f-7fed5c233273",
+          "4e7b70ed-9868-47ba-9b61-304f1e1fdd89",
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/providers/Microsoft.Authorization/roleDefinitions/7f951dda-4ed3-4680-a7ca-43fe172d538d",
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.ContainerRegistry/registries/pocidstokenexacr",
+          null
+        ],
+        [
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.ContainerRegistry/registries/pocidstokenexacr/providers/Microsoft.Authorization/roleAssignments/bf77457a-e4e9-44f5-9030-8cf25f069a9c",
+          "967370eb-a5b0-4531-bc2b-b15a83ac3efd",
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/providers/Microsoft.Authorization/roleDefinitions/7f951dda-4ed3-4680-a7ca-43fe172d538d",
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.ContainerRegistry/registries/pocidstokenexacr",
+          null
+        ],
+        [
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.EventHub/namespaces/poc-ids-token-ex-eh/eventhubs/token-usage/providers/Microsoft.Authorization/roleAssignments/25eedd23-a332-49b1-8dba-d2b6d7b89764",
+          "bcf69911-f34e-4f33-acd8-a36f164db811",
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/providers/Microsoft.Authorization/roleDefinitions/2b629674-e913-4c01-ae53-ef4638d8f975",
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.EventHub/namespaces/poc-ids-token-ex-eh/eventhubs/token-usage",
+          null
+        ],
+        [
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.EventHub/namespaces/poc-ids-token-ex-eh/eventhubs/token-usage/providers/Microsoft.Authorization/roleAssignments/560f7e5a-24f3-429e-b170-ae5a0bc0b38b",
+          "edbfc3e2-a8e5-4652-9bb0-311233756d42",
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/providers/Microsoft.Authorization/roleDefinitions/a638d3c7-ab3a-418d-83e6-5f17a39d4fde",
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.EventHub/namespaces/poc-ids-token-ex-eh/eventhubs/token-usage",
+          null
+        ],
+        [
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.EventHub/namespaces/poc-ids-token-ex-eh/eventhubs/token-usage/providers/Microsoft.Authorization/roleAssignments/c360aed6-1dd0-4556-92ec-5f939998cb56",
+          "bcf69911-f34e-4f33-acd8-a36f164db811",
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/providers/Microsoft.Authorization/roleDefinitions/a638d3c7-ab3a-418d-83e6-5f17a39d4fde",
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.EventHub/namespaces/poc-ids-token-ex-eh/eventhubs/token-usage",
+          null
+        ],
+        [
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.EventHub/namespaces/poc-ids-token-ex-eh/providers/Microsoft.Authorization/roleAssignments/d011af9e-64c3-4fc8-b7ac-e9c90300212b",
+          "bcf69911-f34e-4f33-acd8-a36f164db811",
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/providers/Microsoft.Authorization/roleDefinitions/2b629674-e913-4c01-ae53-ef4638d8f975",
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.EventHub/namespaces/poc-ids-token-ex-eh",
+          null
+        ],
+        [
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Insights/components/poc-ids-token-ex-insights/providers/Microsoft.Authorization/roleAssignments/2c205c33-59b1-46a8-a375-538b427a6f6c",
+          "4e7b70ed-9868-47ba-9b61-304f1e1fdd89",
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/providers/Microsoft.Authorization/roleDefinitions/3913510d-42f4-4e42-8a64-420c390055eb",
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Insights/components/poc-ids-token-ex-insights",
+          null
+        ],
+        [
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Insights/components/poc-ids-token-ex-insights/providers/Microsoft.Authorization/roleAssignments/63554a8a-0525-48d2-b6eb-70872dc9f8ab",
+          "967370eb-a5b0-4531-bc2b-b15a83ac3efd",
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/providers/Microsoft.Authorization/roleDefinitions/3913510d-42f4-4e42-8a64-420c390055eb",
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Insights/components/poc-ids-token-ex-insights",
+          null
+        ],
+        [
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Insights/components/poc-ids-token-ex-insights/providers/Microsoft.Authorization/roleAssignments/6b7da984-c2b2-4fcc-9318-5c387675ca27",
+          "e717101e-1ffa-4ff8-874e-e07faaa7da86",
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/providers/Microsoft.Authorization/roleDefinitions/3913510d-42f4-4e42-8a64-420c390055eb",
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Insights/components/poc-ids-token-ex-insights",
+          null
+        ],
+        [
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Insights/components/poc-ids-token-ex-insights/providers/Microsoft.Authorization/roleAssignments/73f346ba-6db2-416d-93e1-817dedf4325c",
+          "fef60be5-f8ef-4330-8c22-a692b122856a",
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/providers/Microsoft.Authorization/roleDefinitions/3913510d-42f4-4e42-8a64-420c390055eb",
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Insights/components/poc-ids-token-ex-insights",
+          null
+        ],
+        [
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Insights/components/poc-ids-token-ex-insights/providers/Microsoft.Authorization/roleAssignments/dfea6688-b9b9-4b1e-aae7-684f9790202c",
+          "bcf69911-f34e-4f33-acd8-a36f164db811",
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/providers/Microsoft.Authorization/roleDefinitions/3913510d-42f4-4e42-8a64-420c390055eb",
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Insights/components/poc-ids-token-ex-insights",
+          null
+        ],
+        [
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Insights/components/poc-ids-token-ex-insights/providers/Microsoft.Authorization/roleAssignments/e3ac3070-b24a-4528-88cd-5d0c34e2f01f",
+          "edbfc3e2-a8e5-4652-9bb0-311233756d42",
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/providers/Microsoft.Authorization/roleDefinitions/3913510d-42f4-4e42-8a64-420c390055eb",
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Insights/components/poc-ids-token-ex-insights",
+          null
+        ],
+        [
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.KeyVault/vaults/pocidstokenexkv/providers/Microsoft.Authorization/roleAssignments/018f19e1-a2e5-4492-80df-41e3b1b6c183",
+          "d4d7491d-311c-423e-a1d2-feb2713383a8",
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/providers/Microsoft.Authorization/roleDefinitions/4633458b-17de-408a-b874-0445c86b69e6",
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.KeyVault/vaults/pocidstokenexkv",
+          null
+        ],
+        [
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.KeyVault/vaults/pocidstokenexkv/providers/Microsoft.Authorization/roleAssignments/0bce9edf-4969-45b6-a515-ddd5fe1554e7",
+          "d4d7491d-311c-423e-a1d2-feb2713383a8",
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/providers/Microsoft.Authorization/roleDefinitions/b86a8fe4-44ce-4948-aee5-eccb2c155cd7",
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.KeyVault/vaults/pocidstokenexkv",
+          null
+        ],
+        [
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.KeyVault/vaults/pocidstokenexkv/providers/Microsoft.Authorization/roleAssignments/62e12904-4410-4593-ab01-749f71640eb4",
+          "dd928302-055b-4516-9b8e-b06ae823057b",
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/providers/Microsoft.Authorization/roleDefinitions/4633458b-17de-408a-b874-0445c86b69e6",
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.KeyVault/vaults/pocidstokenexkv",
+          null
+        ],
+        [
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.KeyVault/vaults/pocidstokenexkv/providers/Microsoft.Authorization/roleAssignments/73fa3e9f-28fc-4f07-b2ae-d7accb22869a",
+          "d4d7491d-311c-423e-a1d2-feb2713383a8",
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/providers/Microsoft.Authorization/roleDefinitions/a4417e6f-fecd-4de8-b567-7b0420556985",
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.KeyVault/vaults/pocidstokenexkv",
+          null
+        ],
+        [
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.KeyVault/vaults/pocidstokenexkv/providers/Microsoft.Authorization/roleAssignments/7aa1dd59-0311-4c38-b6d5-00c2cde2f343",
+          "dd928302-055b-4516-9b8e-b06ae823057b",
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/providers/Microsoft.Authorization/roleDefinitions/a4417e6f-fecd-4de8-b567-7b0420556985",
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.KeyVault/vaults/pocidstokenexkv",
+          null
+        ],
+        [
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.KeyVault/vaults/pocidstokenexkv/providers/Microsoft.Authorization/roleAssignments/a1b981cf-043c-49df-ac76-4f19332e3302",
+          "4e7b70ed-9868-47ba-9b61-304f1e1fdd89",
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/providers/Microsoft.Authorization/roleDefinitions/4633458b-17de-408a-b874-0445c86b69e6",
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.KeyVault/vaults/pocidstokenexkv",
+          null
+        ],
+        [
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.KeyVault/vaults/pocidstokenexkv/providers/Microsoft.Authorization/roleAssignments/db1a6f43-f6ba-4ec0-a2f9-931de6f66fae",
+          "bcf69911-f34e-4f33-acd8-a36f164db811",
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/providers/Microsoft.Authorization/roleDefinitions/4633458b-17de-408a-b874-0445c86b69e6",
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.KeyVault/vaults/pocidstokenexkv",
+          null
+        ],
+        [
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.KeyVault/vaults/pocidstokenexkv/providers/Microsoft.Authorization/roleAssignments/e64642bc-367d-4909-9a2a-ddfe7975a3ff",
+          "dd928302-055b-4516-9b8e-b06ae823057b",
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/providers/Microsoft.Authorization/roleDefinitions/b86a8fe4-44ce-4948-aee5-eccb2c155cd7",
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.KeyVault/vaults/pocidstokenexkv",
+          null
+        ],
+        [
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.OperationalInsights/workspaces/poc-ids-token-ex-logs/providers/Microsoft.Authorization/roleAssignments/d9baa091-73f0-4f4f-a7f0-a7927e09e4f1",
+          "edbfc3e2-a8e5-4652-9bb0-311233756d42",
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/providers/Microsoft.Authorization/roleDefinitions/73c42c96-874c-492b-b04d-ab87d138a893",
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.OperationalInsights/workspaces/poc-ids-token-ex-logs",
+          null
+        ],
+        [
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.OperationalInsights/workspaces/poc-ids-token-ex-logs/providers/Microsoft.Authorization/roleAssignments/f41fb091-927f-49a6-867b-0649a75c7192",
+          "4e7b70ed-9868-47ba-9b61-304f1e1fdd89",
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/providers/Microsoft.Authorization/roleDefinitions/73c42c96-874c-492b-b04d-ab87d138a893",
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.OperationalInsights/workspaces/poc-ids-token-ex-logs",
+          null
+        ],
+        [
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Storage/storageAccounts/pocidstokenexfunc/providers/Microsoft.Authorization/roleAssignments/22d52e8f-0df2-42d5-9dd2-e1deaf5d1d53",
+          "edbfc3e2-a8e5-4652-9bb0-311233756d42",
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/providers/Microsoft.Authorization/roleDefinitions/974c5e8b-45b9-4653-ba55-5f855dd0fb88",
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Storage/storageAccounts/pocidstokenexfunc",
+          null
+        ],
+        [
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Storage/storageAccounts/pocidstokenexfunc/providers/Microsoft.Authorization/roleAssignments/3d3f96f7-cdf9-4830-9814-94b740e86f93",
+          "967370eb-a5b0-4531-bc2b-b15a83ac3efd",
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/providers/Microsoft.Authorization/roleDefinitions/b7e6dc6d-f1e8-4753-8033-0f276bb0955b",
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Storage/storageAccounts/pocidstokenexfunc",
+          null
+        ],
+        [
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Storage/storageAccounts/pocidstokenexfunc/providers/Microsoft.Authorization/roleAssignments/58f5ba0f-cafc-46b2-9fe5-164d635c108d",
+          "967370eb-a5b0-4531-bc2b-b15a83ac3efd",
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/providers/Microsoft.Authorization/roleDefinitions/0a9a7e1f-b9d0-4cc4-a60d-0319b160aaa3",
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Storage/storageAccounts/pocidstokenexfunc",
+          null
+        ],
+        [
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Storage/storageAccounts/pocidstokenexfunc/providers/Microsoft.Authorization/roleAssignments/5e780872-a5b6-4644-8906-2d81d65e9740",
+          "4e7b70ed-9868-47ba-9b61-304f1e1fdd89",
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/providers/Microsoft.Authorization/roleDefinitions/0a9a7e1f-b9d0-4cc4-a60d-0319b160aaa3",
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Storage/storageAccounts/pocidstokenexfunc",
+          null
+        ],
+        [
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Storage/storageAccounts/pocidstokenexfunc/providers/Microsoft.Authorization/roleAssignments/97f6460d-7c0f-4d35-80cb-8d993c4fb647",
+          "edbfc3e2-a8e5-4652-9bb0-311233756d42",
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/providers/Microsoft.Authorization/roleDefinitions/b7e6dc6d-f1e8-4753-8033-0f276bb0955b",
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Storage/storageAccounts/pocidstokenexfunc",
+          null
+        ],
+        [
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Storage/storageAccounts/pocidstokenexfunc/providers/Microsoft.Authorization/roleAssignments/ce1e8f73-e9f2-48ac-817e-a003d7886329",
+          "bcf69911-f34e-4f33-acd8-a36f164db811",
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/providers/Microsoft.Authorization/roleDefinitions/0a9a7e1f-b9d0-4cc4-a60d-0319b160aaa3",
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Storage/storageAccounts/pocidstokenexfunc",
+          null
+        ],
+        [
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Storage/storageAccounts/pocidstokenexfunc/providers/Microsoft.Authorization/roleAssignments/d4480fe0-a074-4361-a635-16e54cc916d0",
+          "edbfc3e2-a8e5-4652-9bb0-311233756d42",
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/providers/Microsoft.Authorization/roleDefinitions/0a9a7e1f-b9d0-4cc4-a60d-0319b160aaa3",
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Storage/storageAccounts/pocidstokenexfunc",
+          null
+        ],
+        [
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Storage/storageAccounts/pocidstokenexfunc/providers/Microsoft.Authorization/roleAssignments/f8e79204-4430-4647-9573-81c222b6ad86",
+          "967370eb-a5b0-4531-bc2b-b15a83ac3efd",
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/providers/Microsoft.Authorization/roleDefinitions/974c5e8b-45b9-4653-ba55-5f855dd0fb88",
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Storage/storageAccounts/pocidstokenexfunc",
+          null
+        ]
+      ],
+      "jwt": {
+        "status": "Resolved",
+        "vaultName": "pocidstokenexkv",
+        "secretName": "aiflux-local-jwt-signing-secret",
+        "identityType": "UserAssigned",
+        "resolved": true,
+        "metadataFound": true,
+        "detailCategories": [
+          "network"
+        ]
+      }
+    },
+    "settings_hashes": {
+      "api": "a4d40a5dbdca329f84e4f23a5c9663192d00eb8af932290d0cad970c19e930fd",
+      "ingestion": "2d084cb4efb6b9f8b23be9e61e609b2c378544e8b16b1cd5e61b5fc21650bc5d",
+      "admin": "8819a64ec5c3e2933d1c451928622977b589e62e843136dc100aee46ba2a3b6e",
+      "customer": "5086ea9867a7b132a493ac263cb13bd09af81ba97f9c8b092249f7322ab2490a"
+    },
+    "configured_product": "aiflux",
+    "timer_disabled": "false",
+    "cutoff": "2026-10-27T06:06:02.045288+00:00",
+    "state_network": {
+      "networkAcls": {
+        "bypass": "AzureServices",
+        "defaultAction": "Deny",
+        "ipRules": [
+          {
+            "action": "Allow",
+            "value": "167.103.66.93"
+          },
+          {
+            "action": "Allow",
+            "value": "167.103.66.248"
+          },
+          {
+            "action": "Allow",
+            "value": "167.103.65.36"
+          }
+        ],
+        "ipv6Rules": [],
+        "resourceAccessRules": [],
+        "virtualNetworkRules": []
+      },
+      "publicNetworkAccess": "Enabled",
+      "allowSharedKeyAccess": true
+    },
+    "apim": {
+      "global": "c67db2cd1b29b5621520621edd84cb043ecb90fc8a68a3dfcd13d800acaacb2d",
+      "legacy": "a51f2fd903ab277257649d16d19eeb74c839a83ae39dc3f158c91d25e3e9cbfd",
+      "native": "a51f2fd903ab277257649d16d19eeb74c839a83ae39dc3f158c91d25e3e9cbfd",
+      "backends": "2d2027b164959ddca066b9d63a21003aae2037ad58a72df8455e09375f3be2dc",
+      "product": "4ceba15e8d0f42e56d677dd61da275e090f701a75d6d72415d7c32cf1c1d8a4a",
+      "binding": "320344d243bd7da5eeb7f6cc1653dbc55e10f2919c5ca606f6ad4d1fa2acac8d",
+      "fragments": "9122f085c5e9ae3f78f790804bec1771b675ffe72cbb1e69d4218275b7529c70",
+      "api": "99519c46c78e364e53fb706f9f780b4ec8b2251705f7884f14748d96f5cf7279",
+      "operations": "8d7ec1ba5b2f1af198f1ac0b5da900441428b5d31a88edc3c7db0de5eadf79e0"
+    }
+  },
+  "policy_sha256": "cbdaae044da1ce9b14a3b562ca74cbce2f9e5d1d1c985addb93282686908241f",
+  "publisher_permissions": [
+    {
+      "principal_id": "4e7b70ed-9868-47ba-9b61-304f1e1fdd89",
+      "fragment_actions": {
+        "Microsoft.ApiManagement/service/policyFragments/read": false,
+        "Microsoft.ApiManagement/service/policyFragments/write": false
+      },
+      "assignment_metadata": [
+        {
+          "id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.ApiManagement/service/poc-ids-token-ex-apim/providers/Microsoft.Authorization/roleAssignments/796ed394-f2c5-4344-a578-faf4e50cfdcf",
+          "roleDefinitionId": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/providers/Microsoft.Authorization/roleDefinitions/fa10dd61-c879-43e6-b259-384d4d29d452",
+          "scope": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.ApiManagement/service/poc-ids-token-ex-apim",
+          "condition": null
+        }
+      ]
+    }
+  ],
+  "foundry_bindings": [
+    {
+      "deployment": "Decision-1",
+      "raiPolicyName": "Microsoft.DefaultV2",
+      "model": {
+        "format": "Microsoft",
+        "name": "Microsoft-Decision-1",
+        "version": "1"
+      },
+      "sku": {
+        "capacity": 250,
+        "name": "DataZoneStandard"
+      }
+    },
+    {
+      "deployment": "gpt-6.1-sol",
+      "raiPolicyName": "Microsoft.DefaultV2",
+      "model": {
+        "format": "OpenAI",
+        "name": "gpt-6.1-sol",
+        "version": "2026-09-29"
+      },
+      "sku": {
+        "capacity": 5000,
+        "name": "GlobalStandard"
+      }
+    },
+    {
+      "deployment": "gpt-5.6-luna",
+      "raiPolicyName": "Microsoft.DefaultV2",
+      "model": {
+        "format": "OpenAI",
+        "name": "gpt-5.6-luna",
+        "version": "2026-07-09"
+      },
+      "sku": {
+        "capacity": 5000,
+        "name": "GlobalStandard"
+      }
+    },
+    {
+      "deployment": "DeepSeek-V4-Flash",
+      "raiPolicyName": "Microsoft.DefaultV2",
+      "model": {
+        "format": "DeepSeek",
+        "name": "DeepSeek-V4-Flash",
+        "version": "2026-04-23"
+      },
+      "sku": {
+        "capacity": 2500,
+        "name": "GlobalStandard"
+      }
+    },
+    {
+      "deployment": "gpt-4o",
+      "raiPolicyName": "Microsoft.DefaultV2",
+      "model": {
+        "format": "OpenAI",
+        "name": "gpt-4o",
+        "version": "2024-11-20"
+      },
+      "sku": {
+        "capacity": 15000,
+        "name": "GlobalStandard"
+      }
+    },
+    {
+      "deployment": "gpt-5.4-mini",
+      "raiPolicyName": "Microsoft.DefaultV2",
+      "model": {
+        "format": "OpenAI",
+        "name": "gpt-5.4-mini",
+        "version": "2026-03-17"
+      },
+      "sku": {
+        "capacity": 5000,
+        "name": "GlobalStandard"
+      }
+    },
+    {
+      "deployment": "grok-4-1-fast-reasoning",
+      "raiPolicyName": "Microsoft.DefaultV2",
+      "model": {
+        "format": "xAI",
+        "name": "grok-4-1-fast-reasoning",
+        "version": "1"
+      },
+      "sku": {
+        "capacity": 2500,
+        "name": "GlobalStandard"
+      }
+    },
+    {
+      "deployment": "grok-4-20-reasoning",
+      "raiPolicyName": "Microsoft.DefaultV2",
+      "model": {
+        "format": "xAI",
+        "name": "grok-4-20-reasoning",
+        "version": "1"
+      },
+      "sku": {
+        "capacity": 2500,
+        "name": "GlobalStandard"
+      }
+    },
+    {
+      "deployment": "grok-4.3",
+      "raiPolicyName": "Microsoft.DefaultV2",
+      "model": {
+        "format": "xAI",
+        "name": "grok-4.3",
+        "version": "1"
+      },
+      "sku": {
+        "capacity": 2500,
+        "name": "GlobalStandard"
+      }
+    },
+    {
+      "deployment": "DeepSeek-V4-Pro",
+      "raiPolicyName": "Microsoft.DefaultV2",
+      "model": {
+        "format": "DeepSeek",
+        "name": "DeepSeek-V4-Pro",
+        "version": "2026-04-23"
+      },
+      "sku": {
+        "capacity": 5000,
+        "name": "GlobalStandard"
+      }
+    },
+    {
+      "deployment": "Kimi-K2.7-Code",
+      "raiPolicyName": "Microsoft.DefaultV2",
+      "model": {
+        "format": "MoonshotAI",
+        "name": "Kimi-K2.7-Code",
+        "version": "2026-06-12"
+      },
+      "sku": {
+        "capacity": 1000,
+        "name": "GlobalStandard"
+      }
+    },
+    {
+      "deployment": "FW-GLM-5.3",
+      "raiPolicyName": "Microsoft.Nil",
+      "model": {
+        "format": "Fireworks",
+        "name": "FW-GLM-5.3",
+        "version": "2"
+      },
+      "sku": {
+        "capacity": 250,
+        "name": "GlobalStandard"
+      }
+    },
+    {
+      "deployment": "FW-MiniMax-M3",
+      "raiPolicyName": "Microsoft.Nil",
+      "model": {
+        "format": "Fireworks",
+        "name": "FW-MiniMax-M3",
+        "version": "1"
+      },
+      "sku": {
+        "capacity": 250,
+        "name": "DataZoneStandard"
+      }
+    }
+  ],
+  "foundry_policies": {
+    "Microsoft.DefaultV2": {
+      "name": "Microsoft.DefaultV2",
+      "policy_definition_read": "unavailable",
+      "deployment_binding_read": "verified",
+      "mutated": false
+    },
+    "Microsoft.Nil": {
+      "name": "Microsoft.Nil",
+      "policy_definition_read": "unavailable",
+      "deployment_binding_read": "verified",
+      "mutated": false
+    }
+  },
+  "inference_tests": "SKIPPED_USER_REQUEST",
+  "publisher_fragment_permission_verified": false,
+  "selected_publisher_principal_id": "4e7b70ed-9868-47ba-9b61-304f1e1fdd89",
+  "required_fragment_scope": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.ApiManagement/service/poc-ids-token-ex-apim/policyFragments/aiflux-dev-unified-poc-settings",
+  "required_actions": [
+    "Microsoft.ApiManagement/service/policyFragments/read",
+    "Microsoft.ApiManagement/service/policyFragments/write"
+  ],
+  "api_control_flags": {
+    "AIFLUX_GATEWAY_CONTROLS_POC_ENABLED": null,
+    "AIFLUX_GATEWAY_CONTROLS_V2_ENABLED": null,
+    "AIFLUX_GATEWAY_SETTINGS_SCOPES": "[]"
+  },
+  "protected_baseline_equal_previous_preflight": true,
+  "policy_equal_previous_preflight": true
+}

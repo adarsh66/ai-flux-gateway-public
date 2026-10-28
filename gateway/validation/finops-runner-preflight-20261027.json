@@ -1,0 +1,220 @@
+{
+  "started_at_utc": "2026-10-27T01:25:16.238221+00:00",
+  "approval": "explicit_user_approved_proposal_and_both_distinct_mi_exposures",
+  "subscription": "aa28274d-fea0-46d4-b9c8-30f3ef0a0e52",
+  "tenant": "beb276ac-6e9f-498e-8e31-019ee666decd",
+  "region": "southeastasia",
+  "status": "approved_not_provisioned_preprovision_gates_failed",
+  "review_outcome": {
+    "approval_missing": false,
+    "network_and_both_distinct_identity_exposures_approved": true,
+    "blocking_gates": [
+      "aci_platform_management_channel_not_validated_with_approved_deny_all_inbound",
+      "all_in_cost_estimate_not_completed_retail_api_followup_http_429"
+    ],
+    "azure_allocation_error": null,
+    "allocation_was_not_attempted": true,
+    "no_port_exception_or_silent_network_loosening": true,
+    "platform_port": 19390,
+    "platform_notes": "Microsoft warns that blocking this management port can prevent deployment and logs. Compatibility with the exact no-inbound approval was not established. This is a preprovision gate failure, not proof that an attempted Azure deployment failed.",
+    "platform_references": [
+      "https://learn.microsoft.com/azure/container-instances/container-instances-egress-ip-address#configure-rules-on-the-firewall",
+      "https://learn.microsoft.com/azure/container-instances/container-instances-virtual-network-concepts#other-limitations"
+    ],
+    "downstream_not_executed_after_failed_gates": [
+      "probe_image_build_or_push",
+      "IaC_build_security_scan_validate_or_whatif",
+      "independent_cleanup_controller_install_or_deadline_test",
+      "runner_provisioning_or_identity_attachment",
+      "private_managed_identity_database_snapshot"
+    ]
+  },
+  "created_resource_ids": [],
+  "deleted_resource_ids": [],
+  "identity_attachments": 0,
+  "network_writes": 0,
+  "new_role_assignments": 0,
+  "database_writes": 0,
+  "replay_executed": false,
+  "timer_enabled": false,
+  "app_release": false,
+  "images_built": 0,
+  "private_probe_executed": false,
+  "ingestion_probe_exit": null,
+  "api_probe_exit": null,
+  "aggregates": null,
+  "approved_activation_cutoff": null,
+  "cleanup_required": false,
+  "cloud_configuration_writes_this_continuation": 0,
+  "historical_approved_state_ip_cloud_configuration_writes": 1,
+  "account_scope_verified": true,
+  "network_capacity": {
+    "cidr": "10.240.5.0/24",
+    "usable_addresses_after_azure_reservation": 251,
+    "existing_subnets": 3,
+    "collision": false
+  },
+  "existing_subnets": [
+    {
+      "id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Network/virtualNetworks/poc-ids-token-ex-vnet/subnets/poc-ids-token-ex-private-endpoints",
+      "prefixes": [
+        "10.240.3.0/24"
+      ],
+      "delegations": [],
+      "purpose": "PrivateEndpoints",
+      "private_endpoint_count": 9
+    },
+    {
+      "id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Network/virtualNetworks/poc-ids-token-ex-vnet/subnets/poc-ids-token-ex-appgw",
+      "prefixes": [
+        "10.240.1.0/24"
+      ],
+      "delegations": [],
+      "purpose": null,
+      "private_endpoint_count": 0
+    },
+    {
+      "id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Network/virtualNetworks/poc-ids-token-ex-vnet/subnets/poc-ids-token-ex-app-service-integration",
+      "prefixes": [
+        "10.240.4.0/24"
+      ],
+      "delegations": [
+        "Microsoft.Web/serverFarms"
+      ],
+      "purpose": null,
+      "private_endpoint_count": 0
+    }
+  ],
+  "owner_nonce": "2f75015b55d1",
+  "planned_resource_ids_not_created": {
+    "ingestion": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.ContainerInstance/containerGroups/poc-ids-token-ex-finops-probe-2f75015b55d1-ingestion",
+    "api": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.ContainerInstance/containerGroups/poc-ids-token-ex-finops-probe-2f75015b55d1-api",
+    "subnet": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Network/virtualNetworks/poc-ids-token-ex-vnet/subnets/poc-ids-token-ex-finops-probe",
+    "nsg": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Network/networkSecurityGroups/poc-ids-token-ex-finops-probe-2f75015b55d1-nsg",
+    "nat": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Network/natGateways/poc-ids-token-ex-finops-probe-2f75015b55d1-nat",
+    "pip": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Network/publicIPAddresses/poc-ids-token-ex-finops-probe-2f75015b55d1-pip"
+  },
+  "baseline_at_utc": "2026-10-27T01:25:26.333760+00:00",
+  "baseline_resource_count": 71,
+  "existing_aci_group_count": 0,
+  "existing_nat_count": 0,
+  "planned_ids_absent_from_fresh_inventory": true,
+  "aci_quota": {
+    "ContainerGroups": {
+      "used": 0,
+      "limit": 100
+    },
+    "StandardCores": {
+      "used": 0,
+      "limit": 1000
+    }
+  },
+  "aci_provider_registered": true,
+  "aci_region_listed": true,
+  "actual_regional_allocation_attempted": false,
+  "registry": {
+    "sku": "Basic",
+    "location": "southeastasia",
+    "dedicated_data_endpoint_enabled": false
+  },
+  "state_acl": {
+    "default_action": "Deny",
+    "ips": [
+      "167.103.65.36",
+      "167.103.66.248",
+      "167.103.66.93"
+    ],
+    "writes": 0
+  },
+  "postgres": {
+    "public_network_access": "Disabled",
+    "firewall_rule_count": 0,
+    "authenticated_snapshot": false
+  },
+  "exit_code": 2,
+  "reason": "sanitized_preflight_failure",
+  "collector_attempt_note": "Original collector ended with this sanitized failure after security metadata. A separate bounded pricing diagnostic returned HTTPError 429. Do not recast the original unclassified exception as a known HTTP status.",
+  "followup_price_diagnostic": {
+    "exception_type": "HTTPError",
+    "http_status": 429,
+    "raw_response_published": false,
+    "automatic_retry_performed": false
+  },
+  "verified_same_session_price_observations": {
+    "observation_date_utc": "2026-10-27",
+    "exact_observation_timestamp_captured": false,
+    "source": "successful verified-TLS Retail Prices API responses before the later rate-limited collector",
+    "currency": "USD",
+    "price_type": "Consumption",
+    "meters": [
+      {"productName": "Container Instances", "skuName": "Standard", "meterName": "Standard vCPU Duration", "unitOfMeasure": "1 Hour", "armRegionName": "southeastasia", "retailPrice": 0.0506, "meterId": "e6fb80ec-2cbc-4065-bf2c-4724c794f2e4"},
+      {"productName": "Container Instances", "skuName": "Standard", "meterName": "Standard Memory Duration", "unitOfMeasure": "1 GB Hour", "armRegionName": "southeastasia", "retailPrice": 0.00553, "meterId": "65ee82dc-4e55-436a-a1a4-9ee0082d904b"},
+      {"productName": "IP Addresses", "skuName": "Standard", "meterName": "Standard IPv4 Static Public IP", "unitOfMeasure": "1 Hour", "armRegionName": "southeastasia", "retailPrice": 0.005, "meterId": "9c150bf9-2bad-430e-a53c-c213804f49ef"},
+      {"productName": "NAT Gateway", "skuName": "Standard", "meterName": "Standard Gateway", "unitOfMeasure": "1 Hour", "armRegionName": "Global", "retailPrice": 0.045, "meterId": "ae30040a-67f5-485b-b0f4-a6ef50504d9c"},
+      {"productName": "NAT Gateway", "skuName": "Standard", "meterName": "Standard Data Processed", "unitOfMeasure": "1 GB", "armRegionName": "Global", "retailPrice": 0.045, "meterId": "d32b6352-b66b-4c4c-8f21-60e94058e04d"}
+    ],
+    "nat_global_public_cloud_not_us_government_or_standard_v2": true,
+    "one_combined_hour_cpu_1_memory_gib_1_5_with_nat_and_ip_subtotal_usd": 0.108895,
+    "additional_nat_data_usd_per_gb": 0.045,
+    "all_in_estimate_usd": null,
+    "not_included": ["ACR build", "retained image storage", "image and other transfer"],
+    "not_a_billing_cap": true,
+    "new_runner_build_or_resource_lifetime_incurred": false
+  },
+  "tests": {
+    "backend_contract_passed": 238,
+    "includes_prior_backend_contract_tests": 207,
+    "new_runner_guard_tests": 31,
+    "duration_seconds": 25.20,
+    "warnings": 1,
+    "junit": "gateway/validation/finops-runner-full-tests-20261027.xml",
+    "initial_narrow_suite_passed": 89,
+    "synthetic_owned_cleanup_and_foreign_resource_denial": true,
+    "exact_create_only_plan_and_mi_image_hash_output_guards": true,
+    "external_cleanup_deadline_tested_or_installed": false,
+    "python_compile_passed": true,
+    "prior_ui_103_retained_not_rerun": true,
+    "live_postgresql_test": false
+  },
+  "finished_at_utc": "2026-10-27T01:25:48.637469+00:00",
+  "probe_source_sha256": "105b265e97fc9f7a64caf2c0a9c07a55ca1c8da4d54bf82aa1e25254e5ae16b4",
+  "absence_verification": {
+    "started_at_utc": "2026-10-27T01:28:59.610398+00:00",
+    "results": [
+      {
+        "resource_id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.ContainerInstance/containerGroups/poc-ids-token-ex-finops-probe-2f75015b55d1-ingestion",
+        "http_status": 404,
+        "checked_at_utc": "2026-10-27T01:29:00.319478+00:00"
+      },
+      {
+        "resource_id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.ContainerInstance/containerGroups/poc-ids-token-ex-finops-probe-2f75015b55d1-api",
+        "http_status": 404,
+        "checked_at_utc": "2026-10-27T01:29:00.391591+00:00"
+      },
+      {
+        "resource_id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Network/virtualNetworks/poc-ids-token-ex-vnet/subnets/poc-ids-token-ex-finops-probe",
+        "http_status": 404,
+        "checked_at_utc": "2026-10-27T01:29:00.499663+00:00"
+      },
+      {
+        "resource_id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Network/networkSecurityGroups/poc-ids-token-ex-finops-probe-2f75015b55d1-nsg",
+        "http_status": 404,
+        "checked_at_utc": "2026-10-27T01:29:00.596002+00:00"
+      },
+      {
+        "resource_id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Network/natGateways/poc-ids-token-ex-finops-probe-2f75015b55d1-nat",
+        "http_status": 404,
+        "checked_at_utc": "2026-10-27T01:29:00.958186+00:00"
+      },
+      {
+        "resource_id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Network/publicIPAddresses/poc-ids-token-ex-finops-probe-2f75015b55d1-pip",
+        "http_status": 404,
+        "checked_at_utc": "2026-10-27T01:29:01.029651+00:00"
+      }
+    ],
+    "delete_executed": false,
+    "basis": "independent_exact_id_arm_http_get_not_inventory",
+    "all_six_ids_verified_absent": true,
+    "finished_at_utc": "2026-10-27T01:29:01.030336+00:00"
+  }
+}

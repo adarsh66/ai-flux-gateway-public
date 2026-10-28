@@ -1,0 +1,69 @@
+{
+  "at": "2026-10-27T13:36:15.160Z",
+  "result": "passed",
+  "method": "Actual existing authenticated browser pages; ordinary navigation/reload and admin Organization UI selections; sanitized response and rendered-card inspection",
+  "release": {
+    "applied_at": "2026-10-27T13:22:16.529476+00:00",
+    "plan_sha256": "22f98df2060057cc5527ad5f6fd80307f2a9256232d19447dec3d8f4d1ee8929",
+    "api_digest": "b47ba73081698e5cb29e50cbe6f415752703fdd8f1122015a53638c59fea7899",
+    "protected_equal_except_one_api_image": true,
+    "all_four_appsettings_hashes_unchanged": true,
+    "readiness_at": "2026-10-27T13:23:47.138771+00:00",
+    "readiness": "READY",
+    "identity_basis": "Existing release and readiness artifacts, not inferred from browser output"
+  },
+  "catalog": {
+    "ui_href_observed": "/models",
+    "api_path": "/api/model-garden",
+    "response_at": "2026-10-27T13:34:00.538Z",
+    "http_status": 200,
+    "rendered_card_inspection_at": "2026-10-27T13:32:30.470Z",
+    "rendered_card_count": 11,
+    "all_numeric_input_output_prices_rendered": true,
+    "all_public_source_links_rendered": true,
+    "all_playground_links_rendered_not_invoked": true,
+    "only_glm_tbc": true,
+    "source_urls": {
+      "openai": "https://azure.microsoft.com/en-us/pricing/details/cognitive-services/openai-service/",
+      "deepseek": "https://azure.microsoft.com/en-us/pricing/details/ai-foundry-models/deepseek/",
+      "grok": "https://azure.microsoft.com/en-us/pricing/details/ai-foundry-models/grok/",
+      "kimi": "https://azure.microsoft.com/en-us/pricing/details/ai-foundry-models/kimi/",
+      "glm": "https://bigmodel.cn/pricing"
+    },
+    "cards": [
+      {"id":"gpt-5.6-luna","input":"0.20","output":"1.20","cached":"0.02","status":"public_list","source":"openai"},
+      {"id":"gpt-5.4-mini","input":"0.75","output":"4.50","cached":"0.08","status":"public_list","source":"openai"},
+      {"id":"DeepSeek-V4-Flash","input":"0.19","output":"0.51","cached":"0.028","status":"public_list","source":"deepseek"},
+      {"id":"DeepSeek-V4-Pro","input":"1.74","output":"3.48","cached":"0.145","status":"public_list","source":"deepseek"},
+      {"id":"glm-5.3","input":"1.14285714","output":"4","cached":"0.28571429","status":"tbc","source":"glm"},
+      {"id":"gpt-4o","input":"2.50","output":"10","cached":"1.25","status":"public_list","source":"openai"},
+      {"id":"gpt-6.1-sol","input":"2","output":"10","cached":"0.10","status":"public_list","source":"openai"},
+      {"id":"grok-4-1-fast-reasoning","input":"0.20","output":"0.50","cached":null,"status":"sourced_proxy","source":"grok"},
+      {"id":"grok-4-20-reasoning","input":"1.25","output":"2.50","cached":null,"status":"sourced_proxy","source":"grok"},
+      {"id":"grok-4.3","input":"1.25","output":"2.50","cached":null,"status":"public_list","source":"grok"},
+      {"id":"Kimi-K2.7-Code","input":"0.95","output":"4","cached":"0.19","status":"public_list","source":"kimi"}
+    ],
+    "configured_catalog_flag": false,
+    "configured_catalog_flag_not_modified": true,
+    "inventory_vs_configuration": "Accepted inventory loading/pricing is separate from the catalog routing configuration flag; successful current response supersedes historical 503"
+  },
+  "usage_reconciliation": {
+    "start": "2026-09-27T11:52:00.000Z",
+    "end": "2026-10-27T11:52:00.000Z",
+    "days": 30,
+    "all_models": true,
+    "customer_all_subscriptions": true,
+    "admin_existing_session_current_status": 200,
+    "historical_admin_401_not_current": true,
+    "same_org_same_window_equal": true,
+    "organizations": [
+      {"organization":"Contoso","customer_at":"2026-10-27T13:36:15.160Z","admin_at":"2026-10-27T13:36:05.335Z","customer_status":200,"admin_status":200,"requests":7,"input_tokens":61,"output_tokens":445,"total_tokens":506,"estimated_cost_usd":"0.001787028571","estimated_requests":4,"unestimated_requests":3,"approximate_requests":2,"known_cost":null},
+      {"organization":"Caldova","customer_at":"2026-10-27T13:34:42.156Z","admin_at":"2026-10-27T13:36:03.654Z","customer_status":200,"admin_status":200,"requests":21,"input_tokens":1087,"output_tokens":1739,"total_tokens":2826,"estimated_cost_usd":"0.007271089999","rendered_customer_usd":"0.00727109","estimated_requests":19,"unestimated_requests":2,"approximate_requests":10,"known_cost":null}
+    ],
+    "pricing_revision": "poc-public-20261027-v1",
+    "health": {"status":"healthy","last_query_success_at":"2026-10-27T13:35:00.235316Z","watermark":"2026-10-27T13:30:00.235316Z","observed_lag_seconds":[364,365,375],"stale_after_seconds":900},
+    "cutoff_from_preserved_release_evidence": "2026-10-27T06:06:02.045288Z"
+  },
+  "existing_tests": {"file":"gateway/validation/catalog-pricing-evidence-tests-20261027.xml","tests":121,"failures":0,"errors":0,"skipped":0,"rerun":false},
+  "safety": {"additional_build":false,"additional_plan_or_apply":false,"restart":false,"cloud_configuration_write":false,"inference_or_extra_usage":false,"auth_storage_or_secret_read":false,"authentication_bypass":false,"request_interception":false,"time_window_override":false}
+}

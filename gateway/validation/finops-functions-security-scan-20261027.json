@@ -1,0 +1,18 @@
+{
+  "at_utc": "2026-10-27T06:23:50.270818+00:00",
+  "scanner": "checkov==3.2.495",
+  "exit_code": 0,
+  "dockerfile_sha256": "2d98e1fea30b29e4e49ac17346a3a0c5f6e556adc18d67ce6a4fbed2baf9b1ea",
+  "summary": {
+    "passed": 96,
+    "failed": 0,
+    "skipped": 1,
+    "parsing_errors": 0,
+    "resource_count": 1,
+    "checkov_version": "3.2.495"
+  },
+  "failed_checks": [],
+  "skipped_checks": [],
+  "remote_policy_downloads": false,
+  "dependencies_upgraded": false
+}

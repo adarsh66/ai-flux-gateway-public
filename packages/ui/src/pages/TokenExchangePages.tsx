@@ -1,7 +1,10 @@
 import { useState, type FormEvent, type ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { ApiError } from "../client";
+import { DeploymentStatus } from "../components/DeploymentStatus";
+import { DisplayPriceDetails, estimateMoney, EstimateCoverage } from "../components/DisplayPrice";
 import { useSession } from "../session";
+import { customerModelPresentation } from "../modelPresentation";
 import type {
   CreditBudget,
   KeyName,
@@ -116,13 +119,12 @@ export function ModelGardenPage() {
     <>
       <PageHeader
         title="Model catalog & pricing"
-        subtitle="Unified catalog of deployed live endpoints and onboarding-ready frontier models across OpenAI, Anthropic Claude, and DeepSeek with Microsoft Decision-1 auto-routing."
+        subtitle="Accepted chat routes through the development gateway. Redacted external input leaves Azure; redaction is best-effort, not anonymization. Decision-1 is routing-only. Sourced public prices are estimates, not invoices."
       />
       <section className="panel" aria-labelledby="router-sim-heading">
-        <h2 id="router-sim-heading">Microsoft Decision-1 (model = auto) route simulator</h2>
+        <h2 id="router-sim-heading">Routing simulator — not Decision-1 inference</h2>
         <p className="muted">
-          Preview how the gateway’s Decision-1 classifier routes <code>&quot;model&quot;: &quot;auto&quot;</code>{" "}
-          requests across your enabled providers.
+          Auto-routing is disabled until the actual Decision-1 integration is verified. This keyword simulator does not call Decision-1 or publish gateway routes.
         </p>
         <form onSubmit={(e) => void testRouter(e)} className="form-row">
           <Field label="Sample prompt">
@@ -243,47 +245,46 @@ export function ModelGardenPage() {
                           <VendorLogo vendor={m.vendor} size={22} />
                         </div>
                         <div>
-                          <h2>{m.display_name}</h2>
+                          <h2>{customerModelPresentation(m).displayName}</h2>
                           <p className="muted">
                             <code>{m.id}</code> · {m.vendor} · {m.region}
                           </p>
                         </div>
                       </div>
                       {m.coming_soon ? (
-                        <Badge tone="warn">Coming soon</Badge>
+                        <Badge tone="warn">{m.capabilities.includes("routing-only") ? "Routing-only · integration unavailable" : "Coming soon"}</Badge>
                       ) : m.id === "auto" ? (
                         <Badge tone="info">Auto Router</Badge>
                       ) : (
                         <Badge tone="ok">Active</Badge>
                       )}
                     </div>
-                    <p>{m.description}</p>
+                    <p>{customerModelPresentation(m).description}</p>
                     <dl className="pricing-strip">
                       <div className="pricing-cell">
                         <dt>Input / 1M tokens</dt>
                         <dd>
-                          {m.currency} {m.input_per_million}
+                          {m.display_price ? `USD ${m.display_price.input}${m.display_price.status === "tbc" ? " · TBC" : ""}` : "Unknown — not free"}
                         </dd>
                       </div>
                       <div className="pricing-cell">
                         <dt>Output / 1M tokens</dt>
                         <dd>
-                          {m.currency} {m.output_per_million}
+                          {m.display_price ? `USD ${m.display_price.output}${m.display_price.status === "tbc" ? " · TBC" : ""}` : "Unknown — not free"}
                         </dd>
                       </div>
                       <div className="pricing-cell">
                         <dt>Cached input / 1M</dt>
                         <dd>
-                          {m.cached_input_per_million
-                            ? `${m.currency} ${m.cached_input_per_million}`
-                            : "N/A"}
+                          {m.display_price?.cached !== undefined ? `USD ${m.display_price.cached}` : "Unknown"}
                         </dd>
                       </div>
                     </dl>
+                    <DisplayPriceDetails price={m.display_price} />
                     <div className="card-meta-row">
                       <span>Context / Max output</span>
                       <strong>
-                        {fmtInt(m.context_window)} / {fmtInt(m.max_completion_tokens)}
+                        Unverified / {fmtInt(m.max_completion_tokens)}
                       </strong>
                     </div>
                     <div className="badges">
@@ -296,7 +297,7 @@ export function ModelGardenPage() {
                         </Badge>
                       ))}
                     </div>
-                    {!m.coming_soon && m.enabled && (
+                    {!m.coming_soon && m.enabled && m.capabilities.includes("chat") && (
                       <div className="actions" style={{ marginTop: "auto", paddingTop: "0.4rem" }}>
                         <Link className="btn primary" style={{ width: "100%" }} to={`/playground?model=${encodeURIComponent(m.id)}`}>
                           Try in Playground →
@@ -344,19 +345,20 @@ export function CustomerCreditsPage() {
       </div>
       <AsyncView state={state}>
         {(summary) => {
-          const remainingPct = Math.max(0, Math.min(100, Number((100 - summary.utilization_pct).toFixed(2))));
+          const remainingPct = summary.utilization_pct === null ? 0 : Math.max(0, Math.min(100, Number((100 - summary.utilization_pct).toFixed(2))));
           const ringRadius = 46;
           const circumference = 2 * Math.PI * ringRadius;
           const strokeDashoffset = circumference - (remainingPct / 100) * circumference;
           const avgCostPer1k =
-            summary.total_tokens > 0
+            summary.cost_complete !== false && summary.total_tokens > 0
               ? ((Number(summary.used_credits) / summary.total_tokens) * 1000).toFixed(4)
-              : "0.0024";
+              : "Unknown";
           const donutColors = ["#4D6BFE", "#D97757", "#10a37f", "#8b5cf6"];
           let cumulativePct = 0;
 
           return (
             <>
+              {summary.cost_complete === false && <p role="status" className="notice">Pricing incomplete: {fmtInt(summary.unpriced_requests ?? 0)} request(s) are unpriced. Displayed spend is a known lower bound, not a final charge. Remaining credit and utilization are unknown. Hard-stop enforcement is unchanged.</p>}
               {summary.low_credit_alert && (
                 <p role="alert" className="notice bad">
                   Low credit alert: Your organization has consumed {summary.utilization_pct}% of its
@@ -370,11 +372,11 @@ export function CustomerCreditsPage() {
                   <div className="badges">
                     <Badge tone="info">{summary.organization_name} · Enterprise Token Exchange Plan</Badge>
                     <Badge tone={summary.low_credit_alert ? "bad" : "ok"}>
-                      {summary.low_credit_alert ? "Low Credit Warning" : "Active & Healthy"}
+                      {summary.cost_complete === false ? "Pricing incomplete" : summary.low_credit_alert ? "Low Credit Warning" : "Active & Healthy"}
                     </Badge>
                   </div>
                   <div className="credit-hero-balance">
-                    {summary.currency} {summary.remaining_credits}{" "}
+                    {summary.currency} {summary.remaining_credits ?? "Unknown"}{" "}
                     <span className="muted" style={{ fontWeight: 500, fontSize: "0.95rem" }}>
                       remaining of {summary.currency} {summary.total_credits} monthly allocation
                     </span>
@@ -383,7 +385,7 @@ export function CustomerCreditsPage() {
                     <div className="credit-track">
                       <div
                         className={summary.low_credit_alert ? "credit-fill danger" : "credit-fill"}
-                        style={{ width: `${Math.max(2, Math.min(100, summary.utilization_pct))}%` }}
+                        style={{ width: `${summary.utilization_pct === null ? 0 : Math.max(2, Math.min(100, summary.utilization_pct))}%` }}
                       />
                       <div
                         className="credit-marker"
@@ -392,7 +394,7 @@ export function CustomerCreditsPage() {
                       />
                     </div>
                     <div className="credit-meter-foot">
-                      <span>Used: {summary.currency} {summary.used_credits} ({summary.utilization_pct}%)</span>
+                      <span>Known used: {summary.currency} {summary.used_credits} ({summary.utilization_pct === null ? "utilization unknown" : `${summary.utilization_pct}%`})</span>
                       <span>Low-credit alert @ {summary.alert_threshold_pct}%</span>
                       <span>Hard stop: {summary.hard_stop_enabled ? "Enabled" : "Advisory"}</span>
                     </div>
@@ -422,7 +424,7 @@ export function CustomerCreditsPage() {
                       transform="rotate(-90 56 56)"
                     />
                     <text x="56" y="53" textAnchor="middle" fill="var(--ink)" fontSize="15" fontWeight="800" fontFamily="var(--font-mono)">
-                      {remainingPct}%
+                      {summary.utilization_pct === null ? "Unknown" : `${remainingPct}%`}
                     </text>
                     <text x="56" y="69" textAnchor="middle" fill="var(--ink-dim)" fontSize="9.5" fontWeight="600">
                       AVAILABLE
@@ -433,15 +435,21 @@ export function CustomerCreditsPage() {
                       Smart Routing Savings
                     </div>
                     <div style={{ fontSize: "1.2rem", fontWeight: 800, color: "var(--ok)", fontFamily: "var(--font-mono)" }}>
-                      -18.4% Cost
+                      Not measured
                     </div>
                     <div className="muted" style={{ fontSize: "0.75rem" }}>
-                      via Decision-1 Auto Router
+                      No verified routing savings available
                     </div>
                   </div>
                 </div>
               </section>
 
+              {summary.pricing_revision && <section className="panel" aria-label="Estimated token cost">
+                <h2>Estimated token cost ({days}d)</h2>
+                <p className="bento-value">{estimateMoney(summary.estimated_cost_usd)}</p>
+                <p>Current-rate restatement of measured usage, including all priced models. Separate from recorded credits below.</p>
+                <EstimateCoverage estimate={summary} />
+              </section>}
               <dl className="bento-grid" aria-label="Credit balance summary">
                 <div className="bento-card">
                   <div className="bento-top">
@@ -464,7 +472,7 @@ export function CustomerCreditsPage() {
                     {summary.currency} {summary.used_credits}
                   </dd>
                   <span className="bento-sub">
-                    <Badge tone="ok">${avgCostPer1k} / 1K tok</Badge> {summary.utilization_pct}% of cap
+                    <Badge tone="info">{avgCostPer1k === "Unknown" ? "Unit cost unknown" : `$${avgCostPer1k} / 1K tok`}</Badge> {summary.utilization_pct === null ? "Utilization unknown" : `${summary.utilization_pct}% of cap`}
                   </span>
                 </div>
                 <div className="bento-card">
@@ -473,11 +481,11 @@ export function CustomerCreditsPage() {
                     <span className="bento-icon" aria-hidden="true">🛡</span>
                   </div>
                   <dd className="bento-value" style={{ margin: 0 }}>
-                    {summary.currency} {summary.remaining_credits}
+                    {summary.currency} {summary.remaining_credits ?? "Unknown"}
                   </dd>
                   <span className="bento-sub">
                     <Badge tone={summary.low_credit_alert ? "bad" : "ok"}>
-                      {summary.low_credit_alert ? "Low credit warning" : "Healthy"}
+                      {summary.cost_complete === false ? "Unknown" : summary.low_credit_alert ? "Low credit warning" : "Healthy"}
                     </Badge>
                   </span>
                 </div>
@@ -617,7 +625,7 @@ export function CustomerCreditsPage() {
                       "Input tokens",
                       "Output tokens",
                       "Total tokens",
-                      "Cost (USD)",
+                      summary.pricing_revision ? "Estimated cost (USD)" : "Cost (USD)",
                       "Share",
                     ]}
                   >
@@ -636,7 +644,7 @@ export function CustomerCreditsPage() {
                         <td>{fmtInt(m.input_tokens)}</td>
                         <td>{fmtInt(m.output_tokens)}</td>
                         <td>{fmtInt(m.total_tokens)}</td>
-                        <td>{summary.currency} {m.cost_usd}</td>
+                        <td>{summary.pricing_revision ? estimateMoney(m.estimated_cost_usd) : m.cost_usd === null ? "Unknown" : `${summary.currency} ${m.cost_usd}`}{summary.pricing_revision ? <small className="block">{m.unestimated_requests} unestimated</small> : (m.unpriced_requests ?? 0) > 0 && <small className="block">{m.unpriced_requests} unpriced; known amounts only</small>}</td>
                         <td><ShareBar pct={m.share_pct} /></td>
                       </tr>
                     ))}
@@ -666,7 +674,7 @@ export function CustomerCreditsPage() {
                         <td>{p.team}</td>
                         <td>{fmtInt(p.requests)}</td>
                         <td>{fmtInt(p.total_tokens)}</td>
-                        <td>{summary.currency} {p.cost_usd}</td>
+                        <td>{summary.pricing_revision ? estimateMoney(p.estimated_cost_usd) : p.cost_usd === null ? "Unknown" : `${summary.currency} ${p.cost_usd}`}{summary.pricing_revision ? <small className="block">{p.unestimated_requests} unestimated</small> : (p.unpriced_requests ?? 0) > 0 && <small className="block">{p.unpriced_requests} unpriced; known amounts only</small>}</td>
                         <td><ShareBar pct={p.share_pct} /></td>
                       </tr>
                     ))}
@@ -688,7 +696,7 @@ export function CustomerCreditsPage() {
                         <td><Badge tone="info">{c.channel}</Badge></td>
                         <td>{fmtInt(c.requests)}</td>
                         <td>{fmtInt(c.total_tokens)}</td>
-                        <td>{summary.currency} {c.cost_usd}</td>
+                        <td>{summary.pricing_revision ? estimateMoney(c.estimated_cost_usd) : c.cost_usd === null ? "Unknown" : `${summary.currency} ${c.cost_usd}`}{summary.pricing_revision ? <small className="block">{c.unestimated_requests} unestimated</small> : (c.unpriced_requests ?? 0) > 0 && <small className="block">{c.unpriced_requests} unpriced; known amounts only</small>}</td>
                         <td><ShareBar pct={c.share_pct} /></td>
                       </tr>
                     ))}
@@ -942,11 +950,11 @@ export function AdminBudgetsAndFinOpsPage() {
                 <tr key={b.id}>
                   <td>{b.organization_name}</td>
                   <td>USD {b.credit_allocation}</td>
-                  <td>USD {b.used_credits}</td>
-                  <td>USD {b.remaining_credits}</td>
+                  <td>USD {b.used_credits}{b.cost_complete === false && <small className="block">Known lower bound; {b.unpriced_requests} unpriced</small>}</td>
+                  <td>{b.remaining_credits === null ? "Unknown" : `USD ${b.remaining_credits}`}</td>
                   <td>
                     <Badge tone={b.low_credit_alert ? "bad" : "ok"}>
-                      {b.utilization_pct}% (alert @ {b.alert_threshold_pct}%)
+                      {b.utilization_pct === null ? "Unknown" : `${b.utilization_pct}%`} (alert @ {b.alert_threshold_pct}%)
                     </Badge>
                   </td>
                   <td><code>{b.allowed_models.join(", ")}</code></td>
@@ -1208,7 +1216,7 @@ export function AdminModelRouterPage() {
         candidate_models: routerState.data.candidate_models,
         rules: routerState.data.rules,
       });
-      setNotice(`Updated Microsoft Decision-1 router strategy to '${nextStrategy}'.`);
+      setNotice(`Saved router configuration '${nextStrategy}'. This does not deploy APIM routes or verify Decision-1 inference.`);
       setVersion((v) => v + 1);
     } catch (err) {
       setError(err instanceof ApiError ? err.detail : "Could not update model router.");
@@ -1251,7 +1259,7 @@ export function AdminModelRouterPage() {
         coming_soon: false,
       });
       setNotice(
-        `${updated.display_name} (${updated.id}) is now ${updated.enabled ? "Active" : "Disabled"} and synced to ModelRoutes.`,
+        `${updated.display_name} (${updated.id}) metadata saved. This does not publish gateway routes.`,
       );
       setVersion((v) => v + 1);
     } catch (err) {
@@ -1263,8 +1271,9 @@ export function AdminModelRouterPage() {
     <>
       <PageHeader
         title="Model router (Decision-1) & Model Catalog endpoints"
-        subtitle="Configure Microsoft Decision-1 (model = auto) routing strategies, compare Cost-Optimized vs. Latency-Optimized dispatch, and manage Model Catalog endpoints."
+        subtitle="Manage model metadata. Database edits do not publish APIM routes; the keyword simulator is not Decision-1 inference."
       />
+      <DeploymentStatus />
       {error && <ErrorState message={error} />}
       {notice && (
         <p role="status" className="notice">
@@ -1333,15 +1342,15 @@ export function AdminModelRouterPage() {
                       <div className="bento-top">
                         <span className="bento-label">{sKey}</span>
                         <Badge tone={isCurrent ? "info" : prof.tone}>
-                          {isCurrent ? "✓ Active Policy" : prof.badge}
+                          {isCurrent ? "Configured strategy · not verified inference" : "Not verified"}
                         </Badge>
                       </div>
                       <strong style={{ fontSize: "0.92rem" }}>{prof.title}</strong>
                       <p className="muted" style={{ margin: 0, fontSize: "0.78rem" }}>
-                        {prof.summary}
+                        Strategy configuration only. Actual Decision-1 inference, price optimization and latency targets have not been verified.
                       </p>
                       <span className="bento-sub" style={{ marginTop: "auto", paddingTop: "0.35rem", fontFamily: "var(--font-mono)", fontWeight: 600 }}>
-                        {prof.sla}
+                        No verified price, latency or savings guarantee.
                       </span>
                     </div>
                   );
@@ -1449,7 +1458,7 @@ export function AdminModelRouterPage() {
                   <td><strong>{m.display_name}</strong></td>
                   <td>{m.vendor}</td>
                   <td style={{ fontFamily: "var(--font-mono)", whiteSpace: "nowrap" }}>
-                    ${m.input_per_million} / ${m.output_per_million}
+                    Unknown — not free
                   </td>
                   <td>
                     <input
@@ -1463,7 +1472,7 @@ export function AdminModelRouterPage() {
                   </td>
                   <td>
                     {m.coming_soon ? (
-                      <Badge tone="warn">Coming soon</Badge>
+                      <Badge tone="warn">{m.capabilities.includes("routing-only") ? "Routing-only · integration unavailable" : "Coming soon"}</Badge>
                     ) : m.enabled ? (
                       <Badge tone="ok">Active</Badge>
                     ) : (
@@ -1476,6 +1485,7 @@ export function AdminModelRouterPage() {
                       style={{ whiteSpace: "nowrap" }}
                       type="button"
                       aria-label={m.coming_soon || !m.enabled ? `Activate ${m.id}` : `Disable ${m.id}`}
+                      disabled={m.capabilities.includes("routing-only") || m.id === "auto"}
                       onClick={() => void toggleModelEndpoint(m)}
                     >
                       {m.coming_soon || !m.enabled ? "Activate" : "Disable"}
@@ -1492,7 +1502,7 @@ export function AdminModelRouterPage() {
         {(preview) => (
           <section className="panel" aria-labelledby="policy-preview-heading">
             <h2 id="policy-preview-heading">
-              Compiled Turnstile + AIFLUX APIM policy (TurnstileLedger + Content Safety + Decision-1)
+              Illustrative policy preview — not the deployed APIM policy
             </h2>
             <p className="muted">
               Storage account: <code>{preview.ledger_storage_account}</code> · Ledger table:{" "}

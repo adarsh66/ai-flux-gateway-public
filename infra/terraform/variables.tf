@@ -559,6 +559,12 @@ variable "dev_catalog_accepted" {
   }
 }
 
+variable "ingestion_catalog_accepted" {
+  description = "Explicit ingestion-only approved immutable catalog acceptance; does not accept or enable the separate legacy development catalog or public portals."
+  type        = bool
+  default     = false
+}
+
 variable "ingestion_enabled" {
   description = "Enable the verified usage Function only with an immutable container, accepted catalog and explicit activation cutoff."
   type        = bool

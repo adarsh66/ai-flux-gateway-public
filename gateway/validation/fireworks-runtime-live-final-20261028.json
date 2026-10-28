@@ -1,0 +1,65 @@
+{
+  "checkpoint_at_utc": "2026-10-28T03:04:01.722Z",
+  "status": "images_protected_sync_playground_and_scheduled_new_usage_verified_with_ui_method_limitations",
+  "superseding_final_acceptance_artifact": "gateway/validation/fireworks-live-acceptance-20261028.json",
+  "plan_sha256": "f099f30da4bdef7b31570562d275530ea075d55bbad1e95f473d1a4103d92420",
+  "applied_at_utc": "2026-10-28T02:57:25.945420+00:00",
+  "independent_protected_readback_at_utc": "2026-10-28T03:01:20.527545+00:00",
+  "images": {
+    "api": "sha256:dd8b048b8a189061d870ca9011c3d8e0152ff63712ee6d61fe3f2a37af3b0a33",
+    "ingestion": "sha256:fad3faca72297752779b0ecddee05bf50a5504670ebc0b5a4222c7dddc6e8b90"
+  },
+  "protected_equal_except_two_images": true,
+  "all_four_settings_hashes_equal": true,
+  "gateway_reapplied": false,
+  "images_rebuilt": false,
+  "admin_sync": {
+    "at_utc": "2026-10-28T03:02:23.744Z",
+    "authenticated_existing_admin_client": true,
+    "changed": ["FW-GLM-5.3", "FW-MiniMax-M3", "router:default"],
+    "accepted_model_count": 13,
+    "auto_enabled": false,
+    "gateway_published": false,
+    "prices_changed": false,
+    "first_attempt": "404: duplicated API prefix; no sync executed",
+    "corrected_attempt": "200: existing authenticated audited endpoint"
+  },
+  "playground": {
+    "status": "both_passed_unmodified_selector_and_send",
+    "organization": "Caldova",
+    "subscription": "Caldova-AI",
+    "selector_option_count": 13,
+    "external_glm_remains_separate": true,
+    "automatic_retries": 0,
+    "new_chat_requests": 2,
+    "request_limit_each": 1024,
+    "stream": false,
+    "requests": [
+      {"alias": "FW-GLM-5.3", "completed_at_utc": "2026-10-28T03:03:44.874Z", "http_status": 200, "response_model": "FW-GLM-5.3", "assistant_nonempty": true, "visible_answer": "Confirmed — I can answer your questions.", "finish_reason": "stop", "input_tokens": 24, "output_tokens": 333, "total_tokens": 357, "cached_input_tokens": 0, "reasoning_tokens": 323},
+      {"alias": "FW-MiniMax-M3", "completed_at_utc": "2026-10-28T03:03:55.045Z", "http_status": 200, "response_model": "FW-MiniMax-M3", "assistant_nonempty": true, "visible_answer": "Yes, I can answer your questions.", "finish_reason": "stop", "input_tokens": 139, "output_tokens": 102, "total_tokens": 241, "cached_input_tokens": 138}
+    ]
+  },
+  "scheduled_reporting": {
+    "status": "verified_normal_0310_schedule_customer_admin_equal_see_final_acceptance",
+    "final_query_success_at": "2026-10-28T03:10:00.147098Z",
+    "final_watermark": "2026-10-28T03:05:00.147098Z",
+    "new_playground_requests": 2,
+    "new_playground_input_tokens": 163,
+    "new_playground_output_tokens": 435,
+    "new_playground_total_tokens": 598,
+    "health_observed_at_utc": "2026-10-28T03:03:42.971Z",
+    "health_status": "healthy",
+    "last_query_success_at": "2026-10-28T03:01:32.665137Z",
+    "watermark": "2026-10-28T02:56:32.665137Z",
+    "old_probe_records_retained": true,
+    "old_probe_attribution": "backend_attribution_missing; preserve history, do not rewrite",
+    "old_probe_tokens": {"FW-GLM-5.3": 254, "FW-MiniMax-M3": 218},
+    "manual_trigger": false,
+    "cursor_reset": false
+  },
+  "rbac_writes": 0,
+  "network_writes": 0,
+  "optional_controls_activated": false,
+  "database_migrations": 0,
+  "history_backfills": 0
+}

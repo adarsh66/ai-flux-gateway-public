@@ -1,0 +1,15 @@
+{
+    "utc":  "2026-10-26T15:10:50.7348019Z",
+    "python":  0,
+    "terraform_validate":  0,
+    "terraform_external_mock":  0,
+    "terraform_default_mock":  0,
+    "terraform_fmt":  0,
+    "typescript":  {
+                       "apps/customer-portal":  0,
+                       "packages/ui":  0,
+                       "apps/admin-portal":  0
+                   },
+    "external_ui":  1,
+    "scoped_diff_check":  0
+}

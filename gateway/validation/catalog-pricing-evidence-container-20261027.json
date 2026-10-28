@@ -1,0 +1,196 @@
+{
+  "at": "2026-10-27T13:24:14.482215+00:00",
+  "summary": {
+    "bytesRead": 28047,
+    "format": "text",
+    "categories": [
+      "network",
+      "startup_complete",
+      "port_8000"
+    ],
+    "trace": [
+      {
+        "timestamp": "2026-10-27T04:53:09.4344178Z",
+        "categories": [
+          "network"
+        ]
+      },
+      {
+        "timestamp": "2026-10-27T04:57:03.9986135Z",
+        "categories": [
+          "network"
+        ]
+      },
+      {
+        "timestamp": "2026-10-27T05:00:44.4832565Z",
+        "categories": [
+          "network"
+        ]
+      },
+      {
+        "timestamp": "2026-10-27T05:00:45.0836027Z",
+        "categories": [
+          "port_8000"
+        ]
+      },
+      {
+        "timestamp": "2026-10-27T05:00:45.0838901Z",
+        "categories": [
+          "port_8000"
+        ]
+      },
+      {
+        "timestamp": "2026-10-27T05:00:48.8818022Z",
+        "categories": [
+          "startup_complete"
+        ]
+      },
+      {
+        "timestamp": "2026-10-27T05:01:16.0805948Z",
+        "categories": [
+          "startup_complete"
+        ]
+      },
+      {
+        "timestamp": "2026-10-27T05:01:16.5424690Z",
+        "categories": [
+          "startup_complete"
+        ]
+      },
+      {
+        "timestamp": "2026-10-27T12:19:00.4701979Z",
+        "categories": [
+          "network"
+        ]
+      },
+      {
+        "timestamp": "2026-10-27T12:23:00.9266958Z",
+        "categories": [
+          "network"
+        ]
+      },
+      {
+        "timestamp": "2026-10-27T12:26:59.2638216Z",
+        "categories": [
+          "network"
+        ]
+      },
+      {
+        "timestamp": "2026-10-27T12:27:00.8048432Z",
+        "categories": [
+          "port_8000"
+        ]
+      },
+      {
+        "timestamp": "2026-10-27T12:27:00.8048998Z",
+        "categories": [
+          "port_8000"
+        ]
+      },
+      {
+        "timestamp": "2026-10-27T12:27:10.7444378Z",
+        "categories": [
+          "startup_complete"
+        ]
+      },
+      {
+        "timestamp": "2026-10-27T12:29:22.5119074Z",
+        "categories": [
+          "startup_complete"
+        ]
+      },
+      {
+        "timestamp": "2026-10-27T12:29:26.8121057Z",
+        "categories": [
+          "startup_complete"
+        ]
+      },
+      {
+        "timestamp": "2026-10-27T12:55:11.4035070Z",
+        "categories": [
+          "network"
+        ]
+      },
+      {
+        "timestamp": "2026-10-27T12:57:12.0219981Z",
+        "categories": [
+          "network"
+        ]
+      },
+      {
+        "timestamp": "2026-10-27T12:58:20.7379830Z",
+        "categories": [
+          "network"
+        ]
+      },
+      {
+        "timestamp": "2026-10-27T12:58:23.3184762Z",
+        "categories": [
+          "port_8000"
+        ]
+      },
+      {
+        "timestamp": "2026-10-27T12:58:23.4075579Z",
+        "categories": [
+          "port_8000"
+        ]
+      },
+      {
+        "timestamp": "2026-10-27T12:58:48.7887889Z",
+        "categories": [
+          "startup_complete"
+        ]
+      },
+      {
+        "timestamp": "2026-10-27T12:59:13.0307675Z",
+        "categories": [
+          "startup_complete"
+        ]
+      },
+      {
+        "timestamp": "2026-10-27T12:59:14.5177052Z",
+        "categories": [
+          "startup_complete"
+        ]
+      },
+      {
+        "timestamp": "2026-10-27T13:20:36.1258213Z",
+        "categories": [
+          "network"
+        ]
+      },
+      {
+        "timestamp": "2026-10-27T13:22:37.5136264Z",
+        "categories": [
+          "network"
+        ]
+      },
+      {
+        "timestamp": "2026-10-27T13:24:00.6211586Z",
+        "categories": [
+          "network"
+        ]
+      },
+      {
+        "timestamp": "2026-10-27T13:24:01.4974525Z",
+        "categories": [
+          "port_8000"
+        ]
+      },
+      {
+        "timestamp": "2026-10-27T13:24:01.4976989Z",
+        "categories": [
+          "port_8000"
+        ]
+      },
+      {
+        "timestamp": "2026-10-27T13:24:13.1245624Z",
+        "categories": [
+          "startup_complete"
+        ]
+      }
+    ]
+  },
+  "renewal_digest_in_logs": true,
+  "previous_digest_in_logs": true
+}

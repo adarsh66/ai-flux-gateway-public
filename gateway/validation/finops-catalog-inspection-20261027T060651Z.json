@@ -1,0 +1,40 @@
+{
+  "at_utc": "2026-10-27T06:06:51.751497+00:00",
+  "subscription": "aa28274d-fea0-46d4-b9c8-30f3ef0a0e52",
+  "tenant": "beb276ac-6e9f-498e-8e31-019ee666decd",
+  "policy_sha256": "3f3ded3ec635482f4e8e61c46aa998dbb6a0d551efc8d2e47858741e423b1314",
+  "backends": [
+    {
+      "name": "aiflux-external-glm-5-3",
+      "url": "https://api-ap-southeast-1.modelarts-maas.com/v1",
+      "resourceId": null
+    },
+    {
+      "name": "aiflux-project-gpt-5-6-luna",
+      "url": "https://poc-ids-token-ex-foundry.openai.azure.com/openai/v1",
+      "resourceId": null
+    },
+    {
+      "name": "aiflux-project-safety",
+      "url": "https://poc-ids-token-ex-safety.cognitiveservices.azure.com",
+      "resourceId": null
+    }
+  ],
+  "policy_backend_ids": [
+    "aiflux-external-glm-5-3",
+    "aiflux-project-gpt-5-6-luna"
+  ],
+  "foundry_location": "eastus",
+  "ingestion": {
+    "AIFLUX_CATALOG_PATH": "/home/site/wwwroot/gateway/catalog/ingestion-approved.json",
+    "AIFLUX_CATALOG_CONFIGURED": "true",
+    "AzureWebJobs.ingest_usage.Disabled": "true",
+    "AIFLUX_INGESTION_START_AT": "2026-10-27T06:06:02.045288+00:00"
+  },
+  "settings_hashes": {
+    "api": "a4d40a5dbdca329f84e4f23a5c9663192d00eb8af932290d0cad970c19e930fd",
+    "ingestion": "8d9eb39a189c8024c5288c86b125a2897ae95974be868f4f66f3aa8c2434d410",
+    "admin": "8819a64ec5c3e2933d1c451928622977b589e62e843136dc100aee46ba2a3b6e",
+    "customer": "5086ea9867a7b132a493ac263cb13bd09af81ba97f9c8b092249f7322ab2490a"
+  }
+}

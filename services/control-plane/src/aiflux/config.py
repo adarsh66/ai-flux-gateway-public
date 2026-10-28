@@ -28,6 +28,7 @@ class Settings(BaseSettings):
     apim_product_id: str = "aiflux"
     gateway_settings_scopes: list[Literal["dev-openai", "dev-unified"]] = []
     gateway_controls_v2_enabled: bool = False
+    gateway_controls_poc_enabled: bool = False
     gateway_protected_material_available: bool = False
     gateway_monthly_request_quota_available: bool = False
     gateway_safety_relaxation_allowed: bool = False
@@ -37,6 +38,14 @@ class Settings(BaseSettings):
     log_workspace_id: str = ""
     catalog_path: Path = Path("gateway/catalog/models.json")
     catalog_configured: bool = False
+    foundry_project_endpoint: str = "https://poc-ids-token-ex-foundry.services.ai.azure.com/api/projects/poc-ids-token-ex-foundry-project"
+    foundry_project_resource_id: str = (
+        "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/"
+        "providers/Microsoft.CognitiveServices/accounts/poc-ids-token-ex-foundry/projects/poc-ids-token-ex-foundry-project"
+    )
+    foundry_inventory_path: Path | None = None
+    external_inventory_path: Path | None = None
+    foundry_inventory_max_age_seconds: int = Field(default=3600, ge=1, le=86400)
     acme_challenge_enabled: bool = False
     acme_challenge_directory: Path = Path("/home/aiflux-acme-challenges")
     cors_origins: list[str] = []

@@ -1,6 +1,7 @@
 <policies>
   <inbound>
 %{ if unified ~}
+    <!-- Keep CORS first, before inherited gates. Preflight grants no inference access. -->
     <cors allow-credentials="false" terminate-unmatched-request="true">
       <allowed-origins>
 %{ for origin in cors_origins ~}

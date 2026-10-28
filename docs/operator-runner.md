@@ -1,5 +1,11 @@
 # Deferred private operator design
 
+**2026-10-27 FinOps:** the separate [narrow diagnostic-runner proposal](finops-private-runner-proposal-20261027.md)
+records actual current-subscription subnet/DNS/quota/identity evidence and why no
+runner was provisioned. It does not activate this deferred root, create a CI runner,
+or approve this root's VNet/NAT/federation/RBAC design. The executed storage-only
+IP change is recorded [separately](terraform-state-access-diagnosis.md).
+
 **Not the active development deployment plan.** Public Basic v2 dev now uses the
 local operator route in [Infrastructure](infrastructure.md), protected local state
 and conditional hybrid private-data endpoints/API-Function integration in the

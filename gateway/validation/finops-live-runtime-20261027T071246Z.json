@@ -1,0 +1,27 @@
+{
+  "at_utc": "2026-10-27T07:12:46.339641+00:00",
+  "status": 200,
+  "raw_logs_exported": false,
+  "host_keys_read": 0,
+  "expected_digest_seen": true,
+  "ready_results": [],
+  "executions": [
+    {
+      "at_utc": "2026-10-27T07:12:44.5738389Z",
+      "function": "ingestion_ready",
+      "result": "Failed",
+      "invocation_id": "7fee8ec9-fba4-47f3-a390-70ffaefe9627"
+    }
+  ],
+  "scheduled_starts": [],
+  "failures": [
+    {
+      "at_utc": "2026-10-27T07:11:55.2041066Z",
+      "category": "monitor_access_error"
+    },
+    {
+      "at_utc": "2026-10-27T07:12:25.7934995Z",
+      "category": "monitor_access_error"
+    }
+  ]
+}

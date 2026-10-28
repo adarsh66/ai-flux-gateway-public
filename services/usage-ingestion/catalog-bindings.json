@@ -1,0 +1,19 @@
+{
+  "evidence": "gateway/validation/finops-catalog-inspection-20261027T051631Z.json",
+  "live_policy_sha256": "3f3ded3ec635482f4e8e61c46aa998dbb6a0d551efc8d2e47858741e423b1314",
+  "foundry": {
+    "url": "https://poc-ids-token-ex-foundry.openai.azure.com/openai/v1",
+    "region": "eastus",
+    "region_source": "live account ARM location"
+  },
+  "external": {
+    "url": "https://api-ap-southeast-1.modelarts-maas.com/v1",
+    "region": "ap-southeast-1",
+    "region_source": "approved regional upstream endpoint; not gateway region"
+  },
+  "fireworks": {
+    "url": "https://poc-ids-token-ex-foundry.services.ai.azure.com/openai/v1",
+    "region": "eastus",
+    "region_source": "live parent account ARM location"
+  }
+}

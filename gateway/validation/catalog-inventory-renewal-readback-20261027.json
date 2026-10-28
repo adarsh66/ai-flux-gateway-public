@@ -1,0 +1,102 @@
+{
+  "at": "2026-10-27T13:00:08.964400+00:00",
+  "account_and_project_succeeded": true,
+  "connections": 0,
+  "deployments": [
+    {
+      "alias": "Decision-1",
+      "model": "Microsoft-Decision-1",
+      "version": "1",
+      "provider": "Microsoft",
+      "sku": "DataZoneStandard",
+      "capacity": 250
+    },
+    {
+      "alias": "gpt-6.1-sol",
+      "model": "gpt-6.1-sol",
+      "version": "2026-09-29",
+      "provider": "OpenAI",
+      "sku": "GlobalStandard",
+      "capacity": 5000
+    },
+    {
+      "alias": "gpt-5.6-luna",
+      "model": "gpt-5.6-luna",
+      "version": "2026-07-09",
+      "provider": "OpenAI",
+      "sku": "GlobalStandard",
+      "capacity": 5000
+    },
+    {
+      "alias": "DeepSeek-V4-Flash",
+      "model": "DeepSeek-V4-Flash",
+      "version": "2026-04-23",
+      "provider": "DeepSeek",
+      "sku": "GlobalStandard",
+      "capacity": 2500
+    },
+    {
+      "alias": "gpt-4o",
+      "model": "gpt-4o",
+      "version": "2024-11-20",
+      "provider": "OpenAI",
+      "sku": "GlobalStandard",
+      "capacity": 15000
+    },
+    {
+      "alias": "gpt-5.4-mini",
+      "model": "gpt-5.4-mini",
+      "version": "2026-03-17",
+      "provider": "OpenAI",
+      "sku": "GlobalStandard",
+      "capacity": 5000
+    },
+    {
+      "alias": "grok-4-1-fast-reasoning",
+      "model": "grok-4-1-fast-reasoning",
+      "version": "1",
+      "provider": "xAI",
+      "sku": "GlobalStandard",
+      "capacity": 2500
+    },
+    {
+      "alias": "grok-4-20-reasoning",
+      "model": "grok-4-20-reasoning",
+      "version": "1",
+      "provider": "xAI",
+      "sku": "GlobalStandard",
+      "capacity": 2500
+    },
+    {
+      "alias": "grok-4.3",
+      "model": "grok-4.3",
+      "version": "1",
+      "provider": "xAI",
+      "sku": "GlobalStandard",
+      "capacity": 2500
+    },
+    {
+      "alias": "DeepSeek-V4-Pro",
+      "model": "DeepSeek-V4-Pro",
+      "version": "2026-04-23",
+      "provider": "DeepSeek",
+      "sku": "GlobalStandard",
+      "capacity": 5000
+    },
+    {
+      "alias": "Kimi-K2.7-Code",
+      "model": "Kimi-K2.7-Code",
+      "version": "2026-06-12",
+      "provider": "MoonshotAI",
+      "sku": "GlobalStandard",
+      "capacity": 1000
+    }
+  ],
+  "accepted_policy_sha256": "cbdaae044da1ce9b14a3b562ca74cbce2f9e5d1d1c985addb93282686908241f",
+  "snapshot_sha256": "a94a394f2c542fdde6e2bdc205cd9ee0858ded9e8fa32c7efaa70ad2438191fb",
+  "existing_verified_at": "2026-10-26T12:44:49.521995+00:00",
+  "existing_inventory_expired": true,
+  "all_live_metadata_matches": true,
+  "no_inference_no_writes": true,
+  "freshness_limit_seconds_unchanged": 86400
+}

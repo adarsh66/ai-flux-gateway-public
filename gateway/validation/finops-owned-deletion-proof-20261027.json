@@ -1,0 +1,43 @@
+{
+  "basis": "Sanitized first cleanup result observed through file read before second absence-only reconciliation overwrote the shared output; later code preserves timestamped subsequent artifacts",
+  "owner_nonce": "2f75015b55d1",
+  "subscription": "aa28274d-fea0-46d4-b9c8-30f3ef0a0e52",
+  "tenant": "beb276ac-6e9f-498e-8e31-019ee666decd",
+  "session_sha256": "2060859b2bf677f31c2b69f019fa61cc3ab642b5963fdadbeb0216edd749b716",
+  "cleanup_started_at_utc": "2026-10-27T02:25:43.866887+00:00",
+  "cleanup_finished_at_utc": "2026-10-27T02:25:50.800606+00:00",
+  "exit_code": 0,
+  "created_and_deleted_resource_ids": [
+    "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.ContainerInstance/containerGroups/poc-ids-token-ex-finops-probe-2f75015b55d1-ingestion",
+    "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Network/virtualNetworks/poc-ids-token-ex-vnet/subnets/poc-ids-token-ex-finops-probe",
+    "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Network/networkSecurityGroups/poc-ids-token-ex-finops-probe-2f75015b55d1-nsg",
+    "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Network/natGateways/poc-ids-token-ex-finops-probe-2f75015b55d1-nat",
+    "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Network/publicIPAddresses/poc-ids-token-ex-finops-probe-2f75015b55d1-pip"
+  ],
+  "first_final_exact_arm_gets": [
+    {"key": "ingestion", "http_status": 404, "at_utc": "2026-10-27T02:25:50.927108+00:00"},
+    {"key": "api", "http_status": 404, "at_utc": "2026-10-27T02:25:51.051452+00:00"},
+    {"key": "subnet", "http_status": 404, "at_utc": "2026-10-27T02:25:51.196458+00:00"},
+    {"key": "nsg", "http_status": 404, "at_utc": "2026-10-27T02:25:51.325382+00:00"},
+    {"key": "nat", "http_status": 404, "at_utc": "2026-10-27T02:25:51.513815+00:00"},
+    {"key": "pip", "http_status": 404, "at_utc": "2026-10-27T02:25:51.621811+00:00"}
+  ],
+  "key_to_exact_resource_id_source": "gateway/validation/finops-owned-cleanup-20261027.json: ids",
+  "subsequent_independent_full_ids_http_evidence": "gateway/validation/finops-owned-cleanup-20261027.json: final_exact_id_readbacks and arm_events",
+  "api_group_created": false,
+  "ingestion_actual_runtime": {"state": "Terminated", "os_exit_code": 0, "startTime": "2026-10-27T02:22:35.495Z", "finishTime": "2026-10-27T02:22:40.488Z", "restart_count": 0, "ipAddress": null, "validated_probe_result": null},
+  "inbound_actually_applied": "10.240.0.0/16_to_10.240.5.0/24_tcp19390_priority100_then_deny_all_priority200",
+  "outstanding_resource_ids": [],
+  "watchdog": {"pid": 10156, "active_observed_after_cleanup": true, "stopped": false, "cleanup_trigger_at_utc": "2026-10-27T03:12:09.019314+00:00", "deadline_utc": "2026-10-27T03:20:09.019314+00:00"},
+  "tests": {"passed_before_delete": 94, "final_passed": 95, "junit": "gateway/validation/finops-owned-cleanup-tests-20261027.xml"},
+  "new_provisioning": false,
+  "probe_retried": false,
+  "database_writes": 0,
+  "timer_enabled": false,
+  "app_release": false,
+  "preservation_verified_at_utc": "2026-10-27T02:26:05.594162+00:00",
+  "postgres_public_network_access": "Disabled",
+  "postgres_firewall_rule_count": 0,
+  "state_storage_default_action": "Deny",
+  "state_storage_approved_ips": ["167.103.65.36", "167.103.66.248", "167.103.66.93"]
+}

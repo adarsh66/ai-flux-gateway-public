@@ -1,0 +1,59 @@
+{
+  "at_utc": "2026-10-27T10:47:40.848940+00:00",
+  "plan_sha256": "42bf402fb3456e6ea1c0e84c6f8a8b46f44f4fab726dd4ab930fed6336d1d292",
+  "readback_verified": true,
+  "live_policy_sha256": "cbdaae044da1ce9b14a3b562ca74cbce2f9e5d1d1c985addb93282686908241f",
+  "target_policy_sha256": "c3a4b535058aee233e2e53fe0b019a93864829916fd682f02b403f61d81d4535",
+  "normalized_policy_equal": true,
+  "protected_baseline_equal": true,
+  "status": "Applied and independently verified",
+  "applied_at_utc": "2026-10-27T10:44:27.747661+00:00",
+  "apply_wrapper_exit": 0,
+  "independent_verify_exit": 0,
+  "validation_workflow_completed_step": "UpdateStatus",
+  "before_policy_sha256": "a12ad2242a6f87268c7d0a595d91298f102c16cae6ae0cdcbd9b40e5cd78d3d3",
+  "protected_baseline_sha256": "fd91691b44fa5ae05590c952eca7aa819536d50bd4ca2e82f2458343f5b6fa51",
+  "policy_delta": {
+    "before_condition": "@(context.Subscription == null || context.Product == null || context.Product.Id != \"aiflux\" || context.Subscription.Id != \"e9f2abb0-930b-598a-b210-0ab0b279127f\")",
+    "after_condition": "@(context.Subscription == null || context.Product == null || context.Product.Id != \"aiflux\")",
+    "only_original_subscriber_predicate_removed": true,
+    "existing_api_policy_updates": 1,
+    "resource_creates": 0,
+    "model_count": 11,
+    "glm_preserved": true,
+    "safety_quotas_counter_ids_preserved": true
+  },
+  "preserved_finops": {
+    "timer_disabled": "false",
+    "always_on": true,
+    "cutoff": "2026-10-27T06:06:02.045288+00:00",
+    "complete_settings_hashes_equal": true,
+    "four_runtime_image_pins_equal": true
+  },
+  "retained_tests": {
+    "focused_python_passed": 125,
+    "apim_lifecycle_passed": 5,
+    "terraform_mock_passed": 23,
+    "junit_failures": 0,
+    "junit_errors": 0
+  },
+  "automatic_access_flow": "Existing admin creation and owned Reconcile activate product-scoped subscriptions; the live policy no longer requires a per-subscriber allowlist. No API/product approval flag changed.",
+  "live_browser_inference_and_negative_acceptance": "Deferred to parent verification; not performed or claimed by this bounded policy rollout.",
+  "active_product_subscriptions": {
+    "e9f2abb0-930b-598a-b210-0ab0b279127f": {
+      "state": "active",
+      "scope": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.ApiManagement/service/poc-ids-token-ex-apim/products/aiflux",
+      "displayName": "Caldova-AI"
+    },
+    "d9768b6a-415c-5b2c-9c4e-fccaf92db250": {
+      "state": "active",
+      "scope": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.ApiManagement/service/poc-ids-token-ex-apim/products/aiflux",
+      "displayName": "Contoso-subscription"
+    }
+  },
+  "builds": 0,
+  "policy_apply_attempts": 1,
+  "key_reads": 0,
+  "network_writes": 0,
+  "rbac_writes": 0
+}

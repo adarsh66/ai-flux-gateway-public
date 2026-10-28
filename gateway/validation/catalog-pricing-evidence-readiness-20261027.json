@@ -1,0 +1,16 @@
+{
+  "at": "2026-10-27T13:23:47.138771+00:00",
+  "state": "Running",
+  "last_modified": "2026-10-27T13:20:35.9266667",
+  "configured_image": "DOCKER|pocidstokenexacr.azurecr.io/aiflux-api@sha256:b47ba73081698e5cb29e50cbe6f415752703fdd8f1122015a53638c59fea7899",
+  "inventory_only_overrides": {
+    "AIFLUX_CATALOG_PATH": "/app/gateway/catalog/models.json",
+    "AIFLUX_CATALOG_CONFIGURED": "false"
+  },
+  "instances": [
+    {
+      "state": "READY",
+      "containers": 0
+    }
+  ]
+}

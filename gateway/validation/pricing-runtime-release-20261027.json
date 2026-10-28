@@ -1,0 +1,12 @@
+{
+  "at": "2026-10-27T12:21:58.422419+00:00",
+  "plan_sha256": "3bb86f17090387efcb6bc65dec8eea2727d0677609f694057933cddcc6b7e8a4",
+  "protected_equal_except_three_images": true,
+  "images": {
+    "api": "pocidstokenexacr.azurecr.io/aiflux-api@sha256:04ba655c24a87d30f3a47dbf091d2df03f52b2172f8d80b00f9eada7273eeb44",
+    "admin": "pocidstokenexacr.azurecr.io/aiflux-admin@sha256:8950baf1fa8c5e8b0762c3b1069251706fe043dbca9c060b31c77092ba9f6ca0",
+    "customer": "pocidstokenexacr.azurecr.io/aiflux-customer@sha256:072fe85e23168d20081894357ac87aa036e14363eb031e796e68686f4d357594"
+  },
+  "manifest_sha256": "0aec80e69631e8cfccfde7844f6d83379df2e551283dd323809e9ae764573b15",
+  "ingester_unchanged": true
+}

@@ -1,0 +1,108 @@
+{
+  "status": "applied_verified_disabled_stage_only",
+  "at_utc": "2026-10-27T04:58:42.049584+00:00",
+  "tag": "finops-20261027t040422z",
+  "stage_directory": ".deployment/finops/finops-20261027t040422z/disabled-stage-preserved-config",
+  "plan_sha256": "6e8232a8fc591894b43d1557ecc9721c1e110349eaef80c34ffbd80775d6d090",
+  "source_manifest_sha256": "cf3a01e1f2e2f58fa751499c959cb03427d45e59be87548fe7df4f3beb038b2f",
+  "controller_sha256_at_apply": "41f9bd56b9c491296780f7bd1cdf4f1feb7331f9e13e185385373f2020f08c3b",
+  "readback_controller_sha256": "ec4ff6ef9275bf886afc3b5be206381c8bdb24da6df8082f984f1fccc7b6de5d",
+  "terraform_apply_exit": 0,
+  "terraform_applied_at_utc": "2026-10-27T04:53:24.237114+00:00",
+  "apply_task_exit": 2,
+  "apply_task_failure_stage": "post_apply_readback_only_provider_owned_registry_fields",
+  "read_only_verification_task_exit": 0,
+  "focused_tests_before_apply": 61,
+  "focused_tests_after_readback_fix": 70,
+  "existing_linux_ui_tests": 103,
+  "existing_linux_validation_run": "cm1n",
+  "images": {
+    "api": "pocidstokenexacr.azurecr.io/aiflux-api@sha256:7c8b9c715963a1a365895c38f2e79cb1bbfff0b4e166a57cec6e16df9f05ffce",
+    "ingestion": "pocidstokenexacr.azurecr.io/aiflux-ingestion@sha256:81b2c6a96c8a82807eb9bec6098fc305af664b55d97e44e1a3b226e8f3efd56f",
+    "admin": "pocidstokenexacr.azurecr.io/aiflux-admin@sha256:4606e769e95ac647c7ba175f5c0e152baf16dbf02a78fd5d1c3f1a6be289baed",
+    "customer": "pocidstokenexacr.azurecr.io/aiflux-customer@sha256:568cd3f1d4d88cf59ff63528f4baa6b84827a3da45e6ede5da13395d06de29a1"
+  },
+  "build_runs": {
+    "api": "cm1p",
+    "ingestion": "cm1q",
+    "admin": "cm1r",
+    "customer": "cm1s"
+  },
+  "new_builds": 0,
+  "apply_count": 1,
+  "replay_count": 0,
+  "verification": {
+    "at_utc": "2026-10-27T04:57:24.445303+00:00",
+    "images": {
+      "api": "pocidstokenexacr.azurecr.io/aiflux-api@sha256:7c8b9c715963a1a365895c38f2e79cb1bbfff0b4e166a57cec6e16df9f05ffce",
+      "ingestion": "pocidstokenexacr.azurecr.io/aiflux-ingestion@sha256:81b2c6a96c8a82807eb9bec6098fc305af664b55d97e44e1a3b226e8f3efd56f",
+      "admin": "pocidstokenexacr.azurecr.io/aiflux-admin@sha256:4606e769e95ac647c7ba175f5c0e152baf16dbf02a78fd5d1c3f1a6be289baed",
+      "customer": "pocidstokenexacr.azurecr.io/aiflux-customer@sha256:568cd3f1d4d88cf59ff63528f4baa6b84827a3da45e6ede5da13395d06de29a1"
+    },
+    "settings_verified": true,
+    "protected_baseline_verified": true,
+    "function_enabled": false,
+    "timer_disabled": true,
+    "activation_cutoff_present": false,
+    "live_ingestion_accepted": false,
+    "next_gate": "exact_business_cutoff_before_host_and_timer_activation"
+  },
+  "app_states": {
+    "api": {
+      "state": "Running",
+      "enabled": true,
+      "public_network_access": "Disabled"
+    },
+    "ingestion": {
+      "state": "Disabled",
+      "enabled": false,
+      "public_network_access": "Disabled"
+    },
+    "admin": {
+      "state": "Running",
+      "enabled": true,
+      "public_network_access": "Enabled"
+    },
+    "customer": {
+      "state": "Running",
+      "enabled": true,
+      "public_network_access": "Enabled"
+    }
+  },
+  "functions_discovery": {
+    "http_status": 400,
+    "function_count": null,
+    "ingest_usage_discovered": false,
+    "status": "unavailable_while_host_disabled_no_sync_or_start_attempted"
+  },
+  "changed_function_setting_names": [
+    "AIFLUX_APIM_PRODUCT_ID",
+    "AIFLUX_APIM_RESOURCE_ID",
+    "AIFLUX_CATALOG_CONFIGURED",
+    "AIFLUX_CATALOG_PATH",
+    "AIFLUX_DATABASE_URL",
+    "AIFLUX_ENVIRONMENT",
+    "AIFLUX_LOG_WORKSPACE_ID",
+    "AZURE_CLIENT_ID",
+    "WEBSITES_ENABLE_APP_SERVICE_STORAGE"
+  ],
+  "provider_injected_registry_setting_names": [
+    "DOCKER_REGISTRY_SERVER_URL",
+    "DOCKER_REGISTRY_SERVER_USERNAME",
+    "DOCKER_REGISTRY_SERVER_PASSWORD"
+  ],
+  "injected_registry_exact_and_credentials_empty": true,
+  "catalog_configured": false,
+  "cutoff_selected": false,
+  "timer_enabled": false,
+  "host_enabled": false,
+  "runtime_health_or_ingestion_acceptance_claimed": false,
+  "network_rbac_database_writes": 0,
+  "new_probes": 0,
+  "next_stage_gates": [
+    "review_exact_business_history_cutoff",
+    "verify_and_accept_actual_catalog_readiness",
+    "validate_separate_host_timer_activation_plan"
+  ],
+  "old_failed_plan_and_verification_proof_retained": true
+}

@@ -1,5 +1,26 @@
 # Source handoff — 2026-10-24
 
+## Superseding GLM live checkpoint — 2026-10-27 local / October 26 23:01 UTC
+
+API tag `glm-20261026t154044z-dfb523bedf4e` and latest portal tag
+`local-20261026t165602z-eee5c65cfe99` are **already applied**, not waiting to
+deploy. Initial three-image apply completed at 16:45 UTC; latest portal-only
+correction at 22:36 UTC changed exactly two existing apps, with no adds/destroys.
+Fresh captured `verify-live`, `probe-live`, and `diagnose-activation` exits are all
+0. Protected baseline, source manifests, private API, resolved JWT and approved
+storage rules match. All sites report READY; health/proxy probes pass.
+
+Authenticated admin sync returned 200 with no changes and 11 accepted chat models;
+discovery has 12 entries including nonselectable Decision-1. Actual customer GLM
+Playground Send returned 200 and displayed Hello., with 16 prompt / 29 completion /
+45 total tokens. Current focused tests: 199 passed. No provider-key read, new cloud
+configuration writes, inference retries or counter resets during this resume.
+Do not replay obsolete apply plans. Accepted inventory retains its 24-hour expiry;
+fresh all-ten inference and fresh password login were not performed this resume.
+Exact digests and evidence are in the
+[current GLM deployment checkpoint](docs/glm-external-provider.md) and
+[sanitized acceptance report](gateway/validation/glm-release-20261026.json).
+
 ## Branches and review order
 
 1. `fix/backend-postgres-jwt-auth` starts at upstream `origin/main`, not the

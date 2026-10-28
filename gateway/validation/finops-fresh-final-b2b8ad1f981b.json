@@ -1,0 +1,346 @@
+{
+  "started_at_utc": "2026-10-27T03:59:07.000802+00:00",
+  "owner_nonce": "b2b8ad1f981b",
+  "session_sha256": "f851daf7220449859cd92e2a1313d23f2865d4c736ca62dfde8a2fb74d206d28",
+  "mode": "read_only_final_verification_no_provision_probe_retry_or_delete",
+  "execution_sha256": "41adf508f217ded3c18ad360f29858da105b8c4b1331659cd36f1f7ade0a5482",
+  "private_database_aggregates": null,
+  "created_resource_count": 6,
+  "database_writes": 0,
+  "probe_retries": 0,
+  "app_release": false,
+  "timer_enabled": false,
+  "fresh_exact_id_gets": [
+    {
+      "at_utc": "2026-10-27T03:59:13.048340+00:00",
+      "method": "GET",
+      "resource_id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.ContainerInstance/containerGroups/poc-ids-token-ex-finops-probe-b2b8ad1f981b-ingestion",
+      "http_status": 404,
+      "error_codes": [],
+      "action": null
+    },
+    {
+      "at_utc": "2026-10-27T03:59:13.118099+00:00",
+      "method": "GET",
+      "resource_id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.ContainerInstance/containerGroups/poc-ids-token-ex-finops-probe-b2b8ad1f981b-api",
+      "http_status": 404,
+      "error_codes": [],
+      "action": null
+    },
+    {
+      "at_utc": "2026-10-27T03:59:13.195666+00:00",
+      "method": "GET",
+      "resource_id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Network/virtualNetworks/poc-ids-token-ex-vnet/subnets/poc-ids-token-ex-finops-probe-b2b8ad1f981b-subnet",
+      "http_status": 404,
+      "error_codes": [],
+      "action": null
+    },
+    {
+      "at_utc": "2026-10-27T03:59:13.262796+00:00",
+      "method": "GET",
+      "resource_id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Network/networkSecurityGroups/poc-ids-token-ex-finops-probe-b2b8ad1f981b-nsg",
+      "http_status": 404,
+      "error_codes": [],
+      "action": null
+    },
+    {
+      "at_utc": "2026-10-27T03:59:13.334286+00:00",
+      "method": "GET",
+      "resource_id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Network/natGateways/poc-ids-token-ex-finops-probe-b2b8ad1f981b-nat",
+      "http_status": 404,
+      "error_codes": [],
+      "action": null
+    },
+    {
+      "at_utc": "2026-10-27T03:59:13.425771+00:00",
+      "method": "GET",
+      "resource_id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Network/publicIPAddresses/poc-ids-token-ex-finops-probe-b2b8ad1f981b-pip",
+      "http_status": 404,
+      "error_codes": [],
+      "action": null
+    }
+  ],
+  "legacy_exact_id_gets": [
+    {
+      "at_utc": "2026-10-27T03:59:21.222178+00:00",
+      "method": "GET",
+      "resource_id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.ContainerInstance/containerGroups/poc-ids-token-ex-finops-probe-2f75015b55d1-ingestion",
+      "http_status": 404,
+      "error_codes": [],
+      "action": null
+    },
+    {
+      "at_utc": "2026-10-27T03:59:21.305461+00:00",
+      "method": "GET",
+      "resource_id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.ContainerInstance/containerGroups/poc-ids-token-ex-finops-probe-2f75015b55d1-api",
+      "http_status": 404,
+      "error_codes": [],
+      "action": null
+    },
+    {
+      "at_utc": "2026-10-27T03:59:21.400630+00:00",
+      "method": "GET",
+      "resource_id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Network/virtualNetworks/poc-ids-token-ex-vnet/subnets/poc-ids-token-ex-finops-probe",
+      "http_status": 404,
+      "error_codes": [],
+      "action": null
+    },
+    {
+      "at_utc": "2026-10-27T03:59:21.478359+00:00",
+      "method": "GET",
+      "resource_id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Network/networkSecurityGroups/poc-ids-token-ex-finops-probe-2f75015b55d1-nsg",
+      "http_status": 404,
+      "error_codes": [],
+      "action": null
+    },
+    {
+      "at_utc": "2026-10-27T03:59:21.550470+00:00",
+      "method": "GET",
+      "resource_id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Network/natGateways/poc-ids-token-ex-finops-probe-2f75015b55d1-nat",
+      "http_status": 404,
+      "error_codes": [],
+      "action": null
+    },
+    {
+      "at_utc": "2026-10-27T03:59:21.630320+00:00",
+      "method": "GET",
+      "resource_id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Network/publicIPAddresses/poc-ids-token-ex-finops-probe-2f75015b55d1-pip",
+      "http_status": 404,
+      "error_codes": [],
+      "action": null
+    }
+  ],
+  "outstanding_resource_ids": [],
+  "preservation": {
+    "at_utc": "2026-10-27T03:59:34.043152+00:00",
+    "postgres_public_network_access": "Disabled",
+    "postgres_firewall_rule_count": 0,
+    "state_storage_default_action": "Deny",
+    "state_storage_approved_ips": [
+      "167.103.65.36",
+      "167.103.66.248",
+      "167.103.66.93"
+    ],
+    "configuration_writes": 0,
+    "preservation_verified": true
+  },
+  "image_reuse": {
+    "at_utc": "2026-10-27T03:59:49.769576+00:00",
+    "image": "pocidstokenexacr.azurecr.io/aiflux-finops-probe@sha256:136648d5f843cc0f7db8fef3c943baeb18b8377de73427bfa865cc53c4e03bac",
+    "source_probe_sha256": "e6b0b9df57473c786165e6499029253059485d44e8efa67d380ebfa46e522433",
+    "source_entrypoint_sha256": "fe7c3a742ec79a5ad28e969239ca40118ada169d41a9b2b080cefe399ea9168c",
+    "context_manifest_sha256": "39bce89076c60a72d05d3ba3edd0c7603aecb3d8974bf79b467431a60d477640",
+    "live_build_and_manifest_binding_verified": true,
+    "linux_validation_from_bound_build": true,
+    "new_builds": 0,
+    "image_evidence_sha256": "797b65c33662ab675b56ba98c90aa7141dd4fffceb819a25531eb4ee2376e9ba"
+  },
+  "probes": {
+    "ingestion": {
+      "os_exit_code": 0,
+      "sanitized_result": {
+        "status": "verified_read_only_snapshot",
+        "collected_at": "2026-10-27T03:56:11.308282+00:00",
+        "database": "turnstile",
+        "schema": "public",
+        "identity_role_matches": true,
+        "runtime_ddl_or_ownership": false,
+        "table_privileges": {
+          "usage_records": {
+            "select": true,
+            "insert": true,
+            "update": true,
+            "delete": false
+          },
+          "safety_events": {
+            "select": true,
+            "insert": true,
+            "update": false,
+            "delete": false
+          },
+          "ingestion_state": {
+            "select": true,
+            "insert": true,
+            "update": true,
+            "delete": false
+          },
+          "team_subscriptions": {
+            "select": true,
+            "insert": false,
+            "update": false,
+            "delete": false
+          },
+          "model_prices": {
+            "select": true,
+            "insert": false,
+            "update": false,
+            "delete": false
+          }
+        },
+        "all_time": {
+          "requests": 0,
+          "first_request_at": null,
+          "latest_request_at": null,
+          "last_ingested_at": null
+        },
+        "window": {
+          "start": "2026-09-27 03:56:11.308282+00:00",
+          "end_exclusive": "2026-10-27 03:51:11.308282+00:00",
+          "default_lookback_days": 30,
+          "source_retention_verified": false,
+          "requests": 0,
+          "known_input_tokens": 0,
+          "known_output_tokens": 0,
+          "fully_measured_total_tokens": 0,
+          "missing_token_requests": 0,
+          "unpriced_or_non_usd_requests": 0
+        },
+        "checkpoint": null,
+        "ownership": {
+          "subscription_bindings": 1,
+          "active_bindings": 1,
+          "earliest_binding_created_at": "2026-10-26 01:18:34.616157+00:00",
+          "latest_binding_created_at": "2026-10-26 01:18:34.616157+00:00",
+          "orphaned_or_misattributed_usage_rows": 0,
+          "source_subscription_match_verified": false
+        },
+        "prices": {
+          "rows": 8,
+          "usd_rows": 8,
+          "effective_rows": 8
+        },
+        "approved_activation_cutoff": null,
+        "replay_authorized": false,
+        "database_writes": 0
+      },
+      "probe_exit_code": 0,
+      "finished_at_utc": "2026-10-27T03:56:14.717042+00:00",
+      "arm_logs_nonempty": true,
+      "arm_logs_bytes": 1555,
+      "arm_logs_sha256": "4793e15f61807cf3f8d2ddc5489184cec2fdfe27adc86e7fa468f5421b3153ea",
+      "session_sha256": "f851daf7220449859cd92e2a1313d23f2865d4c736ca62dfde8a2fb74d206d28",
+      "image": "pocidstokenexacr.azurecr.io/aiflux-finops-probe@sha256:136648d5f843cc0f7db8fef3c943baeb18b8377de73427bfa865cc53c4e03bac",
+      "probe_sha256": "e6b0b9df57473c786165e6499029253059485d44e8efa67d380ebfa46e522433",
+      "state": "Terminated",
+      "restart_count": 0,
+      "group_absent_http_404_at_utc": "2026-10-27T03:56:15.616720+00:00"
+    },
+    "api": {
+      "os_exit_code": 0,
+      "sanitized_result": {
+        "status": "verified_read_only_snapshot",
+        "collected_at": "2026-10-27T03:58:42.395998+00:00",
+        "database": "turnstile",
+        "schema": "public",
+        "identity_role_matches": true,
+        "runtime_ddl_or_ownership": false,
+        "table_privileges": {
+          "usage_records": {
+            "select": true,
+            "insert": true,
+            "update": true,
+            "delete": true
+          },
+          "safety_events": {
+            "select": true,
+            "insert": true,
+            "update": true,
+            "delete": true
+          },
+          "ingestion_state": {
+            "select": true,
+            "insert": true,
+            "update": true,
+            "delete": true
+          },
+          "team_subscriptions": {
+            "select": true,
+            "insert": true,
+            "update": true,
+            "delete": true
+          },
+          "model_prices": {
+            "select": true,
+            "insert": true,
+            "update": true,
+            "delete": true
+          }
+        },
+        "all_time": {
+          "requests": 0,
+          "first_request_at": null,
+          "latest_request_at": null,
+          "last_ingested_at": null
+        },
+        "window": {
+          "start": "2026-09-27 03:58:42.395998+00:00",
+          "end_exclusive": "2026-10-27 03:53:42.395998+00:00",
+          "default_lookback_days": 30,
+          "source_retention_verified": false,
+          "requests": 0,
+          "known_input_tokens": 0,
+          "known_output_tokens": 0,
+          "fully_measured_total_tokens": 0,
+          "missing_token_requests": 0,
+          "unpriced_or_non_usd_requests": 0
+        },
+        "checkpoint": null,
+        "ownership": {
+          "subscription_bindings": 1,
+          "active_bindings": 1,
+          "earliest_binding_created_at": "2026-10-26 01:18:34.616157+00:00",
+          "latest_binding_created_at": "2026-10-26 01:18:34.616157+00:00",
+          "orphaned_or_misattributed_usage_rows": 0,
+          "source_subscription_match_verified": false
+        },
+        "prices": {
+          "rows": 8,
+          "usd_rows": 8,
+          "effective_rows": 8
+        },
+        "approved_activation_cutoff": null,
+        "replay_authorized": false,
+        "database_writes": 0
+      },
+      "probe_exit_code": 0,
+      "finished_at_utc": "2026-10-27T03:58:45.913977+00:00",
+      "arm_logs_nonempty": true,
+      "arm_logs_bytes": 1545,
+      "arm_logs_sha256": "e23580aee9ee834a0a6e228a274adee30b46f06e614def2c0924aa0b422ccc54",
+      "session_sha256": "f851daf7220449859cd92e2a1313d23f2865d4c736ca62dfde8a2fb74d206d28",
+      "image": "pocidstokenexacr.azurecr.io/aiflux-finops-probe@sha256:136648d5f843cc0f7db8fef3c943baeb18b8377de73427bfa865cc53c4e03bac",
+      "probe_sha256": "e6b0b9df57473c786165e6499029253059485d44e8efa67d380ebfa46e522433",
+      "state": "Terminated",
+      "restart_count": 0,
+      "group_absent_http_404_at_utc": "2026-10-27T03:58:46.887448+00:00"
+    }
+  },
+  "database_readiness_accepted": true,
+  "database_failure_not_classified_as_permission_denial": false,
+  "ingestion_destination_constructed_for_probe_not_live_function_config": true,
+  "production_configuration_and_cutoff_still_require_separate_review": true,
+  "current_application_source_sha256": {
+    "api": "ea55e132bab983aa580e9f1b92398f65e088683f9d9283b73c40f2b9824e79e2",
+    "ingestion": "89c0f3f560d3fbb43cf8bb0fb2b623ffcdb68fbf89d78e741c2b1af7d3825b72",
+    "admin": "29d0b0c3b7b9e38686ab6e2a53ad6b346281b95cb271d188eebfc7a097c39645",
+    "customer": "68cafb31b61f868193d64bcc53bfbd5fe4ca86319e89735a3d5e975e77804012"
+  },
+  "application_source_matches_prior_manifest": false,
+  "watchdogs": [
+    {
+      "pid": 10156,
+      "owner_nonce": "2f75015b55d1",
+      "active_observed": false,
+      "stopped": false
+    },
+    {
+      "pid": 30804,
+      "owner_nonce": "b2b8ad1f981b",
+      "active_observed": true,
+      "stopped": false
+    }
+  ],
+  "cleanup_marker_present": true,
+  "exit_code": 0,
+  "finished_at_utc": "2026-10-27T03:59:50.037964+00:00"
+}

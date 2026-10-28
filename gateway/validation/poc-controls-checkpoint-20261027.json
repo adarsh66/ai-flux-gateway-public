@@ -1,0 +1,274 @@
+{
+  "at_utc": "2026-10-27T15:01:50.211179+00:00",
+  "status": "BLOCKED_EXACT_PUBLISHER_RBAC",
+  "deployed": false,
+  "live_configuration_writes": 0,
+  "rbac_writes": 0,
+  "image_pushes": 0,
+  "inference_tests": "SKIPPED_USER_REQUEST",
+  "gateway_traffic_tests": "SKIPPED_USER_REQUEST",
+  "saved_plan_created": false,
+  "apply_attempts": 0,
+  "initial_db_revision_created": false,
+  "protected_baseline_equal": true,
+  "policy_equal": true,
+  "protected_baseline_sha256": "842b4ccc260729864cc022476ab54921725485cc128e41b05239a077962ad255",
+  "policy_sha256": "cbdaae044da1ce9b14a3b562ca74cbce2f9e5d1d1c985addb93282686908241f",
+  "live_images": {
+    "api": "DOCKER|pocidstokenexacr.azurecr.io/aiflux-api@sha256:b47ba73081698e5cb29e50cbe6f415752703fdd8f1122015a53638c59fea7899",
+    "admin": "DOCKER|pocidstokenexacr.azurecr.io/aiflux-admin@sha256:8950baf1fa8c5e8b0762c3b1069251706fe043dbca9c060b31c77092ba9f6ca0",
+    "customer": "DOCKER|pocidstokenexacr.azurecr.io/aiflux-customer@sha256:072fe85e23168d20081894357ac87aa036e14363eb031e796e68686f4d357594",
+    "ingestion": "DOCKER|pocidstokenexacr.azurecr.io/aiflux-ingestion@sha256:d2bdae4edbd2faf0f6c5a5b28c83882e36222767f88de9625071b251d4114c0b"
+  },
+  "selected_publisher_principal_id": "4e7b70ed-9868-47ba-9b61-304f1e1fdd89",
+  "required_actions": [
+    "Microsoft.ApiManagement/service/policyFragments/read",
+    "Microsoft.ApiManagement/service/policyFragments/write"
+  ],
+  "required_fragment_scope": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.ApiManagement/service/poc-ids-token-ex-apim/policyFragments/aiflux-dev-unified-poc-settings",
+  "api_control_flags": {
+    "AIFLUX_GATEWAY_CONTROLS_POC_ENABLED": null,
+    "AIFLUX_GATEWAY_CONTROLS_V2_ENABLED": null,
+    "AIFLUX_GATEWAY_SETTINGS_SCOPES": "[]"
+  },
+  "native_validation": {
+    "ui": {
+      "at_utc": "2026-10-27T14:39:15.083259+00:00",
+      "exit_code": 0,
+      "run_id": "cm27",
+      "no_push": true,
+      "deployed": false,
+      "sources_sha256": "73a264d3fefc8dbf29b6a84d1e938d850fc755f6a6ea2de1445ecf38fe8e9fbb",
+      "tests_passed": 111,
+      "acr_status": "Succeeded",
+      "finished_at": "2026-10-27T14:39:13.919918+00:00",
+      "log_sha256": "344ceeb00efe4fcfa65b7e7b55d3f8b3267ab638d3b18ff7f12ebec29225c14a"
+    },
+    "api": {
+      "at_utc": "2026-10-27T14:49:02.515931+00:00",
+      "exit_code": 0,
+      "run_id": "cm28",
+      "no_push": true,
+      "deployed": false,
+      "scope": "api-only",
+      "migration_source_changes": 0,
+      "sources_sha256": "236417984733d20d66f593bb8f2a6708eaf44bad150983773ec89a15d29fbdbc",
+      "tests_passed": 96,
+      "acr_status": "Succeeded",
+      "finished_at": "2026-10-27T14:49:03.491520+00:00",
+      "log_sha256": "4b1c9e309cd4207d671231bd9ec279edee959b3854f2af6d7551ae9fcd1c09c3"
+    }
+  },
+  "release_regressions": {
+    "tests": 185,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "unfiltered_workspace_tests": {
+    "tests": 114,
+    "failures": 2,
+    "errors": 0,
+    "skipped": 0
+  },
+  "workspace_migration_failures": "Duplicate revision 0003 in sandbox portal_users and stable_teams; existing production packager excludes sandbox portal_users; both migrations tests pass in native package. No migration source edited.",
+  "foundry_bindings": [
+    {
+      "deployment": "Decision-1",
+      "raiPolicyName": "Microsoft.DefaultV2",
+      "model": {
+        "format": "Microsoft",
+        "name": "Microsoft-Decision-1",
+        "version": "1"
+      },
+      "sku": {
+        "capacity": 250,
+        "name": "DataZoneStandard"
+      }
+    },
+    {
+      "deployment": "gpt-6.1-sol",
+      "raiPolicyName": "Microsoft.DefaultV2",
+      "model": {
+        "format": "OpenAI",
+        "name": "gpt-6.1-sol",
+        "version": "2026-09-29"
+      },
+      "sku": {
+        "capacity": 5000,
+        "name": "GlobalStandard"
+      }
+    },
+    {
+      "deployment": "gpt-5.6-luna",
+      "raiPolicyName": "Microsoft.DefaultV2",
+      "model": {
+        "format": "OpenAI",
+        "name": "gpt-5.6-luna",
+        "version": "2026-07-09"
+      },
+      "sku": {
+        "capacity": 5000,
+        "name": "GlobalStandard"
+      }
+    },
+    {
+      "deployment": "DeepSeek-V4-Flash",
+      "raiPolicyName": "Microsoft.DefaultV2",
+      "model": {
+        "format": "DeepSeek",
+        "name": "DeepSeek-V4-Flash",
+        "version": "2026-04-23"
+      },
+      "sku": {
+        "capacity": 2500,
+        "name": "GlobalStandard"
+      }
+    },
+    {
+      "deployment": "gpt-4o",
+      "raiPolicyName": "Microsoft.DefaultV2",
+      "model": {
+        "format": "OpenAI",
+        "name": "gpt-4o",
+        "version": "2024-11-20"
+      },
+      "sku": {
+        "capacity": 15000,
+        "name": "GlobalStandard"
+      }
+    },
+    {
+      "deployment": "gpt-5.4-mini",
+      "raiPolicyName": "Microsoft.DefaultV2",
+      "model": {
+        "format": "OpenAI",
+        "name": "gpt-5.4-mini",
+        "version": "2026-03-17"
+      },
+      "sku": {
+        "capacity": 5000,
+        "name": "GlobalStandard"
+      }
+    },
+    {
+      "deployment": "grok-4-1-fast-reasoning",
+      "raiPolicyName": "Microsoft.DefaultV2",
+      "model": {
+        "format": "xAI",
+        "name": "grok-4-1-fast-reasoning",
+        "version": "1"
+      },
+      "sku": {
+        "capacity": 2500,
+        "name": "GlobalStandard"
+      }
+    },
+    {
+      "deployment": "grok-4-20-reasoning",
+      "raiPolicyName": "Microsoft.DefaultV2",
+      "model": {
+        "format": "xAI",
+        "name": "grok-4-20-reasoning",
+        "version": "1"
+      },
+      "sku": {
+        "capacity": 2500,
+        "name": "GlobalStandard"
+      }
+    },
+    {
+      "deployment": "grok-4.3",
+      "raiPolicyName": "Microsoft.DefaultV2",
+      "model": {
+        "format": "xAI",
+        "name": "grok-4.3",
+        "version": "1"
+      },
+      "sku": {
+        "capacity": 2500,
+        "name": "GlobalStandard"
+      }
+    },
+    {
+      "deployment": "DeepSeek-V4-Pro",
+      "raiPolicyName": "Microsoft.DefaultV2",
+      "model": {
+        "format": "DeepSeek",
+        "name": "DeepSeek-V4-Pro",
+        "version": "2026-04-23"
+      },
+      "sku": {
+        "capacity": 5000,
+        "name": "GlobalStandard"
+      }
+    },
+    {
+      "deployment": "Kimi-K2.7-Code",
+      "raiPolicyName": "Microsoft.DefaultV2",
+      "model": {
+        "format": "MoonshotAI",
+        "name": "Kimi-K2.7-Code",
+        "version": "2026-06-12"
+      },
+      "sku": {
+        "capacity": 1000,
+        "name": "GlobalStandard"
+      }
+    },
+    {
+      "deployment": "FW-GLM-5.3",
+      "raiPolicyName": "Microsoft.Nil",
+      "model": {
+        "format": "Fireworks",
+        "name": "FW-GLM-5.3",
+        "version": "2"
+      },
+      "sku": {
+        "capacity": 250,
+        "name": "GlobalStandard"
+      }
+    },
+    {
+      "deployment": "FW-MiniMax-M3",
+      "raiPolicyName": "Microsoft.Nil",
+      "model": {
+        "format": "Fireworks",
+        "name": "FW-MiniMax-M3",
+        "version": "1"
+      },
+      "sku": {
+        "capacity": 250,
+        "name": "DataZoneStandard"
+      }
+    }
+  ],
+  "foundry_policies": {
+    "Microsoft.DefaultV2": {
+      "name": "Microsoft.DefaultV2",
+      "policy_definition_read": "unavailable",
+      "deployment_binding_read": "verified",
+      "mutated": false
+    },
+    "Microsoft.Nil": {
+      "name": "Microsoft.Nil",
+      "policy_definition_read": "unavailable",
+      "deployment_binding_read": "verified",
+      "mutated": false
+    }
+  },
+  "build_intent_markers": [
+    "linux-api-validation/build-intent.json",
+    "linux-validation-corrected/build-intent.json",
+    "linux-validation/build-intent.json"
+  ],
+  "rbac_authorization": "Exact missing grant requested; no explicit authorization returned. No grant inferred.",
+  "pending": [
+    "Exact two-action fragment publisher grant authorization and provisioning",
+    "Fresh independent guarded saved-plan validation",
+    "Stage safe default fragment before API policy include",
+    "Publish immutable API/admin images only and enable exact three API flags",
+    "Audited initial DB revision via existing authenticated admin release session",
+    "Management-plane XML/readback and benign same-value org/sub save/remove acceptance; no inference"
+  ]
+}

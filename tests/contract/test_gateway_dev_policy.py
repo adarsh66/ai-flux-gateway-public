@@ -61,6 +61,34 @@ class GuardedDevelopmentPolicyTests(unittest.TestCase):
         self.assertIn("subscription_required = true", self.adapter_source)
         self.assertIn("approval_required     = true", self.adapter_source)
 
+    def test_adapter_cors_is_first_exact_and_does_not_bypass_global_gate(self):
+        inbound = self.dev_policy.find("inbound")
+        self.assertEqual([child.tag for child in inbound][:2], ["cors", "base"])
+        cors = inbound.find("cors")
+        self.assertEqual(cors.attrib, {"allow-credentials": "false", "terminate-unmatched-request": "true"})
+        self.assertEqual([node.text for node in cors.findall("./allowed-origins/origin")], ["${origin}"])
+        self.assertEqual([node.text for node in cors.findall("./allowed-methods/method")], ["GET", "POST"])
+        self.assertEqual(
+            {node.text.lower() for node in cors.findall("./allowed-headers/header")},
+            {"content-type", "ocp-apim-subscription-key"},
+        )
+        self.assertEqual([node.text for node in cors.findall("./expose-headers/header")], ["Retry-After"])
+        self.assertIn("cors_origins                 = var.dev_portal_origins", self.adapter_source)
+        self.assertNotIn("concat(var.dev_portal_origins", self.adapter_source)
+        self.assertIn("%{ if unified ~}", self.dev_source[:self.dev_source.index("<cors")])
+        gate = ET.tostring(self.global_gate, encoding="unicode")
+        self.assertNotIn('context.Request.Method == "OPTIONS"', gate)
+        self.assertEqual(self.global_gate.findall(".//cors"), [])
+        disabled = ET.parse(POLICIES / "disabled.xml").getroot()
+        self.assertEqual(disabled.find("./inbound/return-response/set-status").get("code"), "503")
+
+    def test_openapi_has_no_explicit_options_interception(self):
+        for name in ("openapi-dev.json", "openapi-dev-adapter.json"):
+            api = json.loads((ROOT / "gateway" / name).read_text(encoding="utf-8"))
+            self.assertEqual(set(api["paths"]), {"/models", "/chat/completions"})
+            for path in api["paths"].values():
+                self.assertNotIn("options", path)
+
     def test_adapter_completion_ceiling_matches_catalog_and_schema(self):
         adapter = json.loads((ROOT / "gateway" / "openapi-dev-adapter.json").read_text())
         body = adapter["paths"]["/chat/completions"]["post"]["requestBody"]["content"]["application/json"][

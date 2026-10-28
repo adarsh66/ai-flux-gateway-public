@@ -9,7 +9,7 @@ const timeLabel = (time: number) => `${new Date(time).toISOString().slice(0, 16)
 const modelLabel = (model: string) => model.trim() || "Unknown model";
 const tokenLabel = (item: ModelTokenBucket | undefined) => item
   ? `${item.total_tokens === null ? NA : fmtInt(item.total_tokens)}${item.missing_token_requests ? " (partial)" : ""}`
-  : "0";
+  : "—";
 
 export function ModelTokenChart({ series }: { series: ModelTokenSeries }) {
   const id = useId().replace(/:/g, "");
@@ -32,6 +32,9 @@ export function ModelTokenChart({ series }: { series: ModelTokenSeries }) {
         start: from, end: Math.min(end, first + (index + 1) * interval), items,
         total: [...items.values()].reduce((sum, item) => sum + (item.total_tokens ?? 0), 0),
         missing: [...items.values()].reduce((sum, item) => sum + item.missing_token_requests, 0),
+        measured: [...items.values()].some(item => item.total_tokens !== null)
+          || (items.size === 0 && series.health?.status === "healthy"),
+        partial: from !== first + index * interval || first + (index + 1) * interval > end,
       };
     });
     return { models, buckets };
@@ -52,14 +55,15 @@ export function ModelTokenChart({ series }: { series: ModelTokenSeries }) {
   const intervalUnit = series.interval_seconds < 3600 ? "minute" : series.interval_seconds < 86400 ? "hour" : "day";
   const intervalCount = series.interval_seconds / (intervalUnit === "minute" ? 60 : intervalUnit === "hour" ? 3600 : 86400);
   const intervalText = `${intervalCount} ${intervalUnit}${intervalCount === 1 ? "" : "s"}`;
-  const selectedText = bucket ? `${timeLabel(bucket.start)} to ${timeLabel(bucket.end)}: ${fmtInt(bucket.total)} known tokens${bucket.missing ? " (partial)" : ""}; ${models.map(model => `${modelLabel(model)}: ${tokenLabel(bucket.items.get(model))}`).join("; ")}` : "";
+  const selectedText = bucket ? `${timeLabel(bucket.start)} to ${timeLabel(bucket.end)}${bucket.partial ? " (partial interval)" : ""}: ${bucket.measured ? `${fmtInt(bucket.total)} known tokens` : "No measured total available"}${bucket.missing ? " (partial)" : ""}; ${models.map(model => `${modelLabel(model)}: ${tokenLabel(bucket.items.get(model))}`).join("; ")}` : "";
   const missing = series.items.reduce((sum, item) => sum + item.missing_token_requests, 0);
 
   return <section className="chart-panel model-token-chart" aria-labelledby={`${id}-title`}>
     <h2 id={`${id}-title`}>Token consumption by model</h2>
-    <p className="muted">Input + output tokens per bucket · {intervalText} · UTC</p>
+    <p className="muted">Measured input + output tokens per bucket · {intervalText} · UTC. Edge buckets may cover partial intervals; component subtotals include known measurements.</p>
+    {series.health?.status !== "healthy" && <p role="status" className="notice">Telemetry {series.health?.status ?? "unverified"}: empty buckets are not proof of zero traffic. Last query success: {series.health?.last_query_success_at ?? "unavailable"}. Expected ingestion delay: {Math.round((series.health?.expected_delay_seconds ?? 300) / 60)} minutes.</p>}
     {missing > 0 && <p role="status" className="notice">Partial data: {fmtInt(missing)} request(s) lack complete token usage. Bars show known totals only, not zero usage for missing measurements.</p>}
-    {!series.items.length ? <p>No token usage in this viewport.</p> : <>
+    {!series.items.length ? <p>{series.health?.status === "healthy" ? "No token usage in this viewport." : "No measured token rows available; ingestion health is not confirmed."}</p> : <>
       <ul className="model-token-legend" aria-label="Model legend">{models.map((model, index) =>
         <li key={model}><svg width="16" height="16" aria-hidden="true" style={styleFor(index)}><rect width="16" height="16" fill={fillFor(index)} /></svg>{modelLabel(model)}</li>)}</ul>
       <svg className="usage-chart" viewBox={`0 0 ${WIDTH} ${HEIGHT}`} role="slider" tabIndex={0}
@@ -88,11 +92,13 @@ export function ModelTokenChart({ series }: { series: ModelTokenSeries }) {
             return tokens > 0 && <rect key={model} data-model={model} data-tokens={tokens}
               x={LEFT + bucketIndex * step + step * .1} y={TOP + plotHeight * (1 - accumulated / max)}
               width={step * .8} height={plotHeight * tokens / max} fill={fillFor(modelIndex)}>
-              <title>{modelLabel(model)}: {fmtInt(tokens)} tokens{item.items.get(model)?.missing_token_requests ? " (partial)" : ""}</title>
+              <title>{modelLabel(model)}: {fmtInt(tokens)} measured tokens; known input {fmtInt(item.items.get(model)?.input_tokens ?? null)}, known output {fmtInt(item.items.get(model)?.output_tokens ?? null)}{item.items.get(model)?.missing_token_requests ? " (partial)" : ""}</title>
             </rect>;
           })}</g>;
         })}
         <rect className="model-token-cursor" x={LEFT + cursor * step} y={TOP} width={step} height={plotHeight} />
+        {bucket?.measured && <text className="chart-axis-label" x={Math.max(LEFT + 30, Math.min(WIDTH - RIGHT - 30, LEFT + (cursor + .5) * step))}
+          y={Math.max(TOP + 12, TOP + plotHeight * (1 - bucket.total / max) - 6)} textAnchor="middle">{fmtInt(bucket.total)}</text>}
         <text className="chart-axis-label" x={LEFT} y={HEIGHT - 8}>{timeLabel(Date.parse(series.start))}</text>
         <text className="chart-axis-label" x={WIDTH - RIGHT} y={HEIGHT - 8} textAnchor="end">{timeLabel(Date.parse(series.end))}</text>
       </svg>
@@ -102,9 +108,9 @@ export function ModelTokenChart({ series }: { series: ModelTokenSeries }) {
         <div className="table-wrap"><table>
           <caption className="sr-only">Known token consumption by model and UTC bucket</caption>
           <thead><tr><th scope="col">UTC bucket</th>{models.map(model => <th scope="col" key={model}>{modelLabel(model)}</th>)}<th scope="col">Known total</th><th scope="col">Missing usage</th></tr></thead>
-          <tbody>{buckets.map(item => <tr key={item.start}><th scope="row">{timeLabel(item.start)} – {timeLabel(item.end)}</th>
-            {models.map(model => <td className="num" key={model}>{tokenLabel(item.items.get(model))}</td>)}
-            <td className="num">{fmtInt(item.total)}{item.missing ? " (partial)" : ""}</td><td>{fmtInt(item.missing)} request(s)</td>
+          <tbody>{buckets.map(item => <tr key={item.start}><th scope="row">{timeLabel(item.start)} – {timeLabel(item.end)}{item.partial ? " (partial interval)" : ""}</th>
+            {models.map(model => <td className="num" key={model}>{tokenLabel(item.items.get(model))}<small className="block">Known in {fmtInt(item.items.get(model)?.input_tokens ?? null)} / out {fmtInt(item.items.get(model)?.output_tokens ?? null)}</small></td>)}
+            <td className="num">{item.measured ? fmtInt(item.total) : NA}{item.missing ? " (partial)" : ""}</td><td>{fmtInt(item.missing)} request(s)</td>
           </tr>)}</tbody>
         </table></div>
       </details>

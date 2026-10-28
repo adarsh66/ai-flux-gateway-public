@@ -1,0 +1,18 @@
+{
+  "at": "2026-10-27T12:52:31.829918+00:00",
+  "plan_sha256": "aacc34680e9c8b8f96e0e2eed89a51d4bcee3f68a5f7ff9715b932efda8f8a8c",
+  "image": "pocidstokenexacr.azurecr.io/aiflux-api@sha256:5df0ba96cbf9f6d40a593345734c5427a5f24a5d2be2066901f3b9d48424f1f6",
+  "sources_sha256": "67d802b50741b8da778c89c77c5c7275a88e24e21fad2c27aa993d744c516f08",
+  "tests": {
+    "tests": 66,
+    "sha256": "0a1823ee8d2d1d02cebde802d84f993b83db385855103c3eec339b8faea4296e"
+  },
+  "guard": "exact_one_api_image_only",
+  "state_addresses": 70,
+  "policy_assignments": 1,
+  "manifest_sha256": "0aec80e69631e8cfccfde7844f6d83379df2e551283dd323809e9ae764573b15",
+  "existing_api_acr_pull": true,
+  "ten_live_sku_version_provider_pairs": true,
+  "unchanged_portals_no_build": true,
+  "checks_passed": true
+}

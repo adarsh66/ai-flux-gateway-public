@@ -88,6 +88,10 @@ This view requires the matching control-plane API version before customer rollou
 
 If any required value is missing/invalid the portal renders a "Portal not configured" screen and nothing else (deny by default).
 
+For browser preflight failures, see the [2026-10-26 live APIM investigation](apim-cors-investigation-20261026.md).
+An absent API route or closed inference gate is not fixed by allowing an origin;
+the anonymous OPTIONS diagnostic distinguishes those responses without retrieving keys.
+
 ## Security model
 - MSAL authorization-code + PKCE via popup, `cacheLocation: memoryStorage` (no token/key in localStorage/sessionStorage; reload requires sign-in). Register SPA redirect URIs `https://<host>/redirect.html` (customer) and `https://<host>/admin/redirect.html` (admin). Do not send `Cross-Origin-Opener-Policy: same-origin` (breaks popup).
 - The development registrations are intentionally single-tenant and use the home tenant GUID authority. This is a DEV-only choice; multi-tenant registration requirements are deferred to the customer environment. Production behavior remains organizational/multi-tenant when the authority is not overridden.

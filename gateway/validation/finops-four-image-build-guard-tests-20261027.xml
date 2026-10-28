@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="2" skipped="0" tests="24" time="1.542" timestamp="2026-10-27T11:55:14.759270+08:00" hostname="ST-L1011878"><testcase classname="tests.unit.test_finops_live_build" name="test_current_source_binding_rejects_changed_component" time="0.246" /><testcase classname="tests.unit.test_finops_live_build" name="test_builder_has_no_application_or_database_write_path" time="0.002" /><testcase classname="tests.unit.test_finops_release" name="test_four_image_guard_is_structural_only_and_does_not_mutate_plan" time="0.002" /><testcase classname="tests.unit.test_finops_release" name="test_all_non_image_or_unbound_changes_are_rejected[timer]" time="0.001" /><testcase classname="tests.unit.test_finops_release" name="test_all_non_image_or_unbound_changes_are_rejected[cutoff]" time="0.001" /><testcase classname="tests.unit.test_finops_release" name="test_all_non_image_or_unbound_changes_are_rejected[enabled]" time="0.001" /><testcase classname="tests.unit.test_finops_release" name="test_all_non_image_or_unbound_changes_are_rejected[network]" time="0.001" /><testcase classname="tests.unit.test_finops_release" name="test_all_non_image_or_unbound_changes_are_rejected[identity]" time="0.001" /><testcase classname="tests.unit.test_finops_release" name="test_all_non_image_or_unbound_changes_are_rejected[tls]" time="0.001" /><testcase classname="tests.unit.test_finops_release" name="test_all_non_image_or_unbound_changes_are_rejected[rbac]" time="0.001" /><testcase classname="tests.unit.test_finops_release" name="test_all_non_image_or_unbound_changes_are_rejected[delete]" time="0.001" /><testcase classname="tests.unit.test_finops_release" name="test_all_non_image_or_unbound_changes_are_rejected[missing]" time="0.001" /><testcase classname="tests.unit.test_finops_release" name="test_all_non_image_or_unbound_changes_are_rejected[duplicate]" time="0.001" /><testcase classname="tests.unit.test_finops_release" name="test_all_non_image_or_unbound_changes_are_rejected[unknown]" time="0.001" /><testcase classname="tests.unit.test_finops_release" name="test_all_non_image_or_unbound_changes_are_rejected[deferred]" time="0.001" /><testcase classname="tests.unit.test_finops_release" name="test_all_non_image_or_unbound_changes_are_rejected[native]" time="0.001" /><testcase classname="tests.unit.test_finops_release" name="test_all_non_image_or_unbound_changes_are_rejected[registry]" time="0.001" /><testcase classname="tests.unit.test_finops_release" name="test_all_non_image_or_unbound_changes_are_rejected[pin]" time="0.001" /><testcase classname="tests.unit.test_finops_release" name="test_all_non_image_or_unbound_changes_are_rejected[tag]" time="0.001" /><testcase classname="tests.unit.test_finops_release" name="test_all_non_image_or_unbound_changes_are_rejected[extra_pin]" time="0.001" /><testcase classname="tests.unit.test_finops_release" name="test_all_non_image_or_unbound_changes_are_rejected[not_applyable]" time="0.001" /><testcase classname="tests.unit.test_finops_release" name="test_all_non_image_or_unbound_changes_are_rejected[errored]" time="0.001" /><testcase classname="tests.unit.test_finops_release" name="test_real_source_manifest_includes_all_four_packaged_components_and_ingester_dockerfile" time="0.075"><failure message="KeyError: 'ingestion'">def test_real_source_manifest_includes_all_four_packaged_components_and_ingester_dockerfile():
+        manifest = release.source_manifest()
+        assert manifest["required_changed_components"] == list(release.COMPONENTS)
+        assert not manifest["release_authorized"]
+        for kind in ("api", "ingestion"):
+&gt;           names = {e["path"] for e in manifest["components"][kind]["entries"]}
+                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           KeyError: 'ingestion'
+
+tests\unit\test_finops_release.py:97: KeyError</failure></testcase><testcase classname="tests.unit.test_finops_release" name="test_shared_backend_change_invalidates_api_and_ingestion_not_ui" time="0.738"><failure message="KeyError: 'ingestion'">tmp_path = WindowsPath('C:/Users/p4032099/AppData/Local/Temp/pytest-of-P4032099/pytest-173/test_shared_backend_change_inv0')
+
+    def test_shared_backend_change_invalidates_api_and_ingestion_not_ui(tmp_path):
+        before = release.source_manifest()
+        # Copy only the allowlisted public manifest inputs into the synthetic root.
+        for component in before["components"].values():
+            for entry in component["entries"]:
+                name = entry["path"]
+                target = tmp_path / name
+                target.parent.mkdir(parents=True, exist_ok=True)
+                target.write_bytes((release.ROOT / name).read_bytes())
+        same = release.source_manifest(tmp_path)
+        assert same == before
+        changed = tmp_path / "services/control-plane/src/aiflux/finops.py"
+        changed.write_bytes(changed.read_bytes() + b"\n# synthetic change\n")
+        after = release.source_manifest(tmp_path)
+        for kind in release.COMPONENTS:
+&gt;           assert (after["components"][kind]["source_sha256"] != before["components"][kind]["source_sha256"]) is (kind in {"api", "ingestion"})
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^
+E           KeyError: 'ingestion'
+
+tests\unit\test_finops_release.py:125: KeyError</failure></testcase></testsuite></testsuites>

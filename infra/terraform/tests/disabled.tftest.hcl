@@ -778,3 +778,4 @@ run "turnstile_hybrid_private_postgres_endpoint" {
     error_message = "Hybrid PostgreSQL mode must use privatelink.postgres.database.azure.com and allow outbound port 5432 to the private endpoint subnet."
   }
 }
+

@@ -1,6 +1,6 @@
 from datetime import datetime
 from decimal import Decimal
-from typing import Generic, Literal, TypeVar
+from typing import Any, Generic, Literal, TypeVar
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
@@ -165,16 +165,53 @@ class ManagedGatewayConfiguration(Input):
         return value
 
 
+class PocLimits(Input):
+    rpm: int = Field(default=60, strict=True, ge=1, le=60)
+    tpm: int = Field(default=2048, strict=True, ge=1, le=2048)
+    token_quota: int = Field(default=10000, strict=True, ge=1, le=10000)
+    request_quota: int = Field(default=1000, strict=True, ge=1, le=1000)
+
+
+def poc_safety() -> SafetyConfiguration:
+    return SafetyConfiguration(profile="Custom", hate=1, violence=1, sexual=1, self_harm=1,
+                               prompt_attack=True, protected_material=False,
+                               input_filtering=True, output_filtering=True)
+
+
+class PocOverride(Input):
+    organization_id: UUID
+    subscription_id: UUID | None = None
+    limits: PocLimits | None = None
+    safety: SafetyConfiguration | None = None
+
+
+class PocGatewayConfiguration(Input):
+    schema_version: Literal[3] = 3
+    defaults: PocLimits = Field(default_factory=PocLimits)
+    safety: SafetyConfiguration = Field(default_factory=poc_safety)
+    overrides: list[PocOverride] = Field(default_factory=list, max_length=200)
+
+    @field_validator("schema_version", mode="before")
+    @classmethod
+    def integer_version(cls, value: object) -> object:
+        if type(value) is not int:
+            raise ValueError("Schema version must be integer 3")
+        return value
+
+
 class SafetySettingsUpdate(Input):
-    expected_version: int = Field(strict=True, ge=1)
+    expected_version: int = Field(strict=True, ge=0)
     configuration: SafetyConfiguration
     reason: str = Field(min_length=1, max_length=500)
     acknowledge_relaxation: bool = Field(default=False, strict=True)
+    organization_id: UUID | None = None
+    subscription_id: UUID | None = None
+    inherit: bool = False
 
 
 class GatewaySettingsUpdate(Input):
     expected_version: int = Field(strict=True, ge=0)
-    configuration: GatewayConfiguration | ManagedGatewayConfiguration
+    configuration: GatewayConfiguration | ManagedGatewayConfiguration | PocGatewayConfiguration
     reason: str = Field(min_length=1, max_length=500)
 
 
@@ -184,7 +221,7 @@ class GatewaySettingsRetry(Input):
 
 class GatewayRevisionOutput(BaseModel):
     version: int
-    configuration: GatewayConfiguration | ManagedGatewayConfiguration
+    configuration: GatewayConfiguration | ManagedGatewayConfiguration | PocGatewayConfiguration
     reason: str
     object_id: str
     occurred_at: datetime
@@ -194,6 +231,7 @@ class GatewayRevisionOutput(BaseModel):
 
 class GatewayCapabilities(BaseModel):
     managed_controls_enabled: bool = False
+    poc_controls_enabled: bool = False
     concurrency_tiers: list[int] = [1, 2, 4, 8, 16]
     protected_material_available: bool = False
     safety_relaxation_allowed: bool = False
@@ -209,6 +247,8 @@ class GatewaySettingsOutput(BaseModel):
     version: int
     published_version: int | None
     desired: GatewayRevisionOutput | None
+    effective_defaults: PocGatewayConfiguration | None = None
+    published: GatewayRevisionOutput | None = None
     capabilities: GatewayCapabilities = Field(default_factory=GatewayCapabilities)
 
 
@@ -283,6 +323,9 @@ class PriceOutput(PriceCreate):
 
 
 class UsageOutput(BaseModel):
+    estimated_cost_usd: str | None = None
+    estimate_basis: str = "unestimated"
+    pricing_revision: str | None = None
     id: str
     subscription_id: str
     model: str
@@ -302,9 +345,17 @@ class UsageOutput(BaseModel):
 
 
 class UsageSummary(BaseModel):
+    estimated_cost_usd: str | None = None
+    estimated_requests: int = 0
+    unestimated_requests: int = 0
+    approximate_requests: int = 0
+    pricing_revision: str | None = None
     requests: int
     input_tokens: int
     output_tokens: int
+    total_tokens: int | None = None
+    measured_requests: int = 0
+    missing_token_requests: int = 0
     known_cost: str | None
     currency: str | None
     incomplete_requests: int
@@ -314,6 +365,7 @@ class UsageSummary(BaseModel):
     ttft_supported: bool
     cache_tokens_supported: bool
     last_ingested_at: datetime | None
+    health: "IngestionHealth | None" = None
 
 
 class UsagePage(Page[UsageOutput]):
@@ -345,6 +397,20 @@ class ModelTokenBucket(BaseModel):
     requests: int
     total_tokens: int | None
     missing_token_requests: int
+    input_tokens: int | None = None
+    output_tokens: int | None = None
+    measured_requests: int = 0
+    partial_bucket: bool = False
+
+
+class IngestionHealth(BaseModel):
+    status: Literal["healthy", "stale", "unverified", "disabled", "error"]
+    watermark: datetime | None = None
+    last_query_success_at: datetime | None = None
+    last_row_ingested_at: datetime | None = None
+    lag_seconds: int | None = None
+    stale_after_seconds: int = 900
+    expected_delay_seconds: int = 300
 
 
 class ModelTokenSeries(BaseModel):
@@ -352,6 +418,8 @@ class ModelTokenSeries(BaseModel):
     start: datetime
     end: datetime
     interval_seconds: int
+    granularity: str = "auto"
+    health: IngestionHealth | None = None
 
 
 class SafetyOutput(BaseModel):
@@ -365,6 +433,7 @@ class SafetyOutput(BaseModel):
 
 
 class ModelGardenItemOutput(BaseModel):
+    display_price: dict[str, Any] | None = None
     id: str
     display_name: str
     provider: str
@@ -372,10 +441,10 @@ class ModelGardenItemOutput(BaseModel):
     region: str
     backend_model: str
     endpoint_url: str
-    context_window: int
+    context_window: int | None
     max_completion_tokens: int
-    input_per_million: str
-    output_per_million: str
+    input_per_million: str | None
+    output_per_million: str | None
     cached_input_per_million: str | None = None
     currency: str = "USD"
     capabilities: list[str]
@@ -428,8 +497,10 @@ class CreditBudgetOutput(BaseModel):
     monthly_budget_usd: str
     credit_allocation: str
     used_credits: str
-    remaining_credits: str
-    utilization_pct: float
+    remaining_credits: str | None
+    utilization_pct: float | None
+    unpriced_requests: int = 0
+    cost_complete: bool = True
     low_credit_alert: bool
     alert_threshold_pct: int
     allowed_models: list[str]
@@ -441,6 +512,9 @@ class CreditBudgetOutput(BaseModel):
 
 
 class ModelUsageBreakdownItem(BaseModel):
+    estimated_cost_usd: str | None = None
+    unestimated_requests: int = 0
+    approximate_requests: int = 0
     model: str
     provider: str
     vendor: str
@@ -448,37 +522,53 @@ class ModelUsageBreakdownItem(BaseModel):
     input_tokens: int
     output_tokens: int
     total_tokens: int
-    cost_usd: str
+    cost_usd: str | None
+    unpriced_requests: int = 0
     share_pct: float
 
 
 class ProductUsageBreakdownItem(BaseModel):
+    estimated_cost_usd: str | None = None
+    unestimated_requests: int = 0
+    approximate_requests: int = 0
     subscription_id: str
     subscription_name: str
     team: str
     product_name: str
     requests: int
     total_tokens: int
-    cost_usd: str
+    cost_usd: str | None
+    unpriced_requests: int = 0
     share_pct: float
 
 
 class ChannelUsageBreakdownItem(BaseModel):
+    estimated_cost_usd: str | None = None
+    unestimated_requests: int = 0
+    approximate_requests: int = 0
     channel: str
     requests: int
     total_tokens: int
-    cost_usd: str
+    cost_usd: str | None
+    unpriced_requests: int = 0
     share_pct: float
 
 
 class CreditSummaryOutput(BaseModel):
+    estimated_cost_usd: str | None = None
+    estimated_requests: int = 0
+    unestimated_requests: int = 0
+    approximate_requests: int = 0
+    pricing_revision: str | None = None
     organization_id: str
     organization_name: str
     currency: str = "USD"
     total_credits: str
     used_credits: str
-    remaining_credits: str
-    utilization_pct: float
+    remaining_credits: str | None
+    utilization_pct: float | None
+    unpriced_requests: int = 0
+    cost_complete: bool = True
     alert_threshold_pct: int
     low_credit_alert: bool
     hard_stop_enabled: bool
@@ -568,7 +658,7 @@ class PlaygroundChatResponse(BaseModel):
     input_tokens: int
     output_tokens: int
     total_tokens: int
-    estimated_cost_usd: str
+    estimated_cost_usd: str | None
     latency_ms: int
 
 

@@ -1,0 +1,355 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="2" skipped="0" tests="114" time="17.808" timestamp="2026-10-27T22:42:44.000277+08:00" hostname="ST-L1011878"><testcase classname="tests.unit.test_poc_controls" name="test_default_first_fragment_has_one_stable_literal_quota_not_membership_gate" time="0.003" /><testcase classname="tests.unit.test_poc_controls" name="test_precedence_is_independent_for_limits_and_safety_and_unknown_uses_defaults" time="0.001" /><testcase classname="tests.unit.test_poc_controls" name="test_operator_ceilings_strict_types[rpm-61]" time="0.001" /><testcase classname="tests.unit.test_poc_controls" name="test_operator_ceilings_strict_types[tpm-2049]" time="0.001" /><testcase classname="tests.unit.test_poc_controls" name="test_operator_ceilings_strict_types[token_quota-10001]" time="0.001" /><testcase classname="tests.unit.test_poc_controls" name="test_operator_ceilings_strict_types[request_quota-1001]" time="0.001" /><testcase classname="tests.unit.test_poc_controls" name="test_operator_ceilings_strict_types[rpm-True]" time="0.001" /><testcase classname="tests.unit.test_poc_controls" name="test_operator_ceilings_strict_types[tpm-20]" time="0.001" /><testcase classname="tests.unit.test_poc_controls" name="test_empty_read_does_not_initialize_or_require_gateway_page" time="0.304" /><testcase classname="tests.unit.test_poc_controls" name="test_publish_etag_history_stale_versions_and_failed_edit_preserves_published" time="0.255" /><testcase classname="tests.unit.test_poc_controls" name="test_ownership_safety_floors_and_orthogonal_saves" time="0.190" /><testcase classname="tests.unit.test_poc_controls" name="test_unknown_new_subscription_is_ready_without_settings_publication" time="0.135" /><testcase classname="tests.unit.test_poc_controls" name="test_drift_never_overwrites_current_fragment_and_customer_cannot_publish" time="0.126" /><testcase classname="tests.unit.test_poc_controls" name="test_compiler_capacity_is_bounded" time="0.007" /><testcase classname="tests.unit.test_poc_controls" name="test_literal_quota_branches_preserve_one_increment_key_window_and_epoch" time="0.001" /><testcase classname="tests.unit.test_poc_controls" name="test_new_subscription_without_initialization_or_failed_refresh_is_active_and_ready" time="0.226" /><testcase classname="tests.unit.test_poc_controls" name="test_new_subscription_automatically_publishes_existing_organization_override" time="0.237" /><testcase classname="tests.unit.test_gateway_settings" name="test_settings_require_home_tenant_admin_and_opt_in" time="0.370" /><testcase classname="tests.unit.test_gateway_settings" name="test_missing_bootstrap_artifact_is_an_explicit_readiness_failure" time="0.255" /><testcase classname="tests.unit.test_gateway_settings" name="test_save_readback_history_and_new_revision_rollback" time="0.173" /><testcase classname="tests.unit.test_gateway_settings" name="test_invalid_settings_never_publish[safety_threshold--1]" time="0.219" /><testcase classname="tests.unit.test_gateway_settings" name="test_invalid_settings_never_publish[safety_threshold-8]" time="0.134" /><testcase classname="tests.unit.test_gateway_settings" name="test_invalid_settings_never_publish[safety_threshold-None]" time="0.138" /><testcase classname="tests.unit.test_gateway_settings" name="test_invalid_settings_never_publish[safety_threshold-True]" time="0.194" /><testcase classname="tests.unit.test_gateway_settings" name="test_invalid_settings_never_publish[safety_threshold-4]" time="0.138" /><testcase classname="tests.unit.test_gateway_settings" name="test_invalid_settings_never_publish[rpm-0]" time="0.135" /><testcase classname="tests.unit.test_gateway_settings" name="test_invalid_settings_never_publish[rpm-3]" time="0.149" /><testcase classname="tests.unit.test_gateway_settings" name="test_invalid_settings_never_publish[tpm-0]" time="0.130" /><testcase classname="tests.unit.test_gateway_settings" name="test_invalid_settings_never_publish[tpm-2049]" time="0.135" /><testcase classname="tests.unit.test_gateway_settings" name="test_invalid_settings_never_publish[token_quota-0]" time="0.142" /><testcase classname="tests.unit.test_gateway_settings" name="test_invalid_settings_never_publish[token_quota-2147483648]" time="0.171" /><testcase classname="tests.unit.test_gateway_settings" name="test_invalid_settings_never_publish[token_quota-1.5]" time="0.131" /><testcase classname="tests.unit.test_gateway_settings" name="test_invalid_settings_never_publish[quota_period-Never]" time="0.161" /><testcase classname="tests.unit.test_gateway_settings" name="test_exact_bounds_and_api_counter_isolation[0-dev-openai-2048]" time="0.151" /><testcase classname="tests.unit.test_gateway_settings" name="test_exact_bounds_and_api_counter_isolation[0-dev-unified-20000]" time="0.134" /><testcase classname="tests.unit.test_gateway_settings" name="test_exact_bounds_and_api_counter_isolation[7-dev-openai-2048]" time="0.133" /><testcase classname="tests.unit.test_gateway_settings" name="test_exact_bounds_and_api_counter_isolation[7-dev-unified-20000]" time="0.310" /><testcase classname="tests.unit.test_gateway_settings" name="test_unknown_fields_scope_and_missing_quota_are_rejected" time="0.160" /><testcase classname="tests.unit.test_gateway_settings" name="test_publication_failure_is_durable_and_retry_is_idempotent" time="0.187" /><testcase classname="tests.unit.test_gateway_settings" name="test_timeout_after_remote_success_reconciles_without_overwrite" time="0.163" /><testcase classname="tests.unit.test_gateway_settings" name="test_drift_and_etag_conflict_are_not_overwritten" time="0.167" /><testcase classname="tests.unit.test_gateway_settings" name="test_readback_is_required_and_pending_revision_survives_restart" time="0.191" /><testcase classname="tests.unit.test_gateway_settings" name="test_fragment_management_is_allowlisted_and_conditional" time="0.147" /><testcase classname="tests.unit.test_gateway_settings" name="test_xml_fingerprint_ignores_whitespace_and_attribute_order" time="0.001" /><testcase classname="tests.unit.test_gateway_settings" name="test_fragment_publication_waits_for_arm_validation[Succeeded]" time="0.148" /><testcase classname="tests.unit.test_gateway_settings" name="test_fragment_publication_waits_for_arm_validation[Failed]" time="0.116" /><testcase classname="tests.unit.test_gateway_settings" name="test_fragment_publication_waits_for_arm_validation[Canceled]" time="0.199" /><testcase classname="tests.unit.test_gateway_settings" name="test_fragment_publication_waits_for_arm_validation[unexpected]" time="0.159" /><testcase classname="tests.unit.test_gateway_settings" name="test_fragment_operation_cannot_redirect_management_token[https://untrusted.invalid/policyFragments/aiflux-dev-openai-settings]" time="0.224" /><testcase classname="tests.unit.test_gateway_settings" name="test_fragment_operation_cannot_redirect_management_token[https://management.azure.com/another-resource]" time="0.177" /><testcase classname="tests.unit.test_gateway_settings" name="test_settings_queries_compile_for_mssql_with_publication_lock" time="0.169" /><testcase classname="tests.unit.test_gateway_settings" name="test_settings_migration_supports_existing_databases_and_repeated_upgrade" time="0.541"><failure message="alembic.util.exc.CommandError: Multiple head revisions are present for given argument 'head'; please specify a specific target revision, '&lt;branchname&gt;@head' to narrow to a specific head, or 'heads' for all heads">self = &lt;alembic.script.base.ScriptDirectory object at 0x000002812498AD50&gt;
+ancestor = 'Destination %(end)s is not a valid upgrade target from current head(s)'
+multiple_heads = "Multiple head revisions are present for given argument 'head'; please specify a specific target revision, '&lt;branchname&gt;@head' to narrow to a specific head, or 'heads' for all heads"
+start = None, end = 'head', resolution = None
+
+    @contextmanager
+    def _catch_revision_errors(
+        self,
+        ancestor: Optional[str] = None,
+        multiple_heads: Optional[str] = None,
+        start: Optional[str] = None,
+        end: Optional[str] = None,
+        resolution: Optional[str] = None,
+    ) -&gt; Iterator[None]:
+        try:
+&gt;           yield
+
+.venv\Lib\site-packages\alembic\script\base.py:219: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+.venv\Lib\site-packages\alembic\script\base.py:427: in _upgrade_revs
+    for script in reversed(list(revs))
+                           ^^^^^^^^^^
+.venv\Lib\site-packages\alembic\script\revision.py:814: in iterate_revisions
+    revisions, heads = fn(
+.venv\Lib\site-packages\alembic\script\revision.py:1447: in _collect_upgrade_revisions
+    for rev in self._parse_upgrade_target(
+.venv\Lib\site-packages\alembic\script\revision.py:1234: in _parse_upgrade_target
+    return self.get_revisions(target)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv\Lib\site-packages\alembic\script\revision.py:544: in get_revisions
+    resolved_id, branch_label = self._resolve_revision_number(id_)
+                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv\Lib\site-packages\alembic\script\revision.py:778: in _resolve_revision_number
+    current_head = self.get_current_head(branch_label)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = &lt;alembic.script.revision.RevisionMap object at 0x000002812498AE90&gt;, branch_label = None
+
+    def get_current_head(
+        self, branch_label: Optional[str] = None
+    ) -&gt; Optional[str]:
+        """Return the current head revision.
+    
+        If the script directory has multiple heads
+        due to branching, an error is raised;
+        :meth:`.ScriptDirectory.get_heads` should be
+        preferred.
+    
+        :param branch_label: optional branch name which will limit the
+         heads considered to those which include that branch_label.
+    
+        :return: a string revision number.
+    
+        .. seealso::
+    
+            :meth:`.ScriptDirectory.get_heads`
+    
+        """
+        current_heads: Sequence[str] = self.heads
+        if branch_label:
+            current_heads = self.filter_for_lineage(
+                current_heads, branch_label
+            )
+        if len(current_heads) &gt; 1:
+&gt;           raise MultipleHeads(
+                current_heads,
+                "%s@head" % branch_label if branch_label else "head",
+            )
+E           alembic.script.revision.MultipleHeads: Multiple heads are present for given argument 'head'; 0003, 0003
+
+.venv\Lib\site-packages\alembic\script\revision.py:508: MultipleHeads
+
+The above exception was the direct cause of the following exception:
+
+env = namespace(client=&lt;starlette.testclient.TestClient object at 0x0000028122FD96A0&gt;, db_engine=Engine(sqlite:///:memory:),...applications.FastAPI object at 0x0000028122DB8A50&gt;, idempotency=&lt;function env.&lt;locals&gt;.&lt;lambda&gt; at 0x00000281246E8C20&gt;)
+monkeypatch = &lt;_pytest.monkeypatch.MonkeyPatch object at 0x00000281246747D0&gt;
+
+    def test_settings_migration_supports_existing_databases_and_repeated_upgrade(env, monkeypatch):
+        from aiflux.models import GatewaySettings
+        from alembic import command
+        from alembic.config import Config
+        from sqlalchemy import inspect
+    
+        GatewaySettingsRevision.__table__.drop(env.db_engine)
+        GatewaySettings.__table__.drop(env.db_engine)
+        config = Config("services/control-plane/alembic.ini")
+        monkeypatch.setattr("aiflux.config.get_settings", lambda: env.settings)
+        command.stamp(config, "0001")
+&gt;       command.upgrade(config, "head")
+
+tests\unit\test_gateway_settings.py:308: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+.venv\Lib\site-packages\alembic\command.py:483: in upgrade
+    script.run_env()
+.venv\Lib\site-packages\alembic\script\base.py:551: in run_env
+    util.load_python_file(self.dir, "env.py")
+.venv\Lib\site-packages\alembic\util\pyfiles.py:114: in load_python_file
+    module = load_module_py(module_id, path)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv\Lib\site-packages\alembic\util\pyfiles.py:134: in load_module_py
+    spec.loader.exec_module(module)  # type: ignore
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+&lt;frozen importlib._bootstrap_external&gt;:1026: in exec_module
+    ???
+&lt;frozen importlib._bootstrap&gt;:488: in _call_with_frames_removed
+    ???
+services\control-plane\migrations\env.py:29: in &lt;module&gt;
+    migrate(connection)
+services\control-plane\migrations\env.py:22: in migrate
+    context.run_migrations()
+&lt;string&gt;:8: in run_migrations
+    ???
+.venv\Lib\site-packages\alembic\runtime\environment.py:946: in run_migrations
+    self.get_context().run_migrations(**kw)
+.venv\Lib\site-packages\alembic\runtime\migration.py:611: in run_migrations
+    for step in self._migrations_fn(heads, self):
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv\Lib\site-packages\alembic\command.py:472: in upgrade
+    return script._upgrade_revs(revision, rev)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv\Lib\site-packages\alembic\script\base.py:415: in _upgrade_revs
+    with self._catch_revision_errors(
+C:\Program Files\Python313\Lib\contextlib.py:162: in __exit__
+    self.gen.throw(value)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = &lt;alembic.script.base.ScriptDirectory object at 0x000002812498AD50&gt;
+ancestor = 'Destination %(end)s is not a valid upgrade target from current head(s)'
+multiple_heads = "Multiple head revisions are present for given argument 'head'; please specify a specific target revision, '&lt;branchname&gt;@head' to narrow to a specific head, or 'heads' for all heads"
+start = None, end = 'head', resolution = None
+
+    @contextmanager
+    def _catch_revision_errors(
+        self,
+        ancestor: Optional[str] = None,
+        multiple_heads: Optional[str] = None,
+        start: Optional[str] = None,
+        end: Optional[str] = None,
+        resolution: Optional[str] = None,
+    ) -&gt; Iterator[None]:
+        try:
+            yield
+        except revision.RangeNotAncestorError as rna:
+            if start is None:
+                start = cast(Any, rna.lower)
+            if end is None:
+                end = cast(Any, rna.upper)
+            if not ancestor:
+                ancestor = (
+                    "Requested range %(start)s:%(end)s does not refer to "
+                    "ancestor/descendant revisions along the same branch"
+                )
+            ancestor = ancestor % {"start": start, "end": end}
+            raise util.CommandError(ancestor) from rna
+        except revision.MultipleHeads as mh:
+            if not multiple_heads:
+                multiple_heads = (
+                    "Multiple head revisions are present for given "
+                    "argument '%(head_arg)s'; please "
+                    "specify a specific target revision, "
+                    "'&lt;branchname&gt;@%(head_arg)s' to "
+                    "narrow to a specific head, or 'heads' for all heads"
+                )
+            multiple_heads = multiple_heads % {
+                "head_arg": end or mh.argument,
+                "heads": util.format_as_comma(mh.heads),
+            }
+&gt;           raise util.CommandError(multiple_heads) from mh
+E           alembic.util.exc.CommandError: Multiple head revisions are present for given argument 'head'; please specify a specific target revision, '&lt;branchname&gt;@head' to narrow to a specific head, or 'heads' for all heads
+
+.venv\Lib\site-packages\alembic\script\base.py:245: CommandError</failure></testcase><testcase classname="tests.unit.test_managed_controls" name="test_compiled_choose_requires_at_least_one_when[none]" time="0.002" /><testcase classname="tests.unit.test_managed_controls" name="test_compiled_choose_requires_at_least_one_when[team]" time="0.002" /><testcase classname="tests.unit.test_managed_controls" name="test_compiled_choose_requires_at_least_one_when[subscription]" time="0.001" /><testcase classname="tests.unit.test_managed_controls" name="test_compiled_choose_requires_at_least_one_when[both]" time="0.002" /><testcase classname="tests.unit.test_managed_controls" name="test_shared_publication_and_versions_prevent_cross_route_bypass" time="0.280" /><testcase classname="tests.unit.test_managed_controls" name="test_targets_are_stable_tenant_scoped_paginated_and_admin_only" time="0.202" /><testcase classname="tests.unit.test_managed_controls" name="test_team_aggregate_and_subscription_override_are_both_compiled" time="0.147" /><testcase classname="tests.unit.test_managed_controls" name="test_foreign_and_duplicate_target_rejected_before_arm_writes[teams]" time="0.168" /><testcase classname="tests.unit.test_managed_controls" name="test_foreign_and_duplicate_target_rejected_before_arm_writes[subscriptions]" time="0.217" /><testcase classname="tests.unit.test_managed_controls" name="test_operator_bounds_and_typed_input[rpm-3]" time="0.362" /><testcase classname="tests.unit.test_managed_controls" name="test_operator_bounds_and_typed_input[rpm-True]" time="0.131" /><testcase classname="tests.unit.test_managed_controls" name="test_operator_bounds_and_typed_input[tpm-2049]" time="0.153" /><testcase classname="tests.unit.test_managed_controls" name="test_operator_bounds_and_typed_input[request_quota-0]" time="0.168" /><testcase classname="tests.unit.test_managed_controls" name="test_operator_bounds_and_typed_input[request_quota-1.5]" time="0.137" /><testcase classname="tests.unit.test_managed_controls" name="test_operator_bounds_and_typed_input[concurrency-3]" time="0.194" /><testcase classname="tests.unit.test_managed_controls" name="test_operator_bounds_and_typed_input[concurrency-True]" time="0.167" /><testcase classname="tests.unit.test_managed_controls" name="test_operator_bounds_and_typed_input[concurrency-2]" time="0.176" /><testcase classname="tests.unit.test_managed_controls" name="test_monthly_request_quota_capability_and_calendar_counter" time="0.150" /><testcase classname="tests.unit.test_managed_controls" name="test_safety_separate_publication_capabilities_and_relaxation_audit" time="0.267" /><testcase classname="tests.unit.test_managed_controls" name="test_operator_safety_floor_and_contradictory_controls" time="0.220" /><testcase classname="tests.unit.test_managed_controls" name="test_partial_multi_scope_failure_is_durable_and_reconciliation_safe" time="0.227" /><testcase classname="tests.unit.test_managed_controls" name="test_legacy_writes_and_drift_cannot_destroy_new_contract" time="0.175" /><testcase classname="tests.unit.test_managed_controls" name="test_publication_freezes_membership_for_deterministic_reconciliation" time="0.159" /><testcase classname="tests.unit.test_managed_controls" name="test_fragment_size_is_checked_before_durable_save" time="0.181" /><testcase classname="tests.unit.test_managed_controls" name="test_migration_backfills_real_legacy_rows_without_case_or_tenant_merging" time="0.219"><failure message="alembic.util.exc.CommandError: Multiple head revisions are present for given argument 'head'; please specify a specific target revision, '&lt;branchname&gt;@head' to narrow to a specific head, or 'heads' for all heads">self = &lt;alembic.script.base.ScriptDirectory object at 0x0000028124B9B950&gt;
+ancestor = 'Destination %(end)s is not a valid upgrade target from current head(s)'
+multiple_heads = "Multiple head revisions are present for given argument 'head'; please specify a specific target revision, '&lt;branchname&gt;@head' to narrow to a specific head, or 'heads' for all heads"
+start = None, end = 'head', resolution = None
+
+    @contextmanager
+    def _catch_revision_errors(
+        self,
+        ancestor: Optional[str] = None,
+        multiple_heads: Optional[str] = None,
+        start: Optional[str] = None,
+        end: Optional[str] = None,
+        resolution: Optional[str] = None,
+    ) -&gt; Iterator[None]:
+        try:
+&gt;           yield
+
+.venv\Lib\site-packages\alembic\script\base.py:219: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+.venv\Lib\site-packages\alembic\script\base.py:427: in _upgrade_revs
+    for script in reversed(list(revs))
+                           ^^^^^^^^^^
+.venv\Lib\site-packages\alembic\script\revision.py:814: in iterate_revisions
+    revisions, heads = fn(
+.venv\Lib\site-packages\alembic\script\revision.py:1447: in _collect_upgrade_revisions
+    for rev in self._parse_upgrade_target(
+.venv\Lib\site-packages\alembic\script\revision.py:1234: in _parse_upgrade_target
+    return self.get_revisions(target)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv\Lib\site-packages\alembic\script\revision.py:544: in get_revisions
+    resolved_id, branch_label = self._resolve_revision_number(id_)
+                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv\Lib\site-packages\alembic\script\revision.py:778: in _resolve_revision_number
+    current_head = self.get_current_head(branch_label)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = &lt;alembic.script.revision.RevisionMap object at 0x0000028124B99CD0&gt;, branch_label = None
+
+    def get_current_head(
+        self, branch_label: Optional[str] = None
+    ) -&gt; Optional[str]:
+        """Return the current head revision.
+    
+        If the script directory has multiple heads
+        due to branching, an error is raised;
+        :meth:`.ScriptDirectory.get_heads` should be
+        preferred.
+    
+        :param branch_label: optional branch name which will limit the
+         heads considered to those which include that branch_label.
+    
+        :return: a string revision number.
+    
+        .. seealso::
+    
+            :meth:`.ScriptDirectory.get_heads`
+    
+        """
+        current_heads: Sequence[str] = self.heads
+        if branch_label:
+            current_heads = self.filter_for_lineage(
+                current_heads, branch_label
+            )
+        if len(current_heads) &gt; 1:
+&gt;           raise MultipleHeads(
+                current_heads,
+                "%s@head" % branch_label if branch_label else "head",
+            )
+E           alembic.script.revision.MultipleHeads: Multiple heads are present for given argument 'head'; 0003, 0003
+
+.venv\Lib\site-packages\alembic\script\revision.py:508: MultipleHeads
+
+The above exception was the direct cause of the following exception:
+
+env = namespace(client=&lt;starlette.testclient.TestClient object at 0x0000028124FE49E0&gt;, db_engine=Engine(sqlite:///:memory:),...applications.FastAPI object at 0x00000281227D1D10&gt;, idempotency=&lt;function env.&lt;locals&gt;.&lt;lambda&gt; at 0x0000028122908E00&gt;)
+monkeypatch = &lt;_pytest.monkeypatch.MonkeyPatch object at 0x0000028124C7A970&gt;
+
+    def test_migration_backfills_real_legacy_rows_without_case_or_tenant_merging(env, monkeypatch):
+        from pathlib import Path
+    
+        from alembic import command
+        from alembic.config import Config
+        from sqlalchemy import text
+    
+        monkeypatch.setattr("aiflux.config.get_settings", lambda: env.settings)
+        config = Config(str(Path("services") / "control-plane" / "alembic.ini"))
+        command.stamp(config, "0003")
+        command.downgrade(config, "0002")
+        identities = []
+        with env.db_engine.begin() as connection:
+            for org in (env.orgs["admin"], env.orgs["customer"]):
+                for label in ("Engineering", "engineering"):
+                    for _ in range(2):
+                        identity = str(uuid4())
+                        identities.append((identity, org, label))
+                        connection.execute(text(
+                            "INSERT INTO team_subscriptions "
+                            "(id,organization_id,name,team,state,desired_state,idempotency_key,created_at) "
+                            "VALUES (:id,:org,'Test',:team,'active','active',:idem,CURRENT_TIMESTAMP)"
+                        ), {"id": identity, "org": org, "team": label, "idem": str(uuid4())})
+&gt;       command.upgrade(config, "head")
+
+tests\unit\test_managed_controls.py:290: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+.venv\Lib\site-packages\alembic\command.py:483: in upgrade
+    script.run_env()
+.venv\Lib\site-packages\alembic\script\base.py:551: in run_env
+    util.load_python_file(self.dir, "env.py")
+.venv\Lib\site-packages\alembic\util\pyfiles.py:114: in load_python_file
+    module = load_module_py(module_id, path)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv\Lib\site-packages\alembic\util\pyfiles.py:134: in load_module_py
+    spec.loader.exec_module(module)  # type: ignore
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+&lt;frozen importlib._bootstrap_external&gt;:1026: in exec_module
+    ???
+&lt;frozen importlib._bootstrap&gt;:488: in _call_with_frames_removed
+    ???
+services\control-plane\migrations\env.py:29: in &lt;module&gt;
+    migrate(connection)
+services\control-plane\migrations\env.py:22: in migrate
+    context.run_migrations()
+&lt;string&gt;:8: in run_migrations
+    ???
+.venv\Lib\site-packages\alembic\runtime\environment.py:946: in run_migrations
+    self.get_context().run_migrations(**kw)
+.venv\Lib\site-packages\alembic\runtime\migration.py:611: in run_migrations
+    for step in self._migrations_fn(heads, self):
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv\Lib\site-packages\alembic\command.py:472: in upgrade
+    return script._upgrade_revs(revision, rev)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv\Lib\site-packages\alembic\script\base.py:415: in _upgrade_revs
+    with self._catch_revision_errors(
+C:\Program Files\Python313\Lib\contextlib.py:162: in __exit__
+    self.gen.throw(value)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = &lt;alembic.script.base.ScriptDirectory object at 0x0000028124B9B950&gt;
+ancestor = 'Destination %(end)s is not a valid upgrade target from current head(s)'
+multiple_heads = "Multiple head revisions are present for given argument 'head'; please specify a specific target revision, '&lt;branchname&gt;@head' to narrow to a specific head, or 'heads' for all heads"
+start = None, end = 'head', resolution = None
+
+    @contextmanager
+    def _catch_revision_errors(
+        self,
+        ancestor: Optional[str] = None,
+        multiple_heads: Optional[str] = None,
+        start: Optional[str] = None,
+        end: Optional[str] = None,
+        resolution: Optional[str] = None,
+    ) -&gt; Iterator[None]:
+        try:
+            yield
+        except revision.RangeNotAncestorError as rna:
+            if start is None:
+                start = cast(Any, rna.lower)
+            if end is None:
+                end = cast(Any, rna.upper)
+            if not ancestor:
+                ancestor = (
+                    "Requested range %(start)s:%(end)s does not refer to "
+                    "ancestor/descendant revisions along the same branch"
+                )
+            ancestor = ancestor % {"start": start, "end": end}
+            raise util.CommandError(ancestor) from rna
+        except revision.MultipleHeads as mh:
+            if not multiple_heads:
+                multiple_heads = (
+                    "Multiple head revisions are present for given "
+                    "argument '%(head_arg)s'; please "
+                    "specify a specific target revision, "
+                    "'&lt;branchname&gt;@%(head_arg)s' to "
+                    "narrow to a specific head, or 'heads' for all heads"
+                )
+            multiple_heads = multiple_heads % {
+                "head_arg": end or mh.argument,
+                "heads": util.format_as_comma(mh.heads),
+            }
+&gt;           raise util.CommandError(multiple_heads) from mh
+E           alembic.util.exc.CommandError: Multiple head revisions are present for given argument 'head'; please specify a specific target revision, '&lt;branchname&gt;@head' to narrow to a specific head, or 'heads' for all heads
+
+.venv\Lib\site-packages\alembic\script\base.py:245: CommandError</failure></testcase><testcase classname="tests.unit.test_managed_controls" name="test_explicit_operator_initial_threshold_is_preserved" time="0.170" /><testcase classname="tests.unit.test_managed_controls" name="test_new_subscription_remains_denied_until_explicit_republication" time="0.276" /><testcase classname="tests.unit.test_managed_controls" name="test_contract_version_is_a_json_integer[True]" time="0.160" /><testcase classname="tests.unit.test_managed_controls" name="test_contract_version_is_a_json_integer[2.0]" time="0.315" /><testcase classname="tests.unit.test_managed_controls" name="test_contract_version_is_a_json_integer[2]" time="0.144" /><testcase classname="tests.unit.test_managed_controls" name="test_legacy_cutover_preserves_safety_or_requires_operator_alignment[2]" time="0.183" /><testcase classname="tests.unit.test_managed_controls" name="test_legacy_cutover_preserves_safety_or_requires_operator_alignment[3]" time="0.266" /><testcase classname="tests.unit.test_admin_subscriptions" name="test_customer_cannot_manage_but_retains_scoped_list_and_reveal[/api/subscriptions]" time="0.271" /><testcase classname="tests.unit.test_admin_subscriptions" name="test_customer_cannot_manage_but_retains_scoped_list_and_reveal[/api/admin/subscriptions]" time="0.431" /><testcase classname="tests.unit.test_admin_subscriptions" name="test_admin_cross_org_listing_audit_and_disabled_targets" time="0.337" /><testcase classname="tests.unit.test_admin_subscriptions" name="test_creation_refreshes_all_scopes_with_unchanged_config_and_no_duplicate_revision" time="0.206" /><testcase classname="tests.unit.test_admin_subscriptions" name="test_failed_publication_is_explicit_and_owned_reconcile_recovers" time="0.276" /><testcase classname="tests.unit.test_admin_subscriptions" name="test_uninitialized_and_unrelated_pending_settings_are_never_auto_approved" time="0.253" /><testcase classname="tests.unit.test_admin_subscriptions" name="test_uncertain_remote_write_recovers_without_new_revision_or_lost_bindings" time="0.308" /><testcase classname="tests.unit.test_admin_subscriptions" name="test_drift_and_unprovisioned_scopes_leave_access_pending" time="0.231" /><testcase classname="tests.unit.test_admin_subscriptions" name="test_admin_actions_reject_unknown_target_and_customer_org_reveal[reveal]" time="0.267" /><testcase classname="tests.unit.test_admin_subscriptions" name="test_admin_actions_reject_unknown_target_and_customer_org_reveal[rotate]" time="0.171" /><testcase classname="tests.unit.test_admin_subscriptions" name="test_admin_actions_reject_unknown_target_and_customer_org_reveal[reconcile]" time="0.195" /><testcase classname="tests.unit.test_admin_subscriptions" name="test_admin_actions_reject_unknown_target_and_customer_org_reveal[state]" time="0.260" /><testcase classname="tests.contract.test_gateway_dev_policy.GuardedDevelopmentPolicyTests" name="test_adapter_allows_ten_sql_owned_team_subscriptions" time="0.008" /><testcase classname="tests.contract.test_gateway_dev_policy.GuardedDevelopmentPolicyTests" name="test_adapter_completion_ceiling_matches_catalog_and_schema" time="0.004" /><testcase classname="tests.contract.test_gateway_dev_policy.GuardedDevelopmentPolicyTests" name="test_adapter_cors_is_first_exact_and_does_not_bypass_global_gate" time="0.002" /><testcase classname="tests.contract.test_gateway_dev_policy.GuardedDevelopmentPolicyTests" name="test_anthropic_normalization_precedes_mandatory_output_safety" time="0.002" /><testcase classname="tests.contract.test_gateway_dev_policy.GuardedDevelopmentPolicyTests" name="test_multiple_credentials_and_query_credentials_are_rejected" time="0.002" /><testcase classname="tests.contract.test_gateway_dev_policy.GuardedDevelopmentPolicyTests" name="test_non_dev_apis_remain_globally_denied" time="0.001" /><testcase classname="tests.contract.test_gateway_dev_policy.GuardedDevelopmentPolicyTests" name="test_only_bounded_plain_text_chat_is_accepted" time="0.001" /><testcase classname="tests.contract.test_gateway_dev_policy.GuardedDevelopmentPolicyTests" name="test_only_buffered_transient_model_errors_are_retried_once" time="0.002" /><testcase classname="tests.contract.test_gateway_dev_policy.GuardedDevelopmentPolicyTests" name="test_only_confirmed_native_safety_violation_is_mapped_to_403" time="0.001" /><testcase classname="tests.contract.test_gateway_dev_policy.GuardedDevelopmentPolicyTests" name="test_openapi_has_no_explicit_options_interception" time="0.004" /><testcase classname="tests.contract.test_gateway_dev_policy.GuardedDevelopmentPolicyTests" name="test_openapi_import_is_bounded_and_default_backend_is_non_routable" time="0.001" /><testcase classname="tests.contract.test_gateway_dev_policy.GuardedDevelopmentPolicyTests" name="test_original_redacted_and_completion_safety_are_present" time="0.001" /><testcase classname="tests.contract.test_gateway_dev_policy.GuardedDevelopmentPolicyTests" name="test_pii_and_model_auth_are_fail_closed_and_keys_are_not_forwarded" time="0.001" /><testcase classname="tests.contract.test_gateway_dev_policy.GuardedDevelopmentPolicyTests" name="test_pii_batches_follow_synchronous_document_limit_and_preserve_global_ids" time="0.001" /><testcase classname="tests.contract.test_gateway_dev_policy.GuardedDevelopmentPolicyTests" name="test_policy_is_subscription_product_scoped" time="0.003" /><testcase classname="tests.contract.test_gateway_dev_policy.GuardedDevelopmentPolicyTests" name="test_prompt_and_completion_body_logging_is_not_enabled" time="0.002" /><testcase classname="tests.contract.test_gateway_dev_policy.GuardedDevelopmentPolicyTests" name="test_request_validation_and_auth_failures_have_specific_errors" time="0.002" /><testcase classname="tests.contract.test_gateway_dev_policy.GuardedDevelopmentPolicyTests" name="test_rpm_and_token_counters_have_distinct_namespaces" time="0.003" /></testsuite></testsuites>

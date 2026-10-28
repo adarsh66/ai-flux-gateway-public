@@ -1,0 +1,39 @@
+{
+  "schema_version": 1,
+  "routes": [
+    {
+      "alias": "glm-5.3",
+      "provider": "ModelArts",
+      "backend_model": "glm-5.3",
+      "upstream_url": "https://api-ap-southeast-1.modelarts-maas.com/v1",
+      "endpoint_url": "https://poc-ids-token-ex-apim.azure-api.net/dev/llm/v1",
+      "api_format": "openai-chat-completions",
+      "upstream_token_parameter": "max_completion_tokens",
+      "capabilities": [
+        "chat"
+      ],
+      "max_completion_tokens": 1024,
+      "gateway_validated": true,
+      "credential_healthy": true,
+      "probe_status": 200,
+      "probe_prompt_tokens": 25,
+      "probe_completion_tokens": 52,
+      "probe_total_tokens": 77,
+      "assistant_nonempty": true,
+      "verified_at": "2026-10-26T15:36:52.071373+00:00",
+      "pricing_status": "unknown",
+      "metadata_renewal": {
+        "kind": "unchanged_apim_metadata",
+        "observed_at": "2026-10-28T01:46:08.848809+00:00",
+        "historical_acceptance_sha256": "7ce74a74b6457e74b09e6df33df7a64f1c35a656912813124849c392a890fe70",
+        "policy_sha256": "e45b6de7b61b29a4085b4569609da48314d9c144306a9c02211d1ce58ce5b456",
+        "backend_sha256": "5ca8f1c31953c1a98523aa365ee9532682eabee56d7efa534ef00567cda3e0e7",
+        "reference_metadata_sha256": "c055b9e0fb8c44bdd0ca82380cff474ee5f8bb76bfcf6aeb904bc7bcacda38df",
+        "named_value_resource_id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.ApiManagement/service/poc-ids-token-ex-apim/namedValues/aiflux-glm-5-3-api-key",
+        "secret_storage": "apim_internal_secret",
+        "fresh_credential_health_verified": false,
+        "smoke_repeated": false
+      }
+    }
+  ]
+}

@@ -1,0 +1,120 @@
+trigger:
+  branches:
+    include:
+      - main
+
+pr:
+  branches:
+    include:
+      - main
+
+variables:
+  vmImageName: ubuntu-latest
+  azureSubscription: 'your-azure-service-connection'
+  resourceGroup: 'IDS-TOKEN-EXCHANGE-POC'
+  acrName: 'pocidstokenexacr'
+  customerImage: 'aiflux-customer'
+  adminImage: 'aiflux-admin'
+  customerAppName: 'poc-ids-token-ex-customer'
+  adminAppName: 'poc-ids-token-ex-admin'
+  portalMode: 'sql'
+  gatewayUrl: 'https://<your-gateway-host>'
+  acrUser: '$(acrUser)'
+  acrPassword: '$(acrPassword)'
+
+stages:
+- stage: BuildAndDeploy
+  displayName: Build and deploy portal artifacts
+  jobs:
+  - job: BuildAndPush
+    displayName: Build Docker images and push to ACR
+    pool:
+      vmImage: $(vmImageName)
+
+    steps:
+    - checkout: self
+
+    - task: AzureCLI@2
+      displayName: Build customer portal image
+      inputs:
+        azureSubscription: $(azureSubscription)
+        scriptType: bash
+        scriptLocation: inlineScript
+        inlineScript: |
+          set -eux
+          az acr login --name $(acrName)
+          docker build \
+            -f apps/customer-portal/Dockerfile \
+            --build-arg VITE_PORTAL_MODE=$(portalMode) \
+            --build-arg VITE_GATEWAY_URL="$(gatewayUrl)" \
+            -t $(acrName).azurecr.io/$(customerImage):$(Build.SourceVersion) \
+            -t $(acrName).azurecr.io/$(customerImage):latest \
+            .
+          docker push $(acrName).azurecr.io/$(customerImage):$(Build.SourceVersion)
+          docker push $(acrName).azurecr.io/$(customerImage):latest
+
+    - task: AzureCLI@2
+      displayName: Build admin portal image
+      inputs:
+        azureSubscription: $(azureSubscription)
+        scriptType: bash
+        scriptLocation: inlineScript
+        inlineScript: |
+          set -eux
+          az acr login --name $(acrName)
+          docker build \
+            -f apps/admin-portal/Dockerfile \
+            --build-arg VITE_PORTAL_MODE=$(portalMode) \
+            --build-arg VITE_GATEWAY_URL="$(gatewayUrl)" \
+            -t $(acrName).azurecr.io/$(adminImage):$(Build.SourceVersion) \
+            -t $(acrName).azurecr.io/$(adminImage):latest \
+            .
+          docker push $(acrName).azurecr.io/$(adminImage):$(Build.SourceVersion)
+          docker push $(acrName).azurecr.io/$(adminImage):latest
+
+  - deployment: DeployPortals
+    displayName: Deploy container images to Azure App Services
+    dependsOn: BuildAndPush
+    environment: 'production'
+    pool:
+      vmImage: $(vmImageName)
+
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - checkout: self
+
+          - task: AzureCLI@2
+            displayName: Deploy customer portal image
+            inputs:
+              azureSubscription: $(azureSubscription)
+              scriptType: bash
+              scriptLocation: inlineScript
+              inlineScript: |
+                set -eux
+                az webapp config container set \
+                  --name $(customerAppName) \
+                  --resource-group $(resourceGroup) \
+                  --docker-custom-image-name $(acrName).azurecr.io/$(customerImage):$(Build.SourceVersion) \
+                  --docker-registry-server-url "https://$(acrName).azurecr.io" \
+                  --docker-registry-server-user "$(acrUser)" \
+                  --docker-registry-server-password "$(acrPassword)"
+                az webapp restart --name $(customerAppName) --resource-group $(resourceGroup)
+
+          - task: AzureCLI@2
+            displayName: Deploy admin portal image
+            inputs:
+              azureSubscription: $(azureSubscription)
+              scriptType: bash
+              scriptLocation: inlineScript
+              inlineScript: |
+                set -eux
+                az webapp config container set \
+                  --name $(adminAppName) \
+                  --resource-group $(resourceGroup) \
+                  --docker-custom-image-name $(acrName).azurecr.io/$(adminImage):$(Build.SourceVersion) \
+                  --docker-registry-server-url "https://$(acrName).azurecr.io" \
+                  --docker-registry-server-user "$(acrUser)" \
+                  --docker-registry-server-password "$(acrPassword)"
+                az webapp restart --name $(adminAppName) --resource-group $(resourceGroup)

@@ -38,12 +38,12 @@ export function PlaygroundPage() {
 
   return (
     <>
-      <PageHeader title="Playground" subtitle="Send live requests directly to the gateway using one of your subscription keys. Conversation history stays in this browser tab only." />
+      <PageHeader title="Playground" subtitle="Send live requests directly to the gateway using one of your subscription keys. External ModelArts models process redacted input outside Azure; PII redaction is best-effort, not anonymization. Conversation history stays in this browser tab only." />
       <AsyncView state={models}>
         {(m) => (
           <AsyncView state={subs}>
             {(s) => {
-              const enabled = m.items.filter((x) => x.enabled);
+              const enabled = m.items.filter((x) => x.enabled && !x.placeholder && x.capabilities.includes("chat"));
               const active = s.items.filter((x) => x.state === "active");
               if (enabled.length === 0) return <EmptyState title="No enabled models" hint="The catalog is empty, so there is nothing to call." />;
               if (active.length === 0) return <EmptyState title="No active subscription" hint="Contact your administrator to create or activate a team subscription for the playground." />;
@@ -92,7 +92,15 @@ function Chat({ models, subs, gatewayUrl, keys, setKey, reveal }: ChatProps) {
   const dialog = useRef<HTMLDivElement>(null);
   const busy = live?.outcome === "streaming";
 
-  const model = models.find((m) => m.id === modelId)!;
+  const model = models.find((m) => m.id === modelId) ?? models[0]!;
+  useEffect(() => {
+    if (!models.some((m) => m.id === modelId)) setModelId(models[0]!.id);
+  }, [models, modelId]);
+  useEffect(() => {
+    setStream(model.capabilities.includes("stream"));
+    setUseTools(false);
+    setFmt("text");
+  }, [model.id]);
   const toolsOk = supportsTools(model.capabilities);
   const schemaOk = supportsStructured(model.capabilities);
   const streamOk = model.capabilities.includes("stream");

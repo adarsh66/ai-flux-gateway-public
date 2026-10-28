@@ -1,0 +1,54 @@
+{
+  "mode": "read_only_external_process_deadline_test",
+  "worker_pid": 4728,
+  "deadline_utc": "2026-10-27T02:18:27.476274+00:00",
+  "started_at_utc": "2026-10-27T02:18:20.136439+00:00",
+  "cloud_deletes": 0,
+  "cloud_creates": 0,
+  "production_watchdog_installed": false,
+  "populated_resource_cleanup_tested": false,
+  "results": [
+    {
+      "resource_id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.ContainerInstance/containerGroups/poc-ids-token-ex-finops-probe-2f75015b55d1-ingestion",
+      "http_status": 404,
+      "at_utc": "2026-10-27T02:18:35.619255+00:00"
+    },
+    {
+      "resource_id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.ContainerInstance/containerGroups/poc-ids-token-ex-finops-probe-2f75015b55d1-api",
+      "http_status": 404,
+      "at_utc": "2026-10-27T02:18:35.765582+00:00"
+    },
+    {
+      "resource_id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Network/virtualNetworks/poc-ids-token-ex-vnet/subnets/poc-ids-token-ex-finops-probe",
+      "http_status": 404,
+      "at_utc": "2026-10-27T02:18:35.892537+00:00"
+    },
+    {
+      "resource_id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Network/networkSecurityGroups/poc-ids-token-ex-finops-probe-2f75015b55d1-nsg",
+      "http_status": 404,
+      "at_utc": "2026-10-27T02:18:36.021579+00:00"
+    },
+    {
+      "resource_id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Network/natGateways/poc-ids-token-ex-finops-probe-2f75015b55d1-nat",
+      "http_status": 404,
+      "at_utc": "2026-10-27T02:18:36.099417+00:00"
+    },
+    {
+      "resource_id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Network/publicIPAddresses/poc-ids-token-ex-finops-probe-2f75015b55d1-pip",
+      "http_status": 404,
+      "at_utc": "2026-10-27T02:18:36.206998+00:00"
+    }
+  ],
+  "triggered_at_utc": "2026-10-27T02:18:27.485147+00:00",
+  "all_six_exact_ids_absent": true,
+  "exit_code": 0,
+  "finished_at_utc": "2026-10-27T02:18:36.207021+00:00",
+  "launcher_pid": 25844,
+  "launcher_exit_code_before_worker_completion": 0,
+  "actual_independent_process_survived_launcher_exit": true,
+  "limitations": [
+    "not a production cleanup controller installation",
+    "no DELETE path or populated live resource cleanup exercised",
+    "depends on this workstation remaining awake, connected and authorized; not proof against host loss"
+  ]
+}

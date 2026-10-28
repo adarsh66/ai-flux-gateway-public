@@ -56,7 +56,32 @@ function setup(handler: (url: URL, init: RequestInit) => unknown, admin = false)
 }
 
 describe("Token Exchange Customer & Admin Portal Pages", () => {
-  it("renders ModelGardenPage pricing cards and simulates Microsoft Decision-1 auto route", async () => {
+  it("renders customer copy and the exact Luna title while retaining model links and pricing disclosures", async () => {
+    const diagnostics = "APIM chat verified 2026-10-26. Persistent POC: output1024; RPM60; TPM2048; daily10000; no expiry/retries.";
+    const { mount } = setup(() => ({
+      items: ["gpt-5.6-luna", "DeepSeek-V4-Flash", "future-model"].map((id) => ({
+        id, display_name: id === "gpt-5.6-luna" ? "Luna — bounded demo (2026-07-09)" : id,
+        vendor: "Test provider", region: "eastus", capabilities: ["chat"],
+        enabled: true, coming_soon: false, description: diagnostics,
+        max_completion_tokens: 1024, content_safety_enabled: false,
+      })), total: 3,
+    }));
+    mount(<ModelGardenPage />);
+    expect(await screen.findByRole("heading", { name: "gpt-5.6-luna" })).toBeInTheDocument();
+    expect(screen.queryByText(/bounded demo/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/APIM chat verified|Persistent POC|RPM60|TPM2048/)).not.toBeInTheDocument();
+    expect(screen.getByText("Use DeepSeek V4 Flash for text-based questions, writing, and everyday conversations.")).toBeInTheDocument();
+    expect(screen.getByText("A conversational AI model for text-based questions, writing, and exploring ideas.")).toBeInTheDocument();
+    expect(screen.getAllByRole("link", { name: /Try in Playground/ }).map((link) => link.getAttribute("href"))).toEqual([
+      "/playground?model=gpt-5.6-luna", "/playground?model=DeepSeek-V4-Flash", "/playground?model=future-model",
+    ]);
+    expect(screen.getAllByText("Unknown — not free")).toHaveLength(6);
+    await userEvent.selectOptions(screen.getByLabelText("Provider family"), "Test provider");
+    await userEvent.click(screen.getByRole("tab", { name: "Deployed & Active (3)" }));
+    expect(screen.getAllByRole("link", { name: /Try in Playground/ })).toHaveLength(3);
+  });
+
+  it("renders unknown pricing honestly and keeps the route simulator distinct from Decision-1 inference", async () => {
     const { mount } = setup((url) => {
       if (url.pathname.endsWith("/model-garden")) {
         return {
@@ -125,7 +150,9 @@ describe("Token Exchange Customer & Admin Portal Pages", () => {
     mount(<ModelGardenPage />);
     expect(await screen.findByText("Microsoft Decision-1 Auto Router")).toBeInTheDocument();
     expect(screen.getByText("DeepSeek V3.2 Speciale")).toBeInTheDocument();
-    expect(screen.getByText("USD 0.2700")).toBeInTheDocument();
+    expect(screen.getAllByText("Unknown — not free").length).toBeGreaterThan(0);
+    expect(screen.queryByText("USD 0.2700")).not.toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Routing simulator — not Decision-1 inference" })).toBeInTheDocument();
 
     await userEvent.click(screen.getByRole("button", { name: "Simulate Auto Route" }));
     expect(await screen.findByText(/Selected model: DeepSeek V3.2 Speciale/)).toBeInTheDocument();
@@ -207,6 +234,9 @@ describe("Token Exchange Customer & Admin Portal Pages", () => {
 
   it("renders AdminBudgetsAndFinOpsPage and AdminModelRouterPage", async () => {
     const { mount } = setup((url) => {
+      if (url.pathname.endsWith("/model-deployments")) {
+        return { items: [], total: 0, verified_at: "2026-01-01T00:00:00Z", auto_enabled: false };
+      }
       if (url.pathname.endsWith("/admin/budgets")) {
         return {
           items: [

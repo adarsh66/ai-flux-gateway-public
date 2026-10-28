@@ -7,6 +7,7 @@ import {
 import { useSession } from "../session";
 import type { GatewayConfigurationUnion, GatewaySettings, SafetyConfiguration } from "../types";
 import { RevisionHistory } from "./RevisionHistory";
+import { PocControlsForm } from "./PocControlsForm";
 
 function SafetyForm({ row, refresh }: { row: GatewaySettings; refresh: () => void }) {
   const { api } = useSession();
@@ -138,7 +139,9 @@ export function ContentSafetySettingsPage() {
             </section>)}
           </div>
           <p className="muted">Settings below apply to {data.items.length > 1 ? "both interfaces" : "this interface"}.</p>
-          {shared && <SafetyForm key={shared.scope} row={shared} refresh={refresh} />}
+          {shared && (shared.capabilities?.poc_controls_enabled
+            ? <PocControlsForm key={shared.scope} row={shared} refresh={refresh} safetyPage />
+            : <SafetyForm key={shared.scope} row={shared} refresh={refresh} />)}
         </>;
       }}
     </AsyncView>

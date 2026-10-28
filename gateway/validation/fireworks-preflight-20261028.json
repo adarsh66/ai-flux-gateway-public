@@ -1,0 +1,43 @@
+{
+  "at_utc": "2026-10-28T01:14:58.867236+00:00",
+  "deployments": [
+    {
+      "alias": "FW-GLM-5.3",
+      "model": {
+        "format": "Fireworks",
+        "name": "FW-GLM-5.3",
+        "version": "2"
+      },
+      "sku": {
+        "capacity": 250,
+        "name": "GlobalStandard"
+      },
+      "raiPolicyName": "Microsoft.Nil",
+      "state": "Succeeded",
+      "native_safety_verified": false
+    },
+    {
+      "alias": "FW-MiniMax-M3",
+      "model": {
+        "format": "Fireworks",
+        "name": "FW-MiniMax-M3",
+        "version": "1"
+      },
+      "sku": {
+        "capacity": 250,
+        "name": "DataZoneStandard"
+      },
+      "raiPolicyName": "Microsoft.Nil",
+      "state": "Succeeded",
+      "native_safety_verified": false
+    }
+  ],
+  "protected_sha256": "842b4ccc260729864cc022476ab54921725485cc128e41b05239a077962ad255",
+  "policy_sha256": "cbdaae044da1ce9b14a3b562ca74cbce2f9e5d1d1c985addb93282686908241f",
+  "external_probe_at": "2026-10-26T15:36:52.071373+00:00",
+  "external_evidence_age_seconds": 121086.795852,
+  "api_promotion_blocked_external_expired": true,
+  "cloud_writes": 0,
+  "inference_requests": 0,
+  "optional_controls_enabled": false
+}

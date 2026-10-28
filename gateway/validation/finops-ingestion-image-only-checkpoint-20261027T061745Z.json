@@ -1,0 +1,133 @@
+{
+  "at_utc": "2026-10-27T06:17:45.978429+00:00",
+  "status": "blocked",
+  "reason": "requested_host_disabled_baseline_not_true",
+  "build": {
+    "tag": "finops-20261027t060657z",
+    "run_id": "cm1u",
+    "image": "pocidstokenexacr.azurecr.io/aiflux-ingestion@sha256:8d331a31ddfd32d25eff2665ce3f2c08380c43ed411e0a8a75819a591bda07e5",
+    "digest": "sha256:8d331a31ddfd32d25eff2665ce3f2c08380c43ed411e0a8a75819a591bda07e5",
+    "source_sha256": "9ec52d9535da86d02cbbbc94b24732a66fb0befa09f735e60ccb6f51dfeee6d2",
+    "manifest_sha256": "b320b7779fba5259b2565368015808111ce2ba1ea87dc824f079f5e803377f81",
+    "native_linux_validation": true,
+    "catalog": {
+      "aliases": [
+        "DeepSeek-V4-Flash",
+        "DeepSeek-V4-Pro",
+        "Kimi-K2.7-Code",
+        "glm-5.3",
+        "gpt-4o",
+        "gpt-5.4-mini",
+        "gpt-5.6-luna",
+        "gpt-6.1-sol",
+        "grok-4-1-fast-reasoning",
+        "grok-4-20-reasoning",
+        "grok-4.3"
+      ],
+      "catalog_sha256": "67f1b9e218375ab2c2070014a630322458ae36d49516ddc0305dea931c86c988",
+      "live_policy_sha256": "3f3ded3ec635482f4e8e61c46aa998dbb6a0d551efc8d2e47858741e423b1314",
+      "catalog_path": "/home/site/wwwroot/gateway/catalog/ingestion-approved.json",
+      "decision_selectable": false,
+      "prices_invented": false
+    }
+  },
+  "source_fixed": true,
+  "new_immutable_image_applied": false,
+  "plan_sha256": "d1c27329e9932e4da601eddcc7e9870f1c749665d1c73d9b8f2f6264c924a1f8",
+  "plan_managed_changes": [
+    {
+      "address": "azurerm_linux_function_app.ingestion[0]",
+      "actions": [
+        "update"
+      ]
+    }
+  ],
+  "actual_guard_exit": 2,
+  "scanner": {
+    "at_utc": "2026-10-27T06:13:25.932225+00:00",
+    "scanner": "checkov==3.2.495",
+    "exit_code": 1,
+    "dockerfile_sha256": "19b316cc0d546603eb0ff5160bed87447bfbbf4b9ec977463cad37ccd40549b8",
+    "summary": {
+      "passed": 78,
+      "failed": 2,
+      "skipped": 0,
+      "parsing_errors": 0,
+      "resource_count": 1,
+      "checkov_version": "3.2.495"
+    },
+    "failed_checks": [
+      {
+        "check_id": "CKV_DOCKER_2",
+        "check_name": "Ensure that HEALTHCHECK instructions have been added to container images",
+        "resource": "C:\\LocalWorkspace\\ai-flux-gateway-public\\services\\usage-ingestion\\Dockerfile."
+      },
+      {
+        "check_id": "CKV_DOCKER_3",
+        "check_name": "Ensure that a user for the container has been created",
+        "resource": "C:\\LocalWorkspace\\ai-flux-gateway-public\\services\\usage-ingestion\\Dockerfile."
+      }
+    ],
+    "remote_policy_downloads": false,
+    "dependencies_upgraded": false
+  },
+  "current_pins": {
+    "api": "DOCKER|pocidstokenexacr.azurecr.io/aiflux-api@sha256:7c8b9c715963a1a365895c38f2e79cb1bbfff0b4e166a57cec6e16df9f05ffce",
+    "admin": "DOCKER|pocidstokenexacr.azurecr.io/aiflux-admin@sha256:4606e769e95ac647c7ba175f5c0e152baf16dbf02a78fd5d1c3f1a6be289baed",
+    "customer": "DOCKER|pocidstokenexacr.azurecr.io/aiflux-customer@sha256:568cd3f1d4d88cf59ff63528f4baa6b84827a3da45e6ede5da13395d06de29a1",
+    "ingestion": "DOCKER|pocidstokenexacr.azurecr.io/aiflux-ingestion@sha256:91c40730377a7b3bf83efe1b52e28eb84dab41ceb6adc76aac9735f1d5e03296"
+  },
+  "protected_baseline_unchanged": true,
+  "complete_settings_hashes": {
+    "api": "a4d40a5dbdca329f84e4f23a5c9663192d00eb8af932290d0cad970c19e930fd",
+    "ingestion": "8d9eb39a189c8024c5288c86b125a2897ae95974be868f4f66f3aa8c2434d410",
+    "admin": "8819a64ec5c3e2933d1c451928622977b589e62e843136dc100aee46ba2a3b6e",
+    "customer": "5086ea9867a7b132a493ac263cb13bd09af81ba97f9c8b092249f7322ab2490a"
+  },
+  "complete_settings_unchanged": true,
+  "security": {
+    "state_default_action": "Deny",
+    "state_ips": [
+      "167.103.65.36",
+      "167.103.66.248",
+      "167.103.66.93"
+    ],
+    "postgres_public": "Disabled",
+    "postgres_firewall_rules": 0
+  },
+  "host_enabled": true,
+  "timer_disabled": "true",
+  "catalog_configured": "true",
+  "cutoff_present": true,
+  "previous_host_plan_applied_at": "2026-10-27T05:57:58.132382+00:00",
+  "previous_host_plan_sha256": "ea9b870207abadb7efa6dcaf7e6b71bf762cf7cc90979bd56fb60fde9355e31c",
+  "configuration_writes_this_continuation": 0,
+  "database_writes": 0,
+  "new_runners": 0,
+  "host_or_timer_activation_this_continuation": false,
+  "prior_apply_replayed": false,
+  "live_ingestion_healthy": false,
+  "workflow_completed_step": "AddValidationSteps",
+  "next_stage": {
+    "image_repair_controller": "scripts/deployment/finops_ingestion_image_repair.py",
+    "image_repair_options": [
+      "plan",
+      "validate",
+      "apply",
+      "verify",
+      "--tag"
+    ],
+    "activation_controller": "scripts/deployment/finops_catalog_repair.py",
+    "activation_options": [
+      "plan",
+      "validate",
+      "apply",
+      "verify",
+      "--stage",
+      "host",
+      "timer"
+    ],
+    "activation_executed": false,
+    "warning": "Do not replay already-applied host/catalog stages or run timer. Parent must reconcile actual activation baseline and scanner findings first."
+  }
+}
