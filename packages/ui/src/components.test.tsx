@@ -52,7 +52,8 @@ describe("UsagePage", () => {
     wrap(api, <UsagePage />);
     expect(await screen.findByText("Unknown", { selector: "dd" })).toBeInTheDocument();
     expect(screen.getAllByText("Unavailable")).toHaveLength(2);
-    expect(screen.getByText(/missing token usage or pricing/i)).toBeInTheDocument();
+    expect(screen.getByText(/missing usage, pricing or attribution/i)).toBeInTheDocument();
+    expect(screen.getByText(/Missing prices do not exclude measured tokens/)).toBeInTheDocument();
   });
   it("renders second-based latency and a keyboard-accessible exact-minute chart", async () => {
     const api = withApi((url) => {
@@ -136,7 +137,7 @@ describe("UsagePage", () => {
     try {
       wrap(api, <UsagePage admin={admin} />);
       await screen.findByText("Unknown", { selector: "dd" });
-      expect(screen.getByText(/configured list prices.*Singtel-specific discounts.*not an invoice/)).toBeInTheDocument();
+      expect(screen.getByText(/sourced public list rates.*restated at current rates.*not an invoice/)).toBeInTheDocument();
       const disclosure = screen.getByText("Transaction details").closest("details")!;
       expect(disclosure).not.toHaveAttribute("open");
       expect(screen.getByText("E2E (s)", { selector: "th" })).not.toBeVisible();
@@ -295,12 +296,18 @@ describe("outcomeView", () => {
       { id: "approved", provider: "OpenAI", enabled: true, capabilities: ["chat"], max_completion_tokens: 64 },
       { id: "another", provider: "OpenAI", enabled: true, capabilities: ["chat"], max_completion_tokens: 123 },
       { id: "preview", provider: "Anthropic", enabled: false, placeholder: true, capabilities: [] },
+      { id: "embedding", provider: "OpenAI", enabled: true, capabilities: ["embeddings"] },
+      { id: "invalid-preview", provider: "OpenAI", enabled: true, placeholder: true, capabilities: ["chat"] },
     ], total: 2 };
 
-    it("renders preview tiles explicitly as uncallable", async () => {
+    it("catalog shows only enabled deployed chat choices, not previews or embeddings", async () => {
       wrap(withApi(() => catalog), <ModelsPage />);
-      expect(await screen.findByRole("heading", { name: "preview" })).toBeInTheDocument();
-      expect(screen.getByText("Preview only - not callable")).toBeInTheDocument();
+      expect(await screen.findByRole("heading", { name: "approved", level: 2 })).toBeInTheDocument();
+      for (const name of ["preview", "embedding", "invalid-preview"]) {
+        // Separate discovery may show unaccepted deployments, but they must
+        // never become selectable catalog cards.
+        expect(screen.queryByRole("heading", { name, level: 2 })).not.toBeInTheDocument();
+      }
     });
 
     it("sends bounded non-streaming chat and never offers placeholders", async () => {
@@ -310,6 +317,9 @@ describe("outcomeView", () => {
       wrap(api, <PlaygroundPage />);
       await screen.findByRole("option", { name: "approved" });
       expect(screen.queryByRole("option", { name: "preview" })).not.toBeInTheDocument();
+      expect(screen.queryByRole("option", { name: "embedding" })).not.toBeInTheDocument();
+      expect(screen.queryByRole("option", { name: "invalid-preview" })).not.toBeInTheDocument();
+      expect(screen.queryByRole("option", { name: "auto" })).not.toBeInTheDocument();
       expect(screen.getByText(/Guarded text-only requests/i)).toBeInTheDocument();
       await userEvent.type(screen.getByLabelText("Or paste a key"), "test-key");
       await userEvent.type(screen.getByLabelText("Message"), "Reply OK.");

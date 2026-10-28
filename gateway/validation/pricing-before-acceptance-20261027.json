@@ -1,0 +1,36 @@
+{
+  "status": "pre_release_authenticated_UI_reads",
+  "method": "Existing customer sessions; ordinary Usage & Telemetry navigation/refresh; captured response summaries only. No auth storage or keys read, no inference.",
+  "contoso": {
+    "start": "2026-09-27T11:42:00.000Z",
+    "end": "2026-10-27T11:42:00.000Z",
+    "days": 30,
+    "model": null,
+    "subscription": "all_owned",
+    "requests": 7,
+    "input_tokens": 61,
+    "output_tokens": 445,
+    "total_tokens": 506,
+    "known_cost": null,
+    "failed_requests": 3,
+    "missing_token_requests": 0,
+    "last_query_success_at": "2026-10-27T11:40:00.255336Z",
+    "watermark": "2026-10-27T11:35:00.255336Z"
+  },
+  "caldova": {
+    "start": "2026-09-27T11:45:00.000Z",
+    "end": "2026-10-27T11:45:00.000Z",
+    "days": 30,
+    "model": null,
+    "subscription": "all_owned",
+    "requests": 21,
+    "input_tokens": 1087,
+    "output_tokens": 1739,
+    "total_tokens": 2826,
+    "known_cost": null,
+    "failed_requests": 1,
+    "missing_token_requests": 0,
+    "last_query_success_at": "2026-10-27T11:40:00.255336Z",
+    "watermark": "2026-10-27T11:35:00.255336Z"
+  }
+}

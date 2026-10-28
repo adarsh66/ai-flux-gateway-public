@@ -62,33 +62,20 @@ def test_enabled_placeholder_is_rejected(tmp_path):
         Catalog.load(path)
 
 
-def test_catalog_api_exposes_models_with_catalog_acceptance_state(env):
+def test_dev_catalog_from_other_accounts_is_not_deployment_evidence(env):
     catalog_path = Path(__file__).resolve().parents[2] / "gateway/catalog/dev-models.json"
     catalog = Catalog.load(catalog_path)
     env.settings.catalog_path = catalog_path
     response = env.client.get("/api/models", headers=env.customer)
     assert response.status_code == 200
     items = response.json()["items"]
-    assert len(items) == 11
-    assert {m["id"] for m in items if m["enabled"]} == {m.id for m in catalog.models if m.enabled}
-    assert {m["id"] for m in items if m["placeholder"] and not m["enabled"]} == {
-        m.id for m in catalog.models if m.placeholder
-    }
-    assert all(m["max_completion_tokens"] == 4096 for m in items if m["id"] in {
-        "gpt-6-astra",
-        "gpt-6-luna",
-        "gpt-6-sol",
-        "Kimi-K2.6",
-        "DeepSeek-V4-Flash-0731",
-        "DeepSeek-V4-Pro",
-        "claude-sonnet-5-5",
-        "claude-opus-5-5",
-    })
+    assert catalog.models  # Static accepted entries are insufficient in another project.
+    assert items == []
 
 
 def test_catalog_api_never_advertises_more_than_configured_gateway_limit(env):
-    env.settings.catalog_path = Path(__file__).resolve().parents[2] / "gateway/catalog/dev-models.json"
-    env.settings.gateway_max_completion_tokens = 50000
+    env.settings.gateway_max_completion_tokens = 64
     response = env.client.get("/api/models", headers=env.customer)
     assert response.status_code == 200
-    assert all(model["max_completion_tokens"] <= 50000 for model in response.json()["items"] if model["enabled"])
+    assert len(response.json()["items"]) == 1
+    assert response.json()["items"][0]["max_completion_tokens"] == 64

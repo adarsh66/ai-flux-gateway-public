@@ -1,0 +1,70 @@
+{
+  "date_utc": "2026-10-27",
+  "gateway_acceptance": "passed",
+  "finops_new_call_attribution": "pending_natural_scheduled_ingestion",
+  "policy_rollout": {
+    "plan_sha256": "42bf402fb3456e6ea1c0e84c6f8a8b46f44f4fab726dd4ab930fed6336d1d292",
+    "applied_at_utc": "2026-10-27T10:44:27.747661+00:00",
+    "independently_verified_at_utc": "2026-10-27T10:47:40.848940+00:00",
+    "evidence": "gateway/validation/product-subscription-access-20261027.json",
+    "reapplied_during_acceptance": false
+  },
+  "authentication": {
+    "flow": "existing_authenticated_Contoso_customer_playground_UI",
+    "displayed_customer": "Contoso",
+    "contoso_subscription": "d9768b6a-415c-5b2c-9c4e-fccaf92db250",
+    "fresh_John_password_login_claimed": false,
+    "administrator_impersonation": false,
+    "customer_own_key_reveals": 2,
+    "administrator_key_reveals": 0,
+    "key_material_exported_or_persisted": false,
+    "authentication_storage_read": false,
+    "provider_secret_reads": 0
+  },
+  "expected_model_ids": ["DeepSeek-V4-Flash", "DeepSeek-V4-Pro", "Kimi-K2.7-Code", "gpt-4o", "gpt-5.4-mini", "gpt-5.6-luna", "gpt-6.1-sol", "grok-4-1-fast-reasoning", "grok-4-20-reasoning", "grok-4.3", "glm-5.3"],
+  "contoso_models": {"at_utc": "2026-10-27T10:51:25.832Z", "status": 200, "exact_expected_11": true},
+  "no_key_models": {"at_utc": "2026-10-27T10:51:25.884Z", "status": 401},
+  "contoso_inference": [
+    {"at_utc": "2026-10-27T10:51:29.140Z", "model": "gpt-5.6-luna", "response_model": "gpt-5.6-luna-2026-07-09", "status": 200, "max_completion_tokens": 1024, "input_tokens": 9, "output_tokens": 5, "total_tokens": 14, "finish_reason": "stop", "assistant_nonempty": true},
+    {"at_utc": "2026-10-27T10:51:47.012Z", "model": "glm-5.3", "response_model": "glm-5.3", "status": 200, "max_completion_tokens": 1024, "input_tokens": 15, "output_tokens": 367, "total_tokens": 382, "finish_reason": "stop", "assistant_nonempty": true}
+  ],
+  "new_measured_tokens": {"input": 24, "output": 372, "total": 396},
+  "caldova_regression": {"at_utc": "2026-10-27T10:52:54.030Z", "subscription": "e9f2abb0-930b-598a-b210-0ab0b279127f", "operation": "GET /models", "status": 200, "exact_expected_11": true, "post_policy_change": true, "new_inference_calls": 0},
+  "initial_finops_checkpoint": {
+    "observed_at_utc": "2026-10-27T10:53:24.235Z",
+    "scope": "authenticated_customer_Contoso",
+    "usage_status": 200,
+    "health": "healthy",
+    "last_query_success_at": "2026-10-27T10:50:00.284907Z",
+    "watermark": "2026-10-27T10:45:00.284907Z",
+    "last_row_ingested_at": "2026-10-27T10:50:01.976853Z",
+    "requests": 3,
+    "failed_requests": 3,
+    "measured_tokens": 0,
+    "proves_new_call_ingestion": false
+  },
+  "retained_tests_not_rerun": {"focused_policy_guard": 125, "apim_lifecycle": 5, "terraform_mock": 23},
+  "live_wrong_product_or_suspended_negatives": "not_run_no_customer_interruption",
+  "acceptance_scope": {"inference_calls": 2, "inference_retries": 0, "subscription_creates": 0, "key_rotations": 0, "state_changes": 0, "policy_or_configuration_writes": 0, "app_deployments": 0, "network_writes": 0, "role_writes": 0, "quota_resets": 0, "manual_ingestion_invocations": 0, "backfill_or_watermark_resets": 0},
+  "preserved_forward_cutoff": "2026-10-27T06:06:02.045288+00:00",
+  "billing": "unknown_not_zero",
+  "subsequent_scheduled_checkpoint": {
+    "customer_observed_at_utc": "2026-10-27T10:55:59.353Z",
+    "admin_contoso_observed_at_utc": "2026-10-27T10:55:59.476Z",
+    "both_http_status": 200,
+    "both_scope": "Contoso",
+    "matching_aggregates": true,
+    "requests": 4,
+    "failed_requests": 3,
+    "input_tokens": 7,
+    "output_tokens": 12,
+    "total_tokens": 19,
+    "health": "healthy",
+    "last_query_success_at": "2026-10-27T10:55:00.340018Z",
+    "watermark": "2026-10-27T10:50:00.340018Z",
+    "last_row_ingested_at": "2026-10-27T10:55:01.424885Z",
+    "proves_new_acceptance_call_ingestion": false
+  },
+  "narrow_acceptance_window": {"start": "2026-10-27T10:51:20Z", "end_exclusive": "2026-10-27T10:52:00Z", "subscription_scope": "Contoso", "expected_requests": 2, "expected_input_tokens": 24, "expected_output_tokens": 372, "expected_total_tokens": 396},
+  "final_finops_checkpoint": null
+}

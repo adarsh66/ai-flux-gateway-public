@@ -33,21 +33,41 @@ describe("ModelTokenChart", () => {
     const slider = screen.getByRole("slider", { name: /Token consumption by model/ });
     fireEvent.keyDown(slider, { key: "ArrowRight" });
     expect(slider).toHaveAttribute("aria-valuenow", "1");
-    expect(slider).toHaveAttribute("aria-valuetext", expect.stringContaining("0 known tokens"));
+    expect(slider).toHaveAttribute("aria-valuetext", expect.stringContaining("No measured total available"));
     fireEvent.keyDown(slider, { key: "End" });
     expect(slider).toHaveAttribute("aria-valuetext", expect.stringContaining(`beta: ${NA} (partial)`));
     fireEvent.keyDown(slider, { key: "Home" });
     expect(slider).toHaveAttribute("aria-valuetext", expect.stringContaining("150 known tokens (partial)"));
     await userEvent.click(screen.getByText("View exact model token data"));
     const table = screen.getByRole("table");
-    expect(within(table).getByText(`${NA} (partial)`)).toBeInTheDocument();
+    expect(within(table).getAllByText(`${NA} (partial)`)).toHaveLength(2);
     expect(within(table).getByText("150 (partial)")).toBeInTheDocument();
   });
 
   it("renders an empty viewport without inventing models or measured usage", () => {
     render(<ModelTokenChart series={{ ...series, items: [] }} />);
-    expect(screen.getByText("No token usage in this viewport.")).toBeInTheDocument();
+    expect(screen.getByText("No measured token rows available; ingestion health is not confirmed.")).toBeInTheDocument();
     expect(screen.queryByRole("slider")).not.toBeInTheDocument();
+  });
+
+  it("only describes an idle bucket as zero when source health is confirmed", () => {
+    render(<ModelTokenChart series={{ ...series, health: { status: "healthy", last_query_success_at: start,
+      last_row_ingested_at: start, watermark: end, lag_seconds: 0, expected_delay_seconds: 300 } }} />);
+    const slider = screen.getByRole("slider");
+    fireEvent.keyDown(slider, { key: "ArrowRight" });
+    expect(slider).toHaveAttribute("aria-valuetext", expect.stringContaining("0 known tokens"));
+    fireEvent.keyDown(slider, { key: "End" });
+    expect(slider).toHaveAttribute("aria-valuetext", expect.stringContaining("No measured total available"));
+  });
+
+  it("keeps 744 hourly buckets and all eleven models without downsampling", () => {
+    const from = "2026-09-01T00:00:00Z", to = "2026-10-02T00:00:00Z";
+    const { container } = render(<ModelTokenChart series={{ start: from, end: to, interval_seconds: 3600,
+      items: Array.from({ length: 11 }, (_, i) => ({ start: from, end: "2026-09-01T01:00:00Z",
+        model: `model-${i}`, requests: 1, total_tokens: i + 1, missing_token_requests: 0 })) }} />);
+    expect(container.querySelectorAll("[data-bucket-total]")).toHaveLength(744);
+    expect(screen.getAllByRole("listitem")).toHaveLength(11);
+    expect(container.querySelector("[data-bucket-total]")).toHaveAttribute("data-bucket-total", "66");
   });
 
   it("labels unattributed telemetry explicitly without losing its token count", () => {
@@ -128,11 +148,22 @@ describe("customer model-token integration", () => {
     expect(requests()).toHaveLength(count);
   });
 
-  it("does not request or display the new chart in admin showback", async () => {
+  it("requests and displays the shared chart in admin showback", async () => {
     const urls = mount(response, true);
     await screen.findByRole("heading", { name: "Tokens per minute" });
-    expect(urls.some(url => url.pathname.endsWith("/model-tokens"))).toBe(false);
-    expect(screen.queryByRole("heading", { name: "Token consumption by model" })).not.toBeInTheDocument();
+    await screen.findByRole("heading", { name: "Token consumption by model" });
+    expect(urls.some(url => url.pathname === "/api/admin/usage/model-tokens" && url.searchParams.get("granularity") === "day")).toBe(true);
+  });
+
+  it("passes organization and explicit UTC granularity to admin aggregation", async () => {
+    const urls = mount(url => url.pathname.endsWith("/organizations") ? { items: [{ id: "org-selected", name: "Selected" }], total: 1 } : response(url), true);
+    await screen.findByRole("heading", { name: "Token consumption by model" });
+    await userEvent.selectOptions(screen.getByLabelText("Organization"), "org-selected");
+    await userEvent.selectOptions(screen.getByLabelText("Token chart granularity"), "hour");
+    await waitFor(() => expect(urls.some(url => url.pathname === "/api/admin/usage/model-tokens"
+      && url.searchParams.get("organization_id") === "org-selected" && url.searchParams.get("granularity") === "hour")).toBe(true));
+    await userEvent.selectOptions(screen.getByLabelText("Period"), "1");
+    expect(screen.getByLabelText("Token chart granularity")).toHaveValue("hour");
   });
 
   it("shows errors explicitly and retries without hiding existing charts", async () => {

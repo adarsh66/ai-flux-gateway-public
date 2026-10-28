@@ -1,0 +1,51 @@
+{
+  "started_at_utc": "2026-10-27T07:47:30.163718+00:00",
+  "deleted_resource_ids": [
+    "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Network/publicIPAddresses/poc-ids-token-ex-finops-probe-deadbeef1234-pip"
+  ],
+  "absence": [
+    {
+      "resource_id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.ContainerInstance/containerGroups/poc-ids-token-ex-finops-probe-deadbeef1234-ingestion",
+      "http_status": 404,
+      "at_utc": "2026-10-27T07:47:30.171063+00:00"
+    },
+    {
+      "resource_id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.ContainerInstance/containerGroups/poc-ids-token-ex-finops-probe-deadbeef1234-api",
+      "http_status": 404,
+      "at_utc": "2026-10-27T07:47:30.171075+00:00"
+    },
+    {
+      "resource_id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Network/virtualNetworks/poc-ids-token-ex-vnet/subnets/poc-ids-token-ex-finops-probe-deadbeef1234-subnet",
+      "http_status": 404,
+      "at_utc": "2026-10-27T07:47:30.171078+00:00"
+    },
+    {
+      "resource_id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Network/networkSecurityGroups/poc-ids-token-ex-finops-probe-deadbeef1234-nsg",
+      "http_status": 404,
+      "at_utc": "2026-10-27T07:47:30.171081+00:00"
+    },
+    {
+      "resource_id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Network/natGateways/poc-ids-token-ex-finops-probe-deadbeef1234-nat",
+      "http_status": 404,
+      "at_utc": "2026-10-27T07:47:30.171083+00:00"
+    },
+    {
+      "resource_id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Network/publicIPAddresses/poc-ids-token-ex-finops-probe-deadbeef1234-pip",
+      "http_status": 404,
+      "at_utc": "2026-10-27T07:47:30.171085+00:00"
+    }
+  ],
+  "exit_code": 0,
+  "finished_at_utc": "2026-10-27T07:47:30.171087+00:00",
+  "worker_pid": 29900,
+  "deadline_utc": "2026-10-27T08:47:27.652450+00:00",
+  "triggered_at_utc": "2026-10-27T07:47:30.171092+00:00",
+  "survived_launcher_exit": true,
+  "synthetic": true,
+  "launcher_exit_code": 0,
+  "cloud_operations": 0,
+  "limitations": [
+    "synthetic owned resource through real detached cleanup path, not populated Azure deletion",
+    "workstation must remain powered, network-connected and authenticated"
+  ]
+}

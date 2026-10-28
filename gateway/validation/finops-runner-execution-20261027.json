@@ -1,0 +1,527 @@
+{
+  "started_at_utc": "2026-10-27T02:19:48.614765+00:00",
+  "created_resource_ids": [
+    "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Network/publicIPAddresses/poc-ids-token-ex-finops-probe-2f75015b55d1-pip",
+    "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Network/networkSecurityGroups/poc-ids-token-ex-finops-probe-2f75015b55d1-nsg",
+    "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Network/natGateways/poc-ids-token-ex-finops-probe-2f75015b55d1-nat",
+    "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Network/virtualNetworks/poc-ids-token-ex-vnet/subnets/poc-ids-token-ex-finops-probe",
+    "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.ContainerInstance/containerGroups/poc-ids-token-ex-finops-probe-2f75015b55d1-ingestion"
+  ],
+  "probes": {},
+  "database_writes": 0,
+  "timer_enabled": false,
+  "app_release": false,
+  "activation_cutoff": null,
+  "replay_executed": false,
+  "preservation_before": {
+    "at_utc": "2026-10-27T02:20:01.918804+00:00",
+    "postgres_public_network_access": "Disabled",
+    "postgres_firewall_rule_count": 0,
+    "state_storage_default_action": "Deny",
+    "state_storage_approved_ips": [
+      "167.103.65.36",
+      "167.103.66.248",
+      "167.103.66.93"
+    ],
+    "configuration_writes": 0,
+    "preservation_verified": true
+  },
+  "network_capacity": {
+    "cidr": "10.240.5.0/24",
+    "usable_addresses_after_azure_reservation": 251,
+    "existing_subnets": 3,
+    "collision": false
+  },
+  "service_tags_verified": [
+    "AzureActiveDirectory",
+    "AzureContainerRegistry.SoutheastAsia",
+    "Storage.SoutheastAsia"
+  ],
+  "owner_nonce": "2f75015b55d1",
+  "ids": {
+    "ingestion": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.ContainerInstance/containerGroups/poc-ids-token-ex-finops-probe-2f75015b55d1-ingestion",
+    "api": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.ContainerInstance/containerGroups/poc-ids-token-ex-finops-probe-2f75015b55d1-api",
+    "subnet": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Network/virtualNetworks/poc-ids-token-ex-vnet/subnets/poc-ids-token-ex-finops-probe",
+    "nsg": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Network/networkSecurityGroups/poc-ids-token-ex-finops-probe-2f75015b55d1-nsg",
+    "nat": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Network/natGateways/poc-ids-token-ex-finops-probe-2f75015b55d1-nat",
+    "pip": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Network/publicIPAddresses/poc-ids-token-ex-finops-probe-2f75015b55d1-pip"
+  },
+  "deadline_utc": "2026-10-27T03:20:09.019314+00:00",
+  "immutable_image": "pocidstokenexacr.azurecr.io/aiflux-finops-probe@sha256:fdf8e46ed2f91f3614a456e7261fb5cd77332e65b526dbec08430041bd100cef",
+  "build_run_id": "cm1h",
+  "baseline_at_utc": "2026-10-27T02:20:15.007663+00:00",
+  "inbound": "10.240.0.0/16_to_10.240.5.0/24_tcp19390_priority100_then_deny_all_priority200",
+  "watchdog_pid": 10156,
+  "independent_watchdog_ready": {
+    "pid": 10156,
+    "ready_at_utc": "2026-10-27T02:20:15.327228+00:00",
+    "deadline_utc": "2026-10-27T03:20:09.019314+00:00",
+    "session_sha256": "2060859b2bf677f31c2b69f019fa61cc3ab642b5963fdadbeb0216edd749b716",
+    "synthetic": false,
+    "code_sha256": "6a5aa0524a98dc874078a578b30533bfcb44c22e5df6f5af29eb30260588e802"
+  },
+  "group_previews": {
+    "ingestion": {
+      "validate": {
+        "exit_code": 0,
+        "error_codes": []
+      },
+      "what-if": {
+        "exit_code": 0,
+        "error_codes": [],
+        "exact_create_only_guard_passed": true
+      }
+    }
+  },
+  "exit_code": 2,
+  "reason": "published_ports",
+  "cleanup": {
+    "started_at_utc": "2026-10-27T02:22:46.473184+00:00",
+    "deleted_resource_ids": [],
+    "absence": [],
+    "exit_code": 2,
+    "reason": "published_ports",
+    "finished_at_utc": "2026-10-27T02:22:46.679710+00:00"
+  },
+  "arm_events": [
+    {
+      "at_utc": "2026-10-27T02:20:14.603200+00:00",
+      "method": "GET",
+      "resource_id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.ContainerInstance/containerGroups/poc-ids-token-ex-finops-probe-2f75015b55d1-ingestion",
+      "http_status": 404,
+      "error_codes": [],
+      "action": null
+    },
+    {
+      "at_utc": "2026-10-27T02:20:14.677746+00:00",
+      "method": "GET",
+      "resource_id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.ContainerInstance/containerGroups/poc-ids-token-ex-finops-probe-2f75015b55d1-api",
+      "http_status": 404,
+      "error_codes": [],
+      "action": null
+    },
+    {
+      "at_utc": "2026-10-27T02:20:14.789405+00:00",
+      "method": "GET",
+      "resource_id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Network/virtualNetworks/poc-ids-token-ex-vnet/subnets/poc-ids-token-ex-finops-probe",
+      "http_status": 404,
+      "error_codes": [],
+      "action": null
+    },
+    {
+      "at_utc": "2026-10-27T02:20:14.854400+00:00",
+      "method": "GET",
+      "resource_id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Network/networkSecurityGroups/poc-ids-token-ex-finops-probe-2f75015b55d1-nsg",
+      "http_status": 404,
+      "error_codes": [],
+      "action": null
+    },
+    {
+      "at_utc": "2026-10-27T02:20:14.935744+00:00",
+      "method": "GET",
+      "resource_id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Network/natGateways/poc-ids-token-ex-finops-probe-2f75015b55d1-nat",
+      "http_status": 404,
+      "error_codes": [],
+      "action": null
+    },
+    {
+      "at_utc": "2026-10-27T02:20:15.007630+00:00",
+      "method": "GET",
+      "resource_id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Network/publicIPAddresses/poc-ids-token-ex-finops-probe-2f75015b55d1-pip",
+      "http_status": 404,
+      "error_codes": [],
+      "action": null
+    },
+    {
+      "at_utc": "2026-10-27T02:20:15.529709+00:00",
+      "method": "GET",
+      "resource_id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Network/publicIPAddresses/poc-ids-token-ex-finops-probe-2f75015b55d1-pip",
+      "http_status": 404,
+      "error_codes": [],
+      "action": null
+    },
+    {
+      "at_utc": "2026-10-27T02:20:15.927971+00:00",
+      "method": "PUT",
+      "resource_id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Network/publicIPAddresses/poc-ids-token-ex-finops-probe-2f75015b55d1-pip",
+      "http_status": 201,
+      "action": null
+    },
+    {
+      "at_utc": "2026-10-27T02:20:16.115762+00:00",
+      "method": "GET",
+      "resource_id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Network/publicIPAddresses/poc-ids-token-ex-finops-probe-2f75015b55d1-pip",
+      "http_status": 200,
+      "action": null
+    },
+    {
+      "at_utc": "2026-10-27T02:20:16.246092+00:00",
+      "method": "GET",
+      "resource_id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Network/networkSecurityGroups/poc-ids-token-ex-finops-probe-2f75015b55d1-nsg",
+      "http_status": 404,
+      "error_codes": [],
+      "action": null
+    },
+    {
+      "at_utc": "2026-10-27T02:20:16.861511+00:00",
+      "method": "PUT",
+      "resource_id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Network/networkSecurityGroups/poc-ids-token-ex-finops-probe-2f75015b55d1-nsg",
+      "http_status": 201,
+      "action": null
+    },
+    {
+      "at_utc": "2026-10-27T02:20:16.992039+00:00",
+      "method": "GET",
+      "resource_id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Network/networkSecurityGroups/poc-ids-token-ex-finops-probe-2f75015b55d1-nsg",
+      "http_status": 200,
+      "action": null
+    },
+    {
+      "at_utc": "2026-10-27T02:20:17.078565+00:00",
+      "method": "GET",
+      "resource_id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Network/natGateways/poc-ids-token-ex-finops-probe-2f75015b55d1-nat",
+      "http_status": 404,
+      "error_codes": [],
+      "action": null
+    },
+    {
+      "at_utc": "2026-10-27T02:20:18.009679+00:00",
+      "method": "PUT",
+      "resource_id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Network/natGateways/poc-ids-token-ex-finops-probe-2f75015b55d1-nat",
+      "http_status": 201,
+      "action": null
+    },
+    {
+      "at_utc": "2026-10-27T02:20:18.097627+00:00",
+      "method": "GET",
+      "resource_id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Network/natGateways/poc-ids-token-ex-finops-probe-2f75015b55d1-nat",
+      "http_status": 200,
+      "action": null
+    },
+    {
+      "at_utc": "2026-10-27T02:20:21.240335+00:00",
+      "method": "GET",
+      "resource_id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Network/natGateways/poc-ids-token-ex-finops-probe-2f75015b55d1-nat",
+      "http_status": 200,
+      "action": null
+    },
+    {
+      "at_utc": "2026-10-27T02:20:24.329711+00:00",
+      "method": "GET",
+      "resource_id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Network/natGateways/poc-ids-token-ex-finops-probe-2f75015b55d1-nat",
+      "http_status": 200,
+      "action": null
+    },
+    {
+      "at_utc": "2026-10-27T02:20:24.474158+00:00",
+      "method": "GET",
+      "resource_id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Network/virtualNetworks/poc-ids-token-ex-vnet/subnets/poc-ids-token-ex-finops-probe",
+      "http_status": 404,
+      "error_codes": [],
+      "action": null
+    },
+    {
+      "at_utc": "2026-10-27T02:20:24.803051+00:00",
+      "method": "PUT",
+      "resource_id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Network/virtualNetworks/poc-ids-token-ex-vnet/subnets/poc-ids-token-ex-finops-probe",
+      "http_status": 201,
+      "action": null
+    },
+    {
+      "at_utc": "2026-10-27T02:20:24.889531+00:00",
+      "method": "GET",
+      "resource_id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Network/virtualNetworks/poc-ids-token-ex-vnet/subnets/poc-ids-token-ex-finops-probe",
+      "http_status": 200,
+      "action": null
+    },
+    {
+      "at_utc": "2026-10-27T02:20:27.999157+00:00",
+      "method": "GET",
+      "resource_id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Network/virtualNetworks/poc-ids-token-ex-vnet/subnets/poc-ids-token-ex-finops-probe",
+      "http_status": 200,
+      "action": null
+    },
+    {
+      "at_utc": "2026-10-27T02:20:28.070612+00:00",
+      "method": "GET",
+      "resource_id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.ContainerInstance/containerGroups/poc-ids-token-ex-finops-probe-2f75015b55d1-api",
+      "http_status": 404,
+      "error_codes": [],
+      "action": null
+    },
+    {
+      "at_utc": "2026-10-27T02:20:56.701536+00:00",
+      "method": "GET",
+      "resource_id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.ContainerInstance/containerGroups/poc-ids-token-ex-finops-probe-2f75015b55d1-ingestion",
+      "http_status": 404,
+      "error_codes": [],
+      "action": null
+    },
+    {
+      "at_utc": "2026-10-27T02:20:59.738509+00:00",
+      "method": "PUT",
+      "resource_id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.ContainerInstance/containerGroups/poc-ids-token-ex-finops-probe-2f75015b55d1-ingestion",
+      "http_status": 201,
+      "action": null
+    },
+    {
+      "at_utc": "2026-10-27T02:20:59.839625+00:00",
+      "method": "GET",
+      "resource_id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.ContainerInstance/containerGroups/poc-ids-token-ex-finops-probe-2f75015b55d1-ingestion",
+      "http_status": 200,
+      "action": null
+    },
+    {
+      "at_utc": "2026-10-27T02:21:02.972909+00:00",
+      "method": "GET",
+      "resource_id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.ContainerInstance/containerGroups/poc-ids-token-ex-finops-probe-2f75015b55d1-ingestion",
+      "http_status": 200,
+      "action": null
+    },
+    {
+      "at_utc": "2026-10-27T02:21:06.070506+00:00",
+      "method": "GET",
+      "resource_id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.ContainerInstance/containerGroups/poc-ids-token-ex-finops-probe-2f75015b55d1-ingestion",
+      "http_status": 200,
+      "action": null
+    },
+    {
+      "at_utc": "2026-10-27T02:21:09.199394+00:00",
+      "method": "GET",
+      "resource_id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.ContainerInstance/containerGroups/poc-ids-token-ex-finops-probe-2f75015b55d1-ingestion",
+      "http_status": 200,
+      "action": null
+    },
+    {
+      "at_utc": "2026-10-27T02:21:12.359598+00:00",
+      "method": "GET",
+      "resource_id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.ContainerInstance/containerGroups/poc-ids-token-ex-finops-probe-2f75015b55d1-ingestion",
+      "http_status": 200,
+      "action": null
+    },
+    {
+      "at_utc": "2026-10-27T02:21:15.502295+00:00",
+      "method": "GET",
+      "resource_id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.ContainerInstance/containerGroups/poc-ids-token-ex-finops-probe-2f75015b55d1-ingestion",
+      "http_status": 200,
+      "action": null
+    },
+    {
+      "at_utc": "2026-10-27T02:21:18.611649+00:00",
+      "method": "GET",
+      "resource_id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.ContainerInstance/containerGroups/poc-ids-token-ex-finops-probe-2f75015b55d1-ingestion",
+      "http_status": 200,
+      "action": null
+    },
+    {
+      "at_utc": "2026-10-27T02:21:21.809959+00:00",
+      "method": "GET",
+      "resource_id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.ContainerInstance/containerGroups/poc-ids-token-ex-finops-probe-2f75015b55d1-ingestion",
+      "http_status": 200,
+      "action": null
+    },
+    {
+      "at_utc": "2026-10-27T02:21:24.926051+00:00",
+      "method": "GET",
+      "resource_id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.ContainerInstance/containerGroups/poc-ids-token-ex-finops-probe-2f75015b55d1-ingestion",
+      "http_status": 200,
+      "action": null
+    },
+    {
+      "at_utc": "2026-10-27T02:21:28.083238+00:00",
+      "method": "GET",
+      "resource_id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.ContainerInstance/containerGroups/poc-ids-token-ex-finops-probe-2f75015b55d1-ingestion",
+      "http_status": 200,
+      "action": null
+    },
+    {
+      "at_utc": "2026-10-27T02:21:31.201877+00:00",
+      "method": "GET",
+      "resource_id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.ContainerInstance/containerGroups/poc-ids-token-ex-finops-probe-2f75015b55d1-ingestion",
+      "http_status": 200,
+      "action": null
+    },
+    {
+      "at_utc": "2026-10-27T02:21:34.334562+00:00",
+      "method": "GET",
+      "resource_id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.ContainerInstance/containerGroups/poc-ids-token-ex-finops-probe-2f75015b55d1-ingestion",
+      "http_status": 200,
+      "action": null
+    },
+    {
+      "at_utc": "2026-10-27T02:21:37.443924+00:00",
+      "method": "GET",
+      "resource_id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.ContainerInstance/containerGroups/poc-ids-token-ex-finops-probe-2f75015b55d1-ingestion",
+      "http_status": 200,
+      "action": null
+    },
+    {
+      "at_utc": "2026-10-27T02:21:40.632725+00:00",
+      "method": "GET",
+      "resource_id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.ContainerInstance/containerGroups/poc-ids-token-ex-finops-probe-2f75015b55d1-ingestion",
+      "http_status": 200,
+      "action": null
+    },
+    {
+      "at_utc": "2026-10-27T02:21:43.802648+00:00",
+      "method": "GET",
+      "resource_id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.ContainerInstance/containerGroups/poc-ids-token-ex-finops-probe-2f75015b55d1-ingestion",
+      "http_status": 200,
+      "action": null
+    },
+    {
+      "at_utc": "2026-10-27T02:21:46.894480+00:00",
+      "method": "GET",
+      "resource_id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.ContainerInstance/containerGroups/poc-ids-token-ex-finops-probe-2f75015b55d1-ingestion",
+      "http_status": 200,
+      "action": null
+    },
+    {
+      "at_utc": "2026-10-27T02:21:50.030532+00:00",
+      "method": "GET",
+      "resource_id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.ContainerInstance/containerGroups/poc-ids-token-ex-finops-probe-2f75015b55d1-ingestion",
+      "http_status": 200,
+      "action": null
+    },
+    {
+      "at_utc": "2026-10-27T02:21:53.318218+00:00",
+      "method": "GET",
+      "resource_id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.ContainerInstance/containerGroups/poc-ids-token-ex-finops-probe-2f75015b55d1-ingestion",
+      "http_status": 200,
+      "action": null
+    },
+    {
+      "at_utc": "2026-10-27T02:21:56.503930+00:00",
+      "method": "GET",
+      "resource_id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.ContainerInstance/containerGroups/poc-ids-token-ex-finops-probe-2f75015b55d1-ingestion",
+      "http_status": 200,
+      "action": null
+    },
+    {
+      "at_utc": "2026-10-27T02:21:59.745077+00:00",
+      "method": "GET",
+      "resource_id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.ContainerInstance/containerGroups/poc-ids-token-ex-finops-probe-2f75015b55d1-ingestion",
+      "http_status": 200,
+      "action": null
+    },
+    {
+      "at_utc": "2026-10-27T02:22:02.861126+00:00",
+      "method": "GET",
+      "resource_id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.ContainerInstance/containerGroups/poc-ids-token-ex-finops-probe-2f75015b55d1-ingestion",
+      "http_status": 200,
+      "action": null
+    },
+    {
+      "at_utc": "2026-10-27T02:22:06.016931+00:00",
+      "method": "GET",
+      "resource_id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.ContainerInstance/containerGroups/poc-ids-token-ex-finops-probe-2f75015b55d1-ingestion",
+      "http_status": 200,
+      "action": null
+    },
+    {
+      "at_utc": "2026-10-27T02:22:09.209828+00:00",
+      "method": "GET",
+      "resource_id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.ContainerInstance/containerGroups/poc-ids-token-ex-finops-probe-2f75015b55d1-ingestion",
+      "http_status": 200,
+      "action": null
+    },
+    {
+      "at_utc": "2026-10-27T02:22:12.327492+00:00",
+      "method": "GET",
+      "resource_id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.ContainerInstance/containerGroups/poc-ids-token-ex-finops-probe-2f75015b55d1-ingestion",
+      "http_status": 200,
+      "action": null
+    },
+    {
+      "at_utc": "2026-10-27T02:22:15.455674+00:00",
+      "method": "GET",
+      "resource_id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.ContainerInstance/containerGroups/poc-ids-token-ex-finops-probe-2f75015b55d1-ingestion",
+      "http_status": 200,
+      "action": null
+    },
+    {
+      "at_utc": "2026-10-27T02:22:18.591649+00:00",
+      "method": "GET",
+      "resource_id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.ContainerInstance/containerGroups/poc-ids-token-ex-finops-probe-2f75015b55d1-ingestion",
+      "http_status": 200,
+      "action": null
+    },
+    {
+      "at_utc": "2026-10-27T02:22:21.714062+00:00",
+      "method": "GET",
+      "resource_id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.ContainerInstance/containerGroups/poc-ids-token-ex-finops-probe-2f75015b55d1-ingestion",
+      "http_status": 200,
+      "action": null
+    },
+    {
+      "at_utc": "2026-10-27T02:22:24.841833+00:00",
+      "method": "GET",
+      "resource_id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.ContainerInstance/containerGroups/poc-ids-token-ex-finops-probe-2f75015b55d1-ingestion",
+      "http_status": 200,
+      "action": null
+    },
+    {
+      "at_utc": "2026-10-27T02:22:27.957836+00:00",
+      "method": "GET",
+      "resource_id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.ContainerInstance/containerGroups/poc-ids-token-ex-finops-probe-2f75015b55d1-ingestion",
+      "http_status": 200,
+      "action": null
+    },
+    {
+      "at_utc": "2026-10-27T02:22:31.106231+00:00",
+      "method": "GET",
+      "resource_id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.ContainerInstance/containerGroups/poc-ids-token-ex-finops-probe-2f75015b55d1-ingestion",
+      "http_status": 200,
+      "action": null
+    },
+    {
+      "at_utc": "2026-10-27T02:22:34.211968+00:00",
+      "method": "GET",
+      "resource_id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.ContainerInstance/containerGroups/poc-ids-token-ex-finops-probe-2f75015b55d1-ingestion",
+      "http_status": 200,
+      "action": null
+    },
+    {
+      "at_utc": "2026-10-27T02:22:37.416397+00:00",
+      "method": "GET",
+      "resource_id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.ContainerInstance/containerGroups/poc-ids-token-ex-finops-probe-2f75015b55d1-ingestion",
+      "http_status": 200,
+      "action": null
+    },
+    {
+      "at_utc": "2026-10-27T02:22:43.232696+00:00",
+      "method": "GET",
+      "resource_id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.ContainerInstance/containerGroups/poc-ids-token-ex-finops-probe-2f75015b55d1-ingestion",
+      "http_status": 200,
+      "action": null
+    },
+    {
+      "at_utc": "2026-10-27T02:22:46.473017+00:00",
+      "method": "GET",
+      "resource_id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.ContainerInstance/containerGroups/poc-ids-token-ex-finops-probe-2f75015b55d1-ingestion",
+      "http_status": 200,
+      "action": null
+    },
+    {
+      "at_utc": "2026-10-27T02:22:46.679498+00:00",
+      "method": "GET",
+      "resource_id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.ContainerInstance/containerGroups/poc-ids-token-ex-finops-probe-2f75015b55d1-ingestion",
+      "http_status": 200,
+      "action": null
+    }
+  ],
+  "preservation_after": {
+    "at_utc": "2026-10-27T02:22:58.380773+00:00",
+    "postgres_public_network_access": "Disabled",
+    "postgres_firewall_rule_count": 0,
+    "state_storage_default_action": "Deny",
+    "state_storage_approved_ips": [
+      "167.103.65.36",
+      "167.103.66.248",
+      "167.103.66.93"
+    ],
+    "configuration_writes": 0,
+    "preservation_verified": true
+  },
+  "finished_at_utc": "2026-10-27T02:22:58.380817+00:00"
+}

@@ -35,7 +35,7 @@ aiflux-ingest = "aiflux.ingestion:main"
 where = ["services/control-plane/src"]
 
 [tool.setuptools.package-data]
-aiflux = ["queries/*.kql"]
+aiflux = ["queries/*.kql", "pricing/*.json"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests/unit"]

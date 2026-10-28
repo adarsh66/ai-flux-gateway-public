@@ -1,0 +1,44 @@
+{
+  "at_utc": "2026-10-27T07:28:23.868481+00:00",
+  "status": "blocked_runtime_data_plane_proof",
+  "proven_controller_defects_fixed": [
+    "storage_AuthorizationPermissionMismatch_misclassified_as_Monitor",
+    "HTTP_readiness_invoked_through_non_HTTP_admin_input_API"
+  ],
+  "underlying_storage_denial_remediated": false,
+  "actual_monitor_MI_query_verified": false,
+  "current_function_PG_readiness_verified": false,
+  "workspace_guid_and_selected_MI_and_existing_roles_match": true,
+  "existing_private_execution_attempt": {
+    "route": "existing_ingestion_SCM",
+    "attempts": 1,
+    "http_status": 403,
+    "exception_class": "HTTPError",
+    "command_execution_verified": false
+  },
+  "image": "pocidstokenexacr.azurecr.io/aiflux-ingestion@sha256:d2bdae4edbd2faf0f6c5a5b28c83882e36222767f88de9625071b251d4114c0b",
+  "full_protected_baseline_and_complete_settings": "verified_after_logging_restoration",
+  "temporary_logging_restored_at_utc": "2026-10-27T07:27:13.711011+00:00",
+  "host_enabled": true,
+  "catalog_enabled": true,
+  "timer_enabled": false,
+  "cutoff": "2026-10-27T06:06:02.045288+00:00",
+  "prepared_runner_nonce": "2be1b356c1dd",
+  "prepared_runner_all_six_get404": true,
+  "new_resources": 0,
+  "new_builds": 0,
+  "role_or_network_changes": 0,
+  "keys_or_secrets_read": 0,
+  "timer_invocations": 0,
+  "database_writes": 0,
+  "historical_replay": false,
+  "tests_passed": 102,
+  "tests_failed": 0,
+  "evidence": [
+    "gateway/validation/finops-live-runtime-20261027T072429Z.json",
+    "gateway/validation/finops-authorization-metadata-20261027T072425Z.json",
+    "gateway/validation/finops-existing-private-query-20261027T072329Z.json",
+    "gateway/validation/finops-authorization-diagnosis-tests-20261027.xml"
+  ],
+  "next_gate": "valid_existing_private_runtime_channel_for_actual_MI_KQL_host_storage_and_PG_checks_before_fresh_exact_timer_only_plan"
+}

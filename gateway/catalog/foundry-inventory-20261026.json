@@ -1,0 +1,356 @@
+{
+  "schema_version": 1,
+  "verified_at": "2026-10-28T01:46:08.848809+00:00",
+  "project_endpoint": "https://poc-ids-token-ex-foundry.services.ai.azure.com/api/projects/poc-ids-token-ex-foundry-project",
+  "project_resource_id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.CognitiveServices/accounts/poc-ids-token-ex-foundry/projects/poc-ids-token-ex-foundry-project",
+  "account_resource_id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.CognitiveServices/accounts/poc-ids-token-ex-foundry",
+  "account_read": "Succeeded",
+  "project_read": "Succeeded",
+  "connections_read": "Succeeded",
+  "connection_ids": [],
+  "project_deployments_read": "PermissionDenied",
+  "deployments": [
+    {
+      "id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.CognitiveServices/accounts/poc-ids-token-ex-foundry/deployments/Decision-1",
+      "name": "Decision-1",
+      "model_name": "Microsoft-Decision-1",
+      "model_version": "1",
+      "model_format": "Microsoft",
+      "provisioning_state": "Succeeded",
+      "deployment_state": null,
+      "capacity": 250,
+      "chat_completion": false,
+      "decision": true
+    },
+    {
+      "id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.CognitiveServices/accounts/poc-ids-token-ex-foundry/deployments/gpt-6.1-sol",
+      "name": "gpt-6.1-sol",
+      "model_name": "gpt-6.1-sol",
+      "model_version": "2026-09-29",
+      "model_format": "OpenAI",
+      "provisioning_state": "Succeeded",
+      "deployment_state": null,
+      "capacity": 5000,
+      "chat_completion": true
+    },
+    {
+      "id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.CognitiveServices/accounts/poc-ids-token-ex-foundry/deployments/gpt-5.6-luna",
+      "name": "gpt-5.6-luna",
+      "model_name": "gpt-5.6-luna",
+      "model_version": "2026-07-09",
+      "model_format": "OpenAI",
+      "provisioning_state": "Succeeded",
+      "deployment_state": null,
+      "capacity": 5000,
+      "chat_completion": true
+    },
+    {
+      "id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.CognitiveServices/accounts/poc-ids-token-ex-foundry/deployments/DeepSeek-V4-Flash",
+      "name": "DeepSeek-V4-Flash",
+      "model_name": "DeepSeek-V4-Flash",
+      "model_version": "2026-04-23",
+      "model_format": "DeepSeek",
+      "provisioning_state": "Succeeded",
+      "deployment_state": null,
+      "capacity": 2500,
+      "chat_completion": true
+    },
+    {
+      "id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.CognitiveServices/accounts/poc-ids-token-ex-foundry/deployments/gpt-4o",
+      "name": "gpt-4o",
+      "model_name": "gpt-4o",
+      "model_version": "2024-11-20",
+      "model_format": "OpenAI",
+      "provisioning_state": "Succeeded",
+      "deployment_state": null,
+      "capacity": 15000,
+      "chat_completion": true
+    },
+    {
+      "id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.CognitiveServices/accounts/poc-ids-token-ex-foundry/deployments/gpt-5.4-mini",
+      "name": "gpt-5.4-mini",
+      "model_name": "gpt-5.4-mini",
+      "model_version": "2026-03-17",
+      "model_format": "OpenAI",
+      "provisioning_state": "Succeeded",
+      "deployment_state": null,
+      "capacity": 5000,
+      "chat_completion": true
+    },
+    {
+      "id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.CognitiveServices/accounts/poc-ids-token-ex-foundry/deployments/grok-4-1-fast-reasoning",
+      "name": "grok-4-1-fast-reasoning",
+      "model_name": "grok-4-1-fast-reasoning",
+      "model_version": "1",
+      "model_format": "xAI",
+      "provisioning_state": "Succeeded",
+      "deployment_state": null,
+      "capacity": 2500,
+      "chat_completion": true
+    },
+    {
+      "id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.CognitiveServices/accounts/poc-ids-token-ex-foundry/deployments/grok-4-20-reasoning",
+      "name": "grok-4-20-reasoning",
+      "model_name": "grok-4-20-reasoning",
+      "model_version": "1",
+      "model_format": "xAI",
+      "provisioning_state": "Succeeded",
+      "deployment_state": null,
+      "capacity": 2500,
+      "chat_completion": true
+    },
+    {
+      "id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.CognitiveServices/accounts/poc-ids-token-ex-foundry/deployments/grok-4.3",
+      "name": "grok-4.3",
+      "model_name": "grok-4.3",
+      "model_version": "1",
+      "model_format": "xAI",
+      "provisioning_state": "Succeeded",
+      "deployment_state": null,
+      "capacity": 2500,
+      "chat_completion": true
+    },
+    {
+      "id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.CognitiveServices/accounts/poc-ids-token-ex-foundry/deployments/DeepSeek-V4-Pro",
+      "name": "DeepSeek-V4-Pro",
+      "model_name": "DeepSeek-V4-Pro",
+      "model_version": "2026-04-23",
+      "model_format": "DeepSeek",
+      "provisioning_state": "Succeeded",
+      "deployment_state": null,
+      "capacity": 5000,
+      "chat_completion": true
+    },
+    {
+      "id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.CognitiveServices/accounts/poc-ids-token-ex-foundry/deployments/Kimi-K2.7-Code",
+      "name": "Kimi-K2.7-Code",
+      "model_name": "Kimi-K2.7-Code",
+      "model_version": "2026-06-12",
+      "model_format": "MoonshotAI",
+      "provisioning_state": "Succeeded",
+      "deployment_state": null,
+      "capacity": 1000,
+      "chat_completion": true
+    },
+    {
+      "id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.CognitiveServices/accounts/poc-ids-token-ex-foundry/deployments/FW-GLM-5.3",
+      "name": "FW-GLM-5.3",
+      "model_name": "FW-GLM-5.3",
+      "model_version": "2",
+      "model_format": "Fireworks",
+      "provisioning_state": "Succeeded",
+      "deployment_state": null,
+      "capacity": 250,
+      "chat_completion": true,
+      "decision": false,
+      "sku": "GlobalStandard"
+    },
+    {
+      "id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.CognitiveServices/accounts/poc-ids-token-ex-foundry/deployments/FW-MiniMax-M3",
+      "name": "FW-MiniMax-M3",
+      "model_name": "FW-MiniMax-M3",
+      "model_version": "1",
+      "model_format": "Fireworks",
+      "provisioning_state": "Succeeded",
+      "deployment_state": null,
+      "capacity": 250,
+      "chat_completion": true,
+      "decision": false,
+      "sku": "DataZoneStandard"
+    }
+  ],
+  "routes": [
+    {
+      "alias": "gpt-5.6-luna",
+      "deployment_id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.CognitiveServices/accounts/poc-ids-token-ex-foundry/deployments/gpt-5.6-luna",
+      "backend_model": "gpt-5.6-luna",
+      "model_name": "gpt-5.6-luna",
+      "model_version": "2026-07-09",
+      "endpoint_url": "https://poc-ids-token-ex-foundry.openai.azure.com/openai/v1",
+      "api_format": "openai-chat-completions",
+      "capabilities": [
+        "chat"
+      ],
+      "max_completion_tokens": 1024,
+      "gateway_validated": true,
+      "upstream_token_parameter": "max_completion_tokens",
+      "expires_at": null
+    },
+    {
+      "alias": "gpt-6.1-sol",
+      "deployment_id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.CognitiveServices/accounts/poc-ids-token-ex-foundry/deployments/gpt-6.1-sol",
+      "backend_model": "gpt-6.1-sol",
+      "model_name": "gpt-6.1-sol",
+      "model_version": "2026-09-29",
+      "endpoint_url": "https://poc-ids-token-ex-foundry.openai.azure.com/openai/v1",
+      "api_format": "openai-chat-completions",
+      "capabilities": [
+        "chat"
+      ],
+      "max_completion_tokens": 1024,
+      "gateway_validated": true,
+      "upstream_token_parameter": "max_completion_tokens",
+      "expires_at": null
+    },
+    {
+      "alias": "gpt-5.4-mini",
+      "deployment_id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.CognitiveServices/accounts/poc-ids-token-ex-foundry/deployments/gpt-5.4-mini",
+      "backend_model": "gpt-5.4-mini",
+      "model_name": "gpt-5.4-mini",
+      "model_version": "2026-03-17",
+      "endpoint_url": "https://poc-ids-token-ex-foundry.openai.azure.com/openai/v1",
+      "api_format": "openai-chat-completions",
+      "capabilities": [
+        "chat"
+      ],
+      "max_completion_tokens": 1024,
+      "gateway_validated": true,
+      "upstream_token_parameter": "max_completion_tokens",
+      "expires_at": null
+    },
+    {
+      "alias": "gpt-4o",
+      "deployment_id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.CognitiveServices/accounts/poc-ids-token-ex-foundry/deployments/gpt-4o",
+      "backend_model": "gpt-4o",
+      "model_name": "gpt-4o",
+      "model_version": "2024-11-20",
+      "endpoint_url": "https://poc-ids-token-ex-foundry.openai.azure.com/openai/v1",
+      "api_format": "openai-chat-completions",
+      "capabilities": [
+        "chat"
+      ],
+      "max_completion_tokens": 1024,
+      "gateway_validated": true,
+      "upstream_token_parameter": "max_completion_tokens",
+      "expires_at": null
+    },
+    {
+      "alias": "DeepSeek-V4-Flash",
+      "deployment_id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.CognitiveServices/accounts/poc-ids-token-ex-foundry/deployments/DeepSeek-V4-Flash",
+      "backend_model": "DeepSeek-V4-Flash",
+      "model_name": "DeepSeek-V4-Flash",
+      "model_version": "2026-04-23",
+      "endpoint_url": "https://poc-ids-token-ex-foundry.openai.azure.com/openai/v1",
+      "api_format": "openai-chat-completions",
+      "capabilities": [
+        "chat"
+      ],
+      "max_completion_tokens": 1024,
+      "gateway_validated": true,
+      "upstream_token_parameter": "max_tokens",
+      "expires_at": null
+    },
+    {
+      "alias": "DeepSeek-V4-Pro",
+      "deployment_id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.CognitiveServices/accounts/poc-ids-token-ex-foundry/deployments/DeepSeek-V4-Pro",
+      "backend_model": "DeepSeek-V4-Pro",
+      "model_name": "DeepSeek-V4-Pro",
+      "model_version": "2026-04-23",
+      "endpoint_url": "https://poc-ids-token-ex-foundry.openai.azure.com/openai/v1",
+      "api_format": "openai-chat-completions",
+      "capabilities": [
+        "chat"
+      ],
+      "max_completion_tokens": 1024,
+      "gateway_validated": true,
+      "upstream_token_parameter": "max_tokens",
+      "expires_at": null
+    },
+    {
+      "alias": "Kimi-K2.7-Code",
+      "deployment_id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.CognitiveServices/accounts/poc-ids-token-ex-foundry/deployments/Kimi-K2.7-Code",
+      "backend_model": "Kimi-K2.7-Code",
+      "model_name": "Kimi-K2.7-Code",
+      "model_version": "2026-06-12",
+      "endpoint_url": "https://poc-ids-token-ex-foundry.openai.azure.com/openai/v1",
+      "api_format": "openai-chat-completions",
+      "capabilities": [
+        "chat"
+      ],
+      "max_completion_tokens": 1024,
+      "gateway_validated": true,
+      "upstream_token_parameter": "max_tokens",
+      "expires_at": null
+    },
+    {
+      "alias": "grok-4.3",
+      "deployment_id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.CognitiveServices/accounts/poc-ids-token-ex-foundry/deployments/grok-4.3",
+      "backend_model": "grok-4.3",
+      "model_name": "grok-4.3",
+      "model_version": "1",
+      "endpoint_url": "https://poc-ids-token-ex-foundry.openai.azure.com/openai/v1",
+      "api_format": "openai-chat-completions",
+      "capabilities": [
+        "chat"
+      ],
+      "max_completion_tokens": 1024,
+      "gateway_validated": true,
+      "upstream_token_parameter": "max_completion_tokens",
+      "expires_at": null
+    },
+    {
+      "alias": "grok-4-20-reasoning",
+      "deployment_id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.CognitiveServices/accounts/poc-ids-token-ex-foundry/deployments/grok-4-20-reasoning",
+      "backend_model": "grok-4-20-reasoning",
+      "model_name": "grok-4-20-reasoning",
+      "model_version": "1",
+      "endpoint_url": "https://poc-ids-token-ex-foundry.openai.azure.com/openai/v1",
+      "api_format": "openai-chat-completions",
+      "capabilities": [
+        "chat"
+      ],
+      "max_completion_tokens": 1024,
+      "gateway_validated": true,
+      "upstream_token_parameter": "max_completion_tokens",
+      "expires_at": null
+    },
+    {
+      "alias": "grok-4-1-fast-reasoning",
+      "deployment_id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.CognitiveServices/accounts/poc-ids-token-ex-foundry/deployments/grok-4-1-fast-reasoning",
+      "backend_model": "grok-4-1-fast-reasoning",
+      "model_name": "grok-4-1-fast-reasoning",
+      "model_version": "1",
+      "endpoint_url": "https://poc-ids-token-ex-foundry.openai.azure.com/openai/v1",
+      "api_format": "openai-chat-completions",
+      "capabilities": [
+        "chat"
+      ],
+      "max_completion_tokens": 1024,
+      "gateway_validated": true,
+      "upstream_token_parameter": "max_completion_tokens",
+      "expires_at": null
+    },
+    {
+      "alias": "FW-GLM-5.3",
+      "deployment_id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.CognitiveServices/accounts/poc-ids-token-ex-foundry/deployments/FW-GLM-5.3",
+      "backend_model": "FW-GLM-5.3",
+      "model_name": "FW-GLM-5.3",
+      "model_version": "2",
+      "endpoint_url": "https://poc-ids-token-ex-foundry.services.ai.azure.com/openai/v1",
+      "api_format": "openai-chat-completions",
+      "capabilities": [
+        "chat"
+      ],
+      "max_completion_tokens": 1024,
+      "gateway_validated": true,
+      "upstream_token_parameter": "max_tokens",
+      "expires_at": null
+    },
+    {
+      "alias": "FW-MiniMax-M3",
+      "deployment_id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.CognitiveServices/accounts/poc-ids-token-ex-foundry/deployments/FW-MiniMax-M3",
+      "backend_model": "FW-MiniMax-M3",
+      "model_name": "FW-MiniMax-M3",
+      "model_version": "1",
+      "endpoint_url": "https://poc-ids-token-ex-foundry.services.ai.azure.com/openai/v1",
+      "api_format": "openai-chat-completions",
+      "capabilities": [
+        "chat"
+      ],
+      "max_completion_tokens": 1024,
+      "gateway_validated": true,
+      "upstream_token_parameter": "max_tokens",
+      "expires_at": null
+    }
+  ]
+}

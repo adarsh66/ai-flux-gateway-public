@@ -1,0 +1,228 @@
+{
+  "owner_nonce": "dcce379a02ce",
+  "started_at_utc": "2026-10-27T07:37:01.014995+00:00",
+  "database_writes": 0,
+  "storage_writes": 0,
+  "new_roles": 0,
+  "production_changes": 0,
+  "metadata": {
+    "at_utc": "2026-10-27T07:37:33.581645+00:00",
+    "workspace_guid": "004a359b-dde6-40fb-843c-4d5651785e17",
+    "storage_private_ips": {
+      "blob": "10.240.3.6",
+      "queue": "10.240.3.7",
+      "table": "10.240.3.8"
+    },
+    "identity_client_object_tenant_verified": true,
+    "assignments": [
+      {
+        "scope": "host_storage",
+        "role_definition": "b7e6dc6d-f1e8-4753-8033-0f276bb0955b",
+        "condition_present": false
+      },
+      {
+        "scope": "host_storage",
+        "role_definition": "974c5e8b-45b9-4653-ba55-5f855dd0fb88",
+        "condition_present": false
+      },
+      {
+        "scope": "host_storage",
+        "role_definition": "0a9a7e1f-b9d0-4cc4-a60d-0319b160aaa3",
+        "condition_present": false
+      },
+      {
+        "scope": "monitor",
+        "role_definition": "73c42c96-874c-492b-b04d-ab87d138a893",
+        "condition_present": false
+      }
+    ],
+    "timer_disabled": true,
+    "catalog_enabled": true,
+    "cutoff_preserved": true
+  },
+  "prerequisites": {
+    "at_utc": "2026-10-27T07:37:50.975715+00:00",
+    "account_scope_verified": true,
+    "aci_quota": {
+      "ContainerGroups": {
+        "used": 0,
+        "limit": 100
+      },
+      "StandardCores": {
+        "used": 0,
+        "limit": 1000
+      }
+    },
+    "aci_registered_and_region_listed": true,
+    "identities": {
+      "ingestion": {
+        "client_object_tenant_verified": true,
+        "existing_registry_acrpull_verified": true
+      },
+      "api": {
+        "client_object_tenant_verified": true,
+        "existing_registry_acrpull_verified": true
+      }
+    },
+    "new_roles": 0
+  },
+  "previous_preparation_absence": [
+    {
+      "at_utc": "2026-10-27T07:37:57.427437+00:00",
+      "method": "GET",
+      "resource_id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.ContainerInstance/containerGroups/poc-ids-token-ex-finops-probe-2be1b356c1dd-ingestion",
+      "http_status": 404,
+      "error_codes": [],
+      "action": null
+    },
+    {
+      "at_utc": "2026-10-27T07:37:57.515928+00:00",
+      "method": "GET",
+      "resource_id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.ContainerInstance/containerGroups/poc-ids-token-ex-finops-probe-2be1b356c1dd-api",
+      "http_status": 404,
+      "error_codes": [],
+      "action": null
+    },
+    {
+      "at_utc": "2026-10-27T07:37:57.802453+00:00",
+      "method": "GET",
+      "resource_id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Network/virtualNetworks/poc-ids-token-ex-vnet/subnets/poc-ids-token-ex-finops-probe-2be1b356c1dd-subnet",
+      "http_status": 404,
+      "error_codes": [],
+      "action": null
+    },
+    {
+      "at_utc": "2026-10-27T07:37:57.896767+00:00",
+      "method": "GET",
+      "resource_id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Network/networkSecurityGroups/poc-ids-token-ex-finops-probe-2be1b356c1dd-nsg",
+      "http_status": 404,
+      "error_codes": [],
+      "action": null
+    },
+    {
+      "at_utc": "2026-10-27T07:37:57.964267+00:00",
+      "method": "GET",
+      "resource_id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Network/natGateways/poc-ids-token-ex-finops-probe-2be1b356c1dd-nat",
+      "http_status": 404,
+      "error_codes": [],
+      "action": null
+    },
+    {
+      "at_utc": "2026-10-27T07:37:58.045379+00:00",
+      "method": "GET",
+      "resource_id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Network/publicIPAddresses/poc-ids-token-ex-finops-probe-2be1b356c1dd-pip",
+      "http_status": 404,
+      "error_codes": [],
+      "action": null
+    }
+  ],
+  "fresh_absence": [
+    {
+      "at_utc": "2026-10-27T07:38:03.641763+00:00",
+      "method": "GET",
+      "resource_id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.ContainerInstance/containerGroups/poc-ids-token-ex-finops-probe-dcce379a02ce-ingestion",
+      "http_status": 404,
+      "error_codes": [],
+      "action": null
+    },
+    {
+      "at_utc": "2026-10-27T07:38:03.722777+00:00",
+      "method": "GET",
+      "resource_id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.ContainerInstance/containerGroups/poc-ids-token-ex-finops-probe-dcce379a02ce-api",
+      "http_status": 404,
+      "error_codes": [],
+      "action": null
+    },
+    {
+      "at_utc": "2026-10-27T07:38:03.842336+00:00",
+      "method": "GET",
+      "resource_id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Network/virtualNetworks/poc-ids-token-ex-vnet/subnets/poc-ids-token-ex-finops-probe-dcce379a02ce-subnet",
+      "http_status": 404,
+      "error_codes": [],
+      "action": null
+    },
+    {
+      "at_utc": "2026-10-27T07:38:03.906840+00:00",
+      "method": "GET",
+      "resource_id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Network/networkSecurityGroups/poc-ids-token-ex-finops-probe-dcce379a02ce-nsg",
+      "http_status": 404,
+      "error_codes": [],
+      "action": null
+    },
+    {
+      "at_utc": "2026-10-27T07:38:03.972154+00:00",
+      "method": "GET",
+      "resource_id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Network/natGateways/poc-ids-token-ex-finops-probe-dcce379a02ce-nat",
+      "http_status": 404,
+      "error_codes": [],
+      "action": null
+    },
+    {
+      "at_utc": "2026-10-27T07:38:04.047385+00:00",
+      "method": "GET",
+      "resource_id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Network/publicIPAddresses/poc-ids-token-ex-finops-probe-dcce379a02ce-pip",
+      "http_status": 404,
+      "error_codes": [],
+      "action": null
+    }
+  ],
+  "preservation": {
+    "at_utc": "2026-10-27T07:38:15.399141+00:00",
+    "postgres_public_network_access": "Disabled",
+    "postgres_firewall_rule_count": 0,
+    "state_storage_default_action": "Deny",
+    "state_storage_approved_ips": [
+      "167.103.65.36",
+      "167.103.66.248",
+      "167.103.66.93"
+    ],
+    "configuration_writes": 0,
+    "preservation_verified": true
+  },
+  "security_scan": {
+    "at_utc": "2026-10-27T07:38:47.683618+00:00",
+    "scanner": "checkov==3.2.495",
+    "exit_code": 0,
+    "cloud_operations": false,
+    "remote_policy_downloads": false,
+    "api_key_forwarded": false,
+    "artifacts_sha256": {
+      "network.arm.json": "41b50db963388b3371c2a23f95c0919577fc7d31ff9c959cd677609fad1d653a",
+      "Dockerfile": "e60e520b5a13588a35926d774d5905f246669d6ba25157660bf0fdb30d5989d0",
+      "ingestion.unbound.arm.json": "6a4c6f81fc214f9c0d7855bf0273d586cf095d92142538e7c7e62e982cd470a1"
+    },
+    "security_gate_passed": true,
+    "frameworks": [
+      {
+        "check_type": "arm",
+        "summary": {
+          "passed": 3,
+          "failed": 0,
+          "skipped": 0,
+          "parsing_errors": 0,
+          "resource_count": 5,
+          "checkov_version": "3.2.495"
+        },
+        "failures": []
+      },
+      {
+        "check_type": "dockerfile",
+        "summary": {
+          "passed": 64,
+          "failed": 0,
+          "skipped": 0,
+          "parsing_errors": 0,
+          "resource_count": 1,
+          "checkov_version": "3.2.495"
+        },
+        "failures": []
+      }
+    ]
+  },
+  "submission_intent_at_utc": "2026-10-27T07:38:53.580470+00:00",
+  "build_submission_cli_exit": 0,
+  "run_id": "cm1w",
+  "exit_code": 2,
+  "reason": "native_linux_build_failed",
+  "finished_at_utc": "2026-10-27T07:39:39.646603+00:00"
+}

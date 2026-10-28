@@ -1,11 +1,36 @@
 from datetime import UTC, datetime, timedelta
 from types import SimpleNamespace
 
+import pytest
 from aiflux.config import Settings
 from aiflux.db import engine_for
 from aiflux.finops import model_token_query, usage_series_query
 from sqlalchemy.dialects import postgresql
 from test_control_plane import create_key
+from conftest import install_inventory
+
+
+@pytest.fixture
+def deployed_garden(env, tmp_path):
+    # Explicit test-only deployment and route acceptance; never assume seeds are live.
+    from aiflux.models import ManagedModelEndpoint
+    from aiflux.turnstile_exchange import DEFAULT_MODELS, ensure_router_config
+    from sqlalchemy.orm import Session
+
+    env.settings.local_auth_enabled = True
+    env.settings.catalog_configured = False
+    entries = []
+    with Session(env.db_engine) as db:
+        config = ensure_router_config(db, env.settings)
+        config.decision_endpoint = "https://gateway.test/router/v1"
+        for item in DEFAULT_MODELS:
+            if not item["enabled"]:
+                continue
+            row = db.get(ManagedModelEndpoint, item["id"])
+            row.endpoint_url = "https://gateway.test/router/v1" if row.id == "auto" else "https://gateway.test/v1"
+            entries.append((row.id, row.backend_model, row.endpoint_url, item["capabilities"], row.max_completion_tokens))
+        db.commit()
+    install_inventory(env.settings, tmp_path / "garden-inventory.json", entries)
 
 
 def test_postgresql_engine_and_production_settings_validation():
@@ -59,7 +84,7 @@ def test_postgresql_dialect_compilation_for_usage_series_and_model_tokens():
     assert "GROUP BY floor(" in token_sql
 
 
-def test_model_garden_pricing_cards_and_admin_onboarding(env):
+def test_model_garden_pricing_cards_and_admin_onboarding(env, deployed_garden):
     customer_garden = env.client.get("/api/model-garden", headers=env.customer)
     assert customer_garden.status_code == 200
     models = {item["id"]: item for item in customer_garden.json()["items"]}
@@ -70,11 +95,11 @@ def test_model_garden_pricing_cards_and_admin_onboarding(env):
         "claude-sonnet-4-5",
         "claude-haiku-4-5",
         "DeepSeek-V3.2-Speciale",
-        "singtel-reai-70b",
-        "gemini-2.5-pro",
     } <= set(models)
-    assert models["singtel-reai-70b"]["coming_soon"] is True
-    assert models["gemini-2.5-pro"]["coming_soon"] is True
+    assert "singtel-reai-70b" not in models
+    assert "gemini-2.5-pro" not in models
+    admin_models = env.client.get("/api/admin/model-garden", headers=env.admin).json()["items"]
+    assert any(m["id"] == "singtel-reai-70b" and not m["enabled"] for m in admin_models)
 
     enable_reai = env.client.put(
         "/api/admin/model-garden/singtel-reai-70b",
@@ -101,11 +126,12 @@ def test_model_garden_pricing_cards_and_admin_onboarding(env):
         },
     )
     assert enable_reai.status_code == 200
-    assert enable_reai.json()["enabled"] is True
+    # An admin metadata toggle cannot manufacture a verified Foundry deployment.
+    assert enable_reai.json()["enabled"] is False
     assert enable_reai.json()["coming_soon"] is False
 
 
-def test_decision_router_auto_mode_and_playground_execution(env):
+def test_decision_router_auto_mode_and_playground_execution(env, deployed_garden):
     sub = create_key(env, "OpCo-Product-Alpha")
     code_route = env.client.post(
         "/api/model-router/decide",
@@ -176,6 +202,35 @@ def test_decision_router_auto_mode_and_playground_execution(env):
     assert "<llm-content-safety" in preview.json()["policy_xml"]
     assert "TurnstileLedger" in preview.json()["policy_xml"]
     assert "ModelRoutes" in preview.json()["policy_xml"]
+
+
+@pytest.mark.parametrize("blocker", ["disabled", "no-auto-route", "no-candidates", "wrong-default", "wrong-endpoint"])
+def test_auto_requires_validated_live_route_and_configured_candidates(env, deployed_garden, blocker):
+    import json
+    from aiflux.models import ModelRouterConfig
+    from sqlalchemy.orm import Session
+
+    if blocker == "no-auto-route":
+        path = env.settings.foundry_inventory_path
+        data = json.loads(path.read_text())
+        data["routes"] = [route for route in data["routes"] if route["alias"] != "auto"]
+        path.write_text(json.dumps(data))
+    else:
+        with Session(env.db_engine) as db:
+            row = db.get(ModelRouterConfig, "default")
+            if blocker == "disabled":
+                row.enabled = False
+            elif blocker == "no-candidates":
+                row.candidate_models_json = '["not-a-deployment"]'
+            elif blocker == "wrong-default":
+                row.default_model = "not-a-deployment"
+            else:
+                row.decision_endpoint = "https://other.test/v1"
+            db.commit()
+    models = env.client.get("/api/models", headers=env.customer).json()["items"]
+    assert models and "auto" not in {m["id"] for m in models}
+    route = env.client.post("/api/model-router/decide", headers=env.customer, json={"prompt": "Hello"})
+    assert route.status_code == 503
 
 
 def test_local_postgres_user_authentication_and_admin_user_management(env):

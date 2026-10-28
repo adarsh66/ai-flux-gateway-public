@@ -1,0 +1,32 @@
+{
+  "revision": "poc-public-20261027-v1",
+  "checked_at": "2026-10-27",
+  "currency": "USD",
+  "unit": "per_million_tokens",
+  "applicable_from": "2026-10-27T06:06:02.045288Z",
+  "basis": "Current-rate restatement of measured POC usage, not historical tariffs or invoices. Display only; never ledger or enforcement rates.",
+  "sources": {
+    "openai": "https://azure.microsoft.com/en-us/pricing/details/cognitive-services/openai-service/",
+    "deepseek": "https://azure.microsoft.com/en-us/pricing/details/ai-foundry-models/deepseek/",
+    "kimi": "https://azure.microsoft.com/en-us/pricing/details/ai-foundry-models/kimi/",
+    "grok": "https://azure.microsoft.com/en-us/pricing/details/ai-foundry-models/grok/",
+    "glm": "https://bigmodel.cn/pricing",
+    "fireworks": "https://fireworks.ai/pricing"
+  },
+  "assumptions": "GlobalStandard deployment SKUs and versions read from ARM on 2026-10-27. Only standard text token rates; tools, images, hosting, discounts and tax excluded. Missing cache detail uses measured input at standard input rate, without inventing cache counts or an upper-bound claim. Short-context estimation is restricted to at most 128000 measured input tokens.",
+  "rates": [
+    {"model":"FW-GLM-5.3","provider":"Fireworks","region":"eastus","model_version":"2","sku":"GlobalStandard","source":"fireworks","status":"unknown","assumption":"Exact Azure Fireworks tariff and defensible publisher proxy unavailable at review; no ModelArts rate substituted. Unknown, not free."},
+    {"model":"FW-MiniMax-M3","provider":"Fireworks","region":"eastus","model_version":"1","sku":"DataZoneStandard","source":"fireworks","status":"unknown","assumption":"Exact Azure Fireworks tariff and defensible publisher proxy unavailable at review; no unrelated MiniMax variant substituted. Unknown, not free."},
+    {"model":"gpt-5.6-luna","provider":"OpenAI","region":"eastus","model_version":"2026-07-09","sku":"GlobalStandard","source":"openai","status":"public_list","input":"0.20","output":"1.20","cached":"0.02","write":"0.25","max_input_tokens":128000,"source_model":"GPT-5.6-luna short context Global"},
+    {"model":"gpt-6.1-sol","provider":"OpenAI","region":"eastus","model_version":"2026-09-29","sku":"GlobalStandard","source":"openai","status":"public_list","input":"2","output":"10","cached":"0.10","write":"2.50","max_input_tokens":128000,"source_model":"GPT-6.1 Sol short context Global"},
+    {"model":"gpt-5.4-mini","provider":"OpenAI","region":"eastus","model_version":"2026-03-17","sku":"GlobalStandard","source":"openai","status":"public_list","input":"0.75","output":"4.50","cached":"0.08","source_model":"GPT-5.4 mini Global; cached rate as rounded on public page"},
+    {"model":"gpt-4o","provider":"OpenAI","region":"eastus","model_version":"2024-11-20","sku":"GlobalStandard","source":"openai","status":"public_list","input":"2.50","output":"10","cached":"1.25","source_model":"GPT-4o-2024-1120 Global"},
+    {"model":"DeepSeek-V4-Flash","provider":"DeepSeek","region":"eastus","model_version":"2026-04-23","sku":"GlobalStandard","source":"deepseek","status":"public_list","input":"0.19","output":"0.51","cached":"0.028","source_model":"DeepSeek-V4 Flash Global (not Flash 0731)"},
+    {"model":"DeepSeek-V4-Pro","provider":"DeepSeek","region":"eastus","model_version":"2026-04-23","sku":"GlobalStandard","source":"deepseek","status":"public_list","input":"1.74","output":"3.48","cached":"0.145","source_model":"DeepSeek-V4 Pro Global"},
+    {"model":"Kimi-K2.7-Code","provider":"MoonshotAI","region":"eastus","model_version":"2026-06-12","sku":"GlobalStandard","source":"kimi","status":"public_list","input":"0.95","output":"4","cached":"0.19","source_model":"Kimi K2.7 Code"},
+    {"model":"grok-4.3","provider":"xAI","region":"eastus","model_version":"1","sku":"GlobalStandard","source":"grok","status":"public_list","input":"1.25","output":"2.50","source_model":"Grok-4.3 Global"},
+    {"model":"grok-4-20-reasoning","provider":"xAI","region":"eastus","model_version":"1","sku":"GlobalStandard","source":"grok","status":"sourced_proxy","input":"1.25","output":"2.50","source_model":"Grok-4.2 Global","assumption":"Published family-level Grok-4.2 rate used for deployed 4-20-reasoning; exact reasoning variant tariff not separately published. Planning estimate, not verified variant billing."},
+    {"model":"grok-4-1-fast-reasoning","provider":"xAI","region":"eastus","model_version":"1","sku":"GlobalStandard","source":"grok","status":"sourced_proxy","input":"0.20","output":"0.50","source_model":"Grok 4.1 Fast Global","assumption":"Published family-level Fast rate used for reasoning variant; no separate reasoning tariff on page."},
+    {"model":"glm-5.3","provider":"ModelArts","region":"ap-southeast-1","model_version":"glm-5.3","sku":"publisher-proxy","source":"glm","status":"tbc","input":"1.14285714","output":"4","cached":"0.28571429","source_model":"Zhipu GLM-5.3, not Flash","original_currency":"CNY","original_input":"8","original_output":"28","original_cached":"2","cny_per_usd_assumption":"7","assumption":"Publisher-direct proxy, NOT ModelArts contract price. Explicit planning assumption 7 CNY per USD (not a fetched FX quote); divide publisher CNY8/28/2 by 7, rounded to 8 decimals. TBC until ModelArts tariff confirmed."}
+  ]
+}

@@ -1,0 +1,38 @@
+{
+  "at_utc": "2026-10-27T09:14:24.104987+00:00",
+  "read_only": true,
+  "full_protected_baseline_except_approved_always_on_matches": true,
+  "ingestion_exact_settings_preserved": true,
+  "settings_sha256": {
+    "api": "a4d40a5dbdca329f84e4f23a5c9663192d00eb8af932290d0cad970c19e930fd",
+    "ingestion": "2d084cb4efb6b9f8b23be9e61e609b2c378544e8b16b1cd5e61b5fc21650bc5d",
+    "admin": "8819a64ec5c3e2933d1c451928622977b589e62e843136dc100aee46ba2a3b6e",
+    "customer": "5086ea9867a7b132a493ac263cb13bd09af81ba97f9c8b092249f7322ab2490a"
+  },
+  "web_metadata": {
+    "alwaysOn": true,
+    "remoteDebuggingEnabled": false,
+    "remoteDebuggingVersion": "VS2022",
+    "virtualApplications": [
+      {
+        "virtualPath": "/",
+        "physicalPath": "site\\wwwroot",
+        "preloadEnabled": true,
+        "virtualDirectories": null
+      }
+    ]
+  },
+  "hash_verified_prior_web_metadata": [
+    {
+      "remoteDebuggingVersion": null,
+      "virtualApplications": [
+        {
+          "virtualPath": "/",
+          "physicalPath": "site\\wwwroot",
+          "preloadEnabled": false,
+          "virtualDirectories": null
+        }
+      ]
+    }
+  ]
+}

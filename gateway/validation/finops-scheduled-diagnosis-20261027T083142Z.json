@@ -1,0 +1,290 @@
+{
+  "at_utc": "2026-10-27T08:31:34.626561+00:00",
+  "read_only": true,
+  "always_on": false,
+  "plan_sku": {
+    "name": "B1",
+    "tier": "Basic",
+    "size": "B1",
+    "family": "B",
+    "capacity": 1
+  },
+  "timer_disabled": "false",
+  "cutoff": "2026-10-27T06:06:02.045288+00:00",
+  "console_status": 200,
+  "files": [
+    {
+      "bytes": 29800,
+      "archive_date": [
+        2026,
+        10,
+        27,
+        7,
+        31,
+        54
+      ],
+      "first_timestamp": "2026-10-27T07:10:26.2438960Z",
+      "last_timestamp": "2026-10-27T07:31:55.5098440Z",
+      "expected_image": false,
+      "events": {
+        "ready_results": [],
+        "executions": [
+          {
+            "at_utc": "2026-10-27T07:12:44.5738389Z",
+            "function": "ingestion_ready",
+            "result": "Failed",
+            "invocation_id": "7fee8ec9-fba4-47f3-a390-70ffaefe9627"
+          }
+        ],
+        "scheduled_starts": [],
+        "failures": [
+          {
+            "at_utc": "2026-10-27T07:11:55.2041066Z",
+            "category": "storage_access_error"
+          },
+          {
+            "at_utc": "2026-10-27T07:12:25.7934995Z",
+            "category": "storage_access_error"
+          },
+          {
+            "at_utc": "2026-10-27T07:12:55.2527276Z",
+            "category": "storage_access_error"
+          },
+          {
+            "at_utc": "2026-10-27T07:13:25.2270178Z",
+            "category": "storage_access_error"
+          },
+          {
+            "at_utc": "2026-10-27T07:13:55.2253992Z",
+            "category": "storage_access_error"
+          },
+          {
+            "at_utc": "2026-10-27T07:14:25.4652997Z",
+            "category": "storage_access_error"
+          },
+          {
+            "at_utc": "2026-10-27T07:14:55.2692918Z",
+            "category": "storage_access_error"
+          },
+          {
+            "at_utc": "2026-10-27T07:15:25.2540105Z",
+            "category": "storage_access_error"
+          },
+          {
+            "at_utc": "2026-10-27T07:15:55.1952185Z",
+            "category": "storage_access_error"
+          },
+          {
+            "at_utc": "2026-10-27T07:16:25.1899970Z",
+            "category": "storage_access_error"
+          },
+          {
+            "at_utc": "2026-10-27T07:16:55.1897972Z",
+            "category": "storage_access_error"
+          },
+          {
+            "at_utc": "2026-10-27T07:17:25.1926991Z",
+            "category": "storage_access_error"
+          },
+          {
+            "at_utc": "2026-10-27T07:17:55.1893112Z",
+            "category": "storage_access_error"
+          },
+          {
+            "at_utc": "2026-10-27T07:18:25.1892406Z",
+            "category": "storage_access_error"
+          },
+          {
+            "at_utc": "2026-10-27T07:18:55.1849130Z",
+            "category": "storage_access_error"
+          },
+          {
+            "at_utc": "2026-10-27T07:19:25.1850638Z",
+            "category": "storage_access_error"
+          },
+          {
+            "at_utc": "2026-10-27T07:19:55.1857500Z",
+            "category": "storage_access_error"
+          },
+          {
+            "at_utc": "2026-10-27T07:20:25.1862931Z",
+            "category": "storage_access_error"
+          },
+          {
+            "at_utc": "2026-10-27T07:20:55.1869422Z",
+            "category": "storage_access_error"
+          },
+          {
+            "at_utc": "2026-10-27T07:21:25.3140596Z",
+            "category": "storage_access_error"
+          },
+          {
+            "at_utc": "2026-10-27T07:21:55.1948279Z",
+            "category": "storage_access_error"
+          },
+          {
+            "at_utc": "2026-10-27T07:22:25.2011928Z",
+            "category": "storage_access_error"
+          },
+          {
+            "at_utc": "2026-10-27T07:22:55.1996415Z",
+            "category": "storage_access_error"
+          },
+          {
+            "at_utc": "2026-10-27T07:23:25.1887956Z",
+            "category": "storage_access_error"
+          },
+          {
+            "at_utc": "2026-10-27T07:23:55.1890359Z",
+            "category": "storage_access_error"
+          },
+          {
+            "at_utc": "2026-10-27T07:24:25.1894998Z",
+            "category": "storage_access_error"
+          },
+          {
+            "at_utc": "2026-10-27T07:24:55.1892945Z",
+            "category": "storage_access_error"
+          },
+          {
+            "at_utc": "2026-10-27T07:25:25.1908046Z",
+            "category": "storage_access_error"
+          },
+          {
+            "at_utc": "2026-10-27T07:25:55.1893682Z",
+            "category": "storage_access_error"
+          },
+          {
+            "at_utc": "2026-10-27T07:26:25.1912357Z",
+            "category": "storage_access_error"
+          },
+          {
+            "at_utc": "2026-10-27T07:26:55.1895123Z",
+            "category": "storage_access_error"
+          },
+          {
+            "at_utc": "2026-10-27T07:27:25.2207737Z",
+            "category": "storage_access_error"
+          },
+          {
+            "at_utc": "2026-10-27T07:27:55.2032503Z",
+            "category": "storage_access_error"
+          },
+          {
+            "at_utc": "2026-10-27T07:28:25.2165643Z",
+            "category": "storage_access_error"
+          },
+          {
+            "at_utc": "2026-10-27T07:28:55.2208505Z",
+            "category": "storage_access_error"
+          },
+          {
+            "at_utc": "2026-10-27T07:29:25.2075191Z",
+            "category": "storage_access_error"
+          },
+          {
+            "at_utc": "2026-10-27T07:29:55.2151965Z",
+            "category": "storage_access_error"
+          },
+          {
+            "at_utc": "2026-10-27T07:30:25.2067326Z",
+            "category": "storage_access_error"
+          },
+          {
+            "at_utc": "2026-10-27T07:30:55.8334142Z",
+            "category": "storage_access_error"
+          },
+          {
+            "at_utc": "2026-10-27T07:31:25.3553380Z",
+            "category": "storage_access_error"
+          },
+          {
+            "at_utc": "2026-10-27T07:31:55.5098440Z",
+            "category": "storage_access_error"
+          }
+        ]
+      },
+      "categories": {
+        "azure_error_codes": [
+          "AuthorizationPermissionMismatch"
+        ],
+        "http_statuses": [],
+        "sqlstates": [],
+        "services_seen": [],
+        "exception_classes": [
+          "FunctionInvocationException"
+        ],
+        "host_context": [
+          "binding_failure",
+          "http_request_binding",
+          "storage_forbidden",
+          "table_logging"
+        ],
+        "stages_seen": []
+      },
+      "timer_listener_mentions": 0
+    },
+    {
+      "bytes": 1961,
+      "archive_date": [
+        2026,
+        10,
+        27,
+        7,
+        12,
+        18
+      ],
+      "first_timestamp": "2026-10-27T07:11:30.4603520Z",
+      "last_timestamp": "2026-10-27T07:12:19.0233554Z",
+      "expected_image": false,
+      "events": {
+        "ready_results": [],
+        "executions": [],
+        "scheduled_starts": [],
+        "failures": []
+      },
+      "categories": {
+        "azure_error_codes": [],
+        "http_statuses": [],
+        "sqlstates": [],
+        "services_seen": [],
+        "exception_classes": [],
+        "host_context": [],
+        "stages_seen": []
+      },
+      "timer_listener_mentions": 0
+    },
+    {
+      "bytes": 39121,
+      "archive_date": [
+        2026,
+        10,
+        27,
+        8,
+        20,
+        48
+      ],
+      "first_timestamp": "2026-10-27T05:59:41.2761158Z",
+      "last_timestamp": "2026-10-27T08:20:48.7297323Z",
+      "expected_image": true,
+      "events": {
+        "ready_results": [],
+        "executions": [],
+        "scheduled_starts": [],
+        "failures": []
+      },
+      "categories": {
+        "azure_error_codes": [],
+        "http_statuses": [],
+        "sqlstates": [],
+        "services_seen": [],
+        "exception_classes": [],
+        "host_context": [],
+        "stages_seen": []
+      },
+      "timer_listener_mentions": 0
+    }
+  ],
+  "appinsights_configured": false,
+  "matching_appinsights": []
+}

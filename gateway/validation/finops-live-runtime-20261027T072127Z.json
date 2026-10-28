@@ -1,0 +1,471 @@
+{
+  "at_utc": "2026-10-27T07:21:27.116473+00:00",
+  "status": 200,
+  "raw_logs_exported": false,
+  "host_keys_read": 0,
+  "expected_digest_seen": true,
+  "ready_results": [],
+  "executions": [
+    {
+      "at_utc": "2026-10-27T07:12:44.5738389Z",
+      "function": "ingestion_ready",
+      "result": "Failed",
+      "invocation_id": "7fee8ec9-fba4-47f3-a390-70ffaefe9627"
+    }
+  ],
+  "scheduled_starts": [],
+  "failures": [
+    {
+      "at_utc": "2026-10-27T07:11:55.2041066Z",
+      "category": "monitor_access_error"
+    },
+    {
+      "at_utc": "2026-10-27T07:12:25.7934995Z",
+      "category": "monitor_access_error"
+    },
+    {
+      "at_utc": "2026-10-27T07:12:55.2527276Z",
+      "category": "monitor_access_error"
+    },
+    {
+      "at_utc": "2026-10-27T07:13:25.2270178Z",
+      "category": "monitor_access_error"
+    },
+    {
+      "at_utc": "2026-10-27T07:13:55.2253992Z",
+      "category": "monitor_access_error"
+    },
+    {
+      "at_utc": "2026-10-27T07:14:25.4652997Z",
+      "category": "monitor_access_error"
+    },
+    {
+      "at_utc": "2026-10-27T07:14:55.2692918Z",
+      "category": "monitor_access_error"
+    },
+    {
+      "at_utc": "2026-10-27T07:15:25.2540105Z",
+      "category": "monitor_access_error"
+    },
+    {
+      "at_utc": "2026-10-27T07:15:55.1952185Z",
+      "category": "monitor_access_error"
+    },
+    {
+      "at_utc": "2026-10-27T07:16:25.1899970Z",
+      "category": "monitor_access_error"
+    },
+    {
+      "at_utc": "2026-10-27T07:16:55.1897972Z",
+      "category": "monitor_access_error"
+    },
+    {
+      "at_utc": "2026-10-27T07:17:25.1926991Z",
+      "category": "monitor_access_error"
+    },
+    {
+      "at_utc": "2026-10-27T07:17:55.1893112Z",
+      "category": "monitor_access_error"
+    },
+    {
+      "at_utc": "2026-10-27T07:18:25.1892406Z",
+      "category": "monitor_access_error"
+    },
+    {
+      "at_utc": "2026-10-27T07:18:55.1849130Z",
+      "category": "monitor_access_error"
+    },
+    {
+      "at_utc": "2026-10-27T07:19:25.1850638Z",
+      "category": "monitor_access_error"
+    },
+    {
+      "at_utc": "2026-10-27T07:19:55.1857500Z",
+      "category": "monitor_access_error"
+    },
+    {
+      "at_utc": "2026-10-27T07:20:25.1862931Z",
+      "category": "monitor_access_error"
+    },
+    {
+      "at_utc": "2026-10-27T07:20:55.1869422Z",
+      "category": "monitor_access_error"
+    },
+    {
+      "at_utc": "2026-10-27T07:21:25.3140596Z",
+      "category": "monitor_access_error"
+    }
+  ],
+  "finite_diagnostics": {
+    "azure_error_codes": [
+      "AuthorizationPermissionMismatch"
+    ],
+    "http_statuses": [],
+    "sqlstates": [],
+    "services_seen": [],
+    "exception_classes": [
+      "FunctionInvocationException"
+    ],
+    "host_context": [
+      "binding_failure",
+      "http_request_binding",
+      "storage_forbidden",
+      "table_logging"
+    ],
+    "stages_seen": []
+  },
+  "finite_error_contexts": [
+    {
+      "at_utc": "2026-10-27T07:11:55",
+      "azure_error_codes": [
+        "AuthorizationPermissionMismatch"
+      ],
+      "http_statuses": [],
+      "sqlstates": [],
+      "services_seen": [],
+      "exception_classes": [],
+      "host_context": [
+        "storage_forbidden"
+      ],
+      "stages_seen": []
+    },
+    {
+      "at_utc": "2026-10-27T07:12:25",
+      "azure_error_codes": [
+        "AuthorizationPermissionMismatch"
+      ],
+      "http_statuses": [],
+      "sqlstates": [],
+      "services_seen": [],
+      "exception_classes": [],
+      "host_context": [
+        "storage_forbidden"
+      ],
+      "stages_seen": []
+    },
+    {
+      "at_utc": "2026-10-27T07:12:44",
+      "azure_error_codes": [],
+      "http_statuses": [],
+      "sqlstates": [],
+      "services_seen": [],
+      "exception_classes": [
+        "FunctionInvocationException"
+      ],
+      "host_context": [],
+      "stages_seen": []
+    },
+    {
+      "at_utc": "2026-10-27T07:12:44",
+      "azure_error_codes": [],
+      "http_statuses": [],
+      "sqlstates": [],
+      "services_seen": [],
+      "exception_classes": [],
+      "host_context": [
+        "binding_failure"
+      ],
+      "stages_seen": []
+    },
+    {
+      "at_utc": "2026-10-27T07:12:44",
+      "azure_error_codes": [],
+      "http_statuses": [],
+      "sqlstates": [],
+      "services_seen": [],
+      "exception_classes": [],
+      "host_context": [
+        "http_request_binding"
+      ],
+      "stages_seen": []
+    },
+    {
+      "at_utc": "2026-10-27T07:12:44",
+      "azure_error_codes": [],
+      "http_statuses": [],
+      "sqlstates": [],
+      "services_seen": [],
+      "exception_classes": [
+        "FunctionInvocationException"
+      ],
+      "host_context": [],
+      "stages_seen": []
+    },
+    {
+      "at_utc": "2026-10-27T07:12:44",
+      "azure_error_codes": [],
+      "http_statuses": [],
+      "sqlstates": [],
+      "services_seen": [],
+      "exception_classes": [],
+      "host_context": [
+        "binding_failure"
+      ],
+      "stages_seen": []
+    },
+    {
+      "at_utc": "2026-10-27T07:12:44",
+      "azure_error_codes": [],
+      "http_statuses": [],
+      "sqlstates": [],
+      "services_seen": [],
+      "exception_classes": [],
+      "host_context": [
+        "http_request_binding"
+      ],
+      "stages_seen": []
+    },
+    {
+      "at_utc": "2026-10-27T07:12:55",
+      "azure_error_codes": [
+        "AuthorizationPermissionMismatch"
+      ],
+      "http_statuses": [],
+      "sqlstates": [],
+      "services_seen": [],
+      "exception_classes": [],
+      "host_context": [
+        "storage_forbidden"
+      ],
+      "stages_seen": []
+    },
+    {
+      "at_utc": "2026-10-27T07:13:25",
+      "azure_error_codes": [
+        "AuthorizationPermissionMismatch"
+      ],
+      "http_statuses": [],
+      "sqlstates": [],
+      "services_seen": [],
+      "exception_classes": [],
+      "host_context": [
+        "storage_forbidden"
+      ],
+      "stages_seen": []
+    },
+    {
+      "at_utc": "2026-10-27T07:13:55",
+      "azure_error_codes": [
+        "AuthorizationPermissionMismatch"
+      ],
+      "http_statuses": [],
+      "sqlstates": [],
+      "services_seen": [],
+      "exception_classes": [],
+      "host_context": [
+        "storage_forbidden"
+      ],
+      "stages_seen": []
+    },
+    {
+      "at_utc": "2026-10-27T07:14:25",
+      "azure_error_codes": [
+        "AuthorizationPermissionMismatch"
+      ],
+      "http_statuses": [],
+      "sqlstates": [],
+      "services_seen": [],
+      "exception_classes": [],
+      "host_context": [
+        "storage_forbidden"
+      ],
+      "stages_seen": []
+    },
+    {
+      "at_utc": "2026-10-27T07:14:55",
+      "azure_error_codes": [
+        "AuthorizationPermissionMismatch"
+      ],
+      "http_statuses": [],
+      "sqlstates": [],
+      "services_seen": [],
+      "exception_classes": [],
+      "host_context": [
+        "storage_forbidden"
+      ],
+      "stages_seen": []
+    },
+    {
+      "at_utc": "2026-10-27T07:15:25",
+      "azure_error_codes": [
+        "AuthorizationPermissionMismatch"
+      ],
+      "http_statuses": [],
+      "sqlstates": [],
+      "services_seen": [],
+      "exception_classes": [],
+      "host_context": [
+        "storage_forbidden"
+      ],
+      "stages_seen": []
+    },
+    {
+      "at_utc": "2026-10-27T07:15:55",
+      "azure_error_codes": [
+        "AuthorizationPermissionMismatch"
+      ],
+      "http_statuses": [],
+      "sqlstates": [],
+      "services_seen": [],
+      "exception_classes": [],
+      "host_context": [
+        "storage_forbidden"
+      ],
+      "stages_seen": []
+    },
+    {
+      "at_utc": "2026-10-27T07:16:25",
+      "azure_error_codes": [
+        "AuthorizationPermissionMismatch"
+      ],
+      "http_statuses": [],
+      "sqlstates": [],
+      "services_seen": [],
+      "exception_classes": [],
+      "host_context": [
+        "storage_forbidden"
+      ],
+      "stages_seen": []
+    },
+    {
+      "at_utc": "2026-10-27T07:16:55",
+      "azure_error_codes": [
+        "AuthorizationPermissionMismatch"
+      ],
+      "http_statuses": [],
+      "sqlstates": [],
+      "services_seen": [],
+      "exception_classes": [],
+      "host_context": [
+        "storage_forbidden"
+      ],
+      "stages_seen": []
+    },
+    {
+      "at_utc": "2026-10-27T07:17:25",
+      "azure_error_codes": [
+        "AuthorizationPermissionMismatch"
+      ],
+      "http_statuses": [],
+      "sqlstates": [],
+      "services_seen": [],
+      "exception_classes": [],
+      "host_context": [
+        "storage_forbidden"
+      ],
+      "stages_seen": []
+    },
+    {
+      "at_utc": "2026-10-27T07:17:55",
+      "azure_error_codes": [
+        "AuthorizationPermissionMismatch"
+      ],
+      "http_statuses": [],
+      "sqlstates": [],
+      "services_seen": [],
+      "exception_classes": [],
+      "host_context": [
+        "storage_forbidden"
+      ],
+      "stages_seen": []
+    },
+    {
+      "at_utc": "2026-10-27T07:18:25",
+      "azure_error_codes": [
+        "AuthorizationPermissionMismatch"
+      ],
+      "http_statuses": [],
+      "sqlstates": [],
+      "services_seen": [],
+      "exception_classes": [],
+      "host_context": [
+        "storage_forbidden"
+      ],
+      "stages_seen": []
+    },
+    {
+      "at_utc": "2026-10-27T07:18:55",
+      "azure_error_codes": [
+        "AuthorizationPermissionMismatch"
+      ],
+      "http_statuses": [],
+      "sqlstates": [],
+      "services_seen": [],
+      "exception_classes": [],
+      "host_context": [
+        "storage_forbidden"
+      ],
+      "stages_seen": []
+    },
+    {
+      "at_utc": "2026-10-27T07:19:25",
+      "azure_error_codes": [
+        "AuthorizationPermissionMismatch"
+      ],
+      "http_statuses": [],
+      "sqlstates": [],
+      "services_seen": [],
+      "exception_classes": [],
+      "host_context": [
+        "storage_forbidden"
+      ],
+      "stages_seen": []
+    },
+    {
+      "at_utc": "2026-10-27T07:19:55",
+      "azure_error_codes": [
+        "AuthorizationPermissionMismatch"
+      ],
+      "http_statuses": [],
+      "sqlstates": [],
+      "services_seen": [],
+      "exception_classes": [],
+      "host_context": [
+        "storage_forbidden"
+      ],
+      "stages_seen": []
+    },
+    {
+      "at_utc": "2026-10-27T07:20:25",
+      "azure_error_codes": [
+        "AuthorizationPermissionMismatch"
+      ],
+      "http_statuses": [],
+      "sqlstates": [],
+      "services_seen": [],
+      "exception_classes": [],
+      "host_context": [
+        "storage_forbidden"
+      ],
+      "stages_seen": []
+    },
+    {
+      "at_utc": "2026-10-27T07:20:55",
+      "azure_error_codes": [
+        "AuthorizationPermissionMismatch"
+      ],
+      "http_statuses": [],
+      "sqlstates": [],
+      "services_seen": [],
+      "exception_classes": [],
+      "host_context": [
+        "storage_forbidden"
+      ],
+      "stages_seen": []
+    },
+    {
+      "at_utc": "2026-10-27T07:21:25",
+      "azure_error_codes": [
+        "AuthorizationPermissionMismatch"
+      ],
+      "http_statuses": [],
+      "sqlstates": [],
+      "services_seen": [],
+      "exception_classes": [],
+      "host_context": [
+        "storage_forbidden"
+      ],
+      "stages_seen": []
+    }
+  ]
+}

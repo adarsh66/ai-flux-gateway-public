@@ -1,0 +1,43 @@
+{
+  "at": "2026-10-27T12:26:40.010062+00:00",
+  "sites": {
+    "api": {
+      "state": "Running",
+      "lastModifiedTimeUtc": "2026-10-27T12:18:49.0566667",
+      "configured_image_matches": true,
+      "instances": [
+        {
+          "state": "READY",
+          "containers": 0
+        }
+      ],
+      "sitecontainers_status": "non_json_response",
+      "logs_status": 504
+    },
+    "admin": {
+      "state": "Running",
+      "lastModifiedTimeUtc": "2026-10-27T12:18:45.9533333",
+      "configured_image_matches": true,
+      "instances": [
+        {
+          "state": "READY",
+          "containers": 0
+        }
+      ],
+      "sitecontainers_status": "non_json_response"
+    },
+    "customer": {
+      "state": "Running",
+      "lastModifiedTimeUtc": "2026-10-27T12:18:45.91",
+      "configured_image_matches": true,
+      "instances": [
+        {
+          "state": "READY",
+          "containers": 0
+        }
+      ],
+      "sitecontainers_status": "non_json_response",
+      "logs_status": 504
+    }
+  }
+}

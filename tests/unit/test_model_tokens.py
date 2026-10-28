@@ -5,7 +5,7 @@ from uuid import uuid4
 import pytest
 from aiflux.finops import TOKEN_BUCKET_EPOCH, model_token_query, token_bucket_interval
 from aiflux.models import TeamSubscription, UsageRecord
-from sqlalchemy.dialects import mssql
+from sqlalchemy.dialects import mssql, postgresql
 from sqlalchemy.orm import Session
 from test_control_plane import create_key
 
@@ -135,3 +135,15 @@ def test_model_tokens_sql_server_compilation_and_unsupported_dialect():
         model_token_query("mssql", "org", None, start, start + timedelta(days=1), 61)
     with pytest.raises(ValueError, match="does not support"):
         model_token_query("unsupported", "org", None, start, start + timedelta(days=1), 60)
+
+
+@pytest.mark.parametrize("interval", [3600, 86400])
+def test_postgresql_hour_and_day_grouping_keeps_utc_epoch_and_scope(interval):
+    start = datetime(2026, 10, 1, tzinfo=UTC)
+    query = model_token_query("postgresql", "org", "sub", start, start + timedelta(days=1), interval, "glm-5.3")
+    sql = str(query.compile(dialect=postgresql.dialect(), compile_kwargs={"literal_binds": True}))
+    assert "EXTRACT(epoch FROM usage_records.occurred_at" in sql
+    assert "GROUP BY floor(" in sql and "usage_records.model" in sql
+    assert "usage_records.organization_id = 'org'" in sql and "usage_records.subscription_id = 'sub'" in sql
+    assert "usage_records.model = 'glm-5.3'" in sql
+    assert "CAST(usage_records.input_tokens AS BIGINT) + CAST(usage_records.output_tokens AS BIGINT)" in sql

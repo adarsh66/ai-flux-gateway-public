@@ -86,9 +86,14 @@ class ApimClient:
             raise ApimError()
         # Reuse resource-ID validation, never accept an ARM URL from an API caller.
         self._url("00000000-0000-0000-0000-000000000000")
+        fragment = f"aiflux-{scope}-settings"
+        if self.settings.gateway_controls_poc_enabled:
+            if scope != "dev-unified" or self.settings.gateway_controls_v2_enabled:
+                raise ApimError()
+            fragment = "aiflux-dev-unified-poc-settings"
         return (
             f"https://management.azure.com{self.settings.apim_resource_id.rstrip('/')}"
-            f"/policyFragments/aiflux-{scope}-settings?api-version={API_VERSION}"
+            f"/policyFragments/{fragment}?api-version={API_VERSION}"
         )
 
     def get_settings_fragment(self, scope: str) -> tuple[str, str]:

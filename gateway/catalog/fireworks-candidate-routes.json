@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "project_endpoint": "https://poc-ids-token-ex-foundry.services.ai.azure.com/api/projects/poc-ids-token-ex-foundry-project",
+  "upstream_url": "https://poc-ids-token-ex-foundry.openai.azure.com/openai/v1",
+  "gateway_url": "https://poc-ids-token-ex-apim.azure-api.net/dev/llm/v1",
+  "routes": {
+    "gpt-5.6-luna": {"version":"2026-07-09","provider":"OpenAI","token_parameter":"max_completion_tokens"},
+    "gpt-6.1-sol": {"version":"2026-09-29","provider":"OpenAI","token_parameter":"max_completion_tokens"},
+    "gpt-5.4-mini": {"version":"2026-03-17","provider":"OpenAI","token_parameter":"max_completion_tokens"},
+    "gpt-4o": {"version":"2024-11-20","provider":"OpenAI","token_parameter":"max_completion_tokens"},
+    "DeepSeek-V4-Flash": {"version":"2026-04-23","provider":"DeepSeek","token_parameter":"max_tokens"},
+    "DeepSeek-V4-Pro": {"version":"2026-04-23","provider":"DeepSeek","token_parameter":"max_tokens"},
+    "Kimi-K2.7-Code": {"version":"2026-06-12","provider":"MoonshotAI","token_parameter":"max_tokens"},
+    "grok-4.3": {"version":"1","provider":"xAI","token_parameter":"max_completion_tokens"},
+    "grok-4-20-reasoning": {"version":"1","provider":"xAI","token_parameter":"max_completion_tokens"},
+    "grok-4-1-fast-reasoning": {"version":"1","provider":"xAI","token_parameter":"max_completion_tokens"},
+    "FW-GLM-5.3": {"version":"2","provider":"Fireworks","token_parameter":"max_tokens","upstream_url":"https://poc-ids-token-ex-foundry.services.ai.azure.com/openai/v1","model_name":"FW-GLM-5.3"},
+    "FW-MiniMax-M3": {"version":"1","provider":"Fireworks","token_parameter":"max_tokens","upstream_url":"https://poc-ids-token-ex-foundry.services.ai.azure.com/openai/v1","model_name":"FW-MiniMax-M3"}
+  }
+}

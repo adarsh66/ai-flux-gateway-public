@@ -1,0 +1,212 @@
+{
+  "at_utc": "2026-10-27T05:09:08.516008+00:00",
+  "status": "blocked_packaged_catalog_mismatch",
+  "tag": "finops-20261027t040422z",
+  "images": {
+    "api": "pocidstokenexacr.azurecr.io/aiflux-api@sha256:7c8b9c715963a1a365895c38f2e79cb1bbfff0b4e166a57cec6e16df9f05ffce",
+    "ingestion": "pocidstokenexacr.azurecr.io/aiflux-ingestion@sha256:81b2c6a96c8a82807eb9bec6098fc305af664b55d97e44e1a3b226e8f3efd56f",
+    "admin": "pocidstokenexacr.azurecr.io/aiflux-admin@sha256:4606e769e95ac647c7ba175f5c0e152baf16dbf02a78fd5d1c3f1a6be289baed",
+    "customer": "pocidstokenexacr.azurecr.io/aiflux-customer@sha256:568cd3f1d4d88cf59ff63528f4baa6b84827a3da45e6ede5da13395d06de29a1"
+  },
+  "prior_apply_replayed": false,
+  "prior_plan_sha256": "6e8232a8fc591894b43d1557ecc9721c1e110349eaef80c34ffbd80775d6d090",
+  "catalog": {
+    "approved_aliases": [
+      "DeepSeek-V4-Flash",
+      "DeepSeek-V4-Pro",
+      "Kimi-K2.7-Code",
+      "glm-5.3",
+      "gpt-4o",
+      "gpt-5.4-mini",
+      "gpt-5.6-luna",
+      "gpt-6.1-sol",
+      "grok-4-1-fast-reasoning",
+      "grok-4-20-reasoning",
+      "grok-4.3"
+    ],
+    "packaged_aliases": [
+      "DeepSeek-V4-Flash-0731",
+      "DeepSeek-V4-Pro",
+      "Kimi-K2.6",
+      "claude-haiku-5-5",
+      "claude-opus-5-5",
+      "claude-sonnet-5-5",
+      "gpt-5.6-luna",
+      "gpt-5.6-sol",
+      "gpt-6-astra",
+      "gpt-6-luna",
+      "gpt-6-sol"
+    ],
+    "live_published_aliases": [
+      "DeepSeek-V4-Flash",
+      "DeepSeek-V4-Pro",
+      "Kimi-K2.7-Code",
+      "glm-5.3",
+      "gpt-4o",
+      "gpt-5.4-mini",
+      "gpt-5.6-luna",
+      "gpt-6.1-sol",
+      "grok-4-1-fast-reasoning",
+      "grok-4-20-reasoning",
+      "grok-4.3"
+    ],
+    "missing_from_package": [
+      "DeepSeek-V4-Flash",
+      "Kimi-K2.7-Code",
+      "glm-5.3",
+      "gpt-4o",
+      "gpt-5.4-mini",
+      "gpt-6.1-sol",
+      "grok-4-1-fast-reasoning",
+      "grok-4-20-reasoning",
+      "grok-4.3"
+    ],
+    "package_not_live": [
+      "DeepSeek-V4-Flash-0731",
+      "Kimi-K2.6",
+      "claude-haiku-5-5",
+      "claude-opus-5-5",
+      "claude-sonnet-5-5",
+      "gpt-5.6-sol",
+      "gpt-6-astra",
+      "gpt-6-luna",
+      "gpt-6-sol"
+    ],
+    "membership_matches": false,
+    "catalog_accepted": false,
+    "packaged_catalog_sha256": "9b0605b95ed77b6d119e34947177a9e886f4fe1ba154fca08196a394189d3615",
+    "live_policy_sha256": "3f3ded3ec635482f4e8e61c46aa998dbb6a0d551efc8d2e47858741e423b1314",
+    "image_source_binding_verified": true,
+    "independent_running_filesystem_attested": false
+  },
+  "protected_baseline_verified": true,
+  "all_settings_hashes_verified": true,
+  "host": {
+    "state": "Disabled",
+    "enabled": false,
+    "public_network_access": "Disabled",
+    "timer_disabled": "true",
+    "catalog_configured": "false",
+    "start_at": null
+  },
+  "functions_discovery": {
+    "http_status": 400,
+    "function_names": null
+  },
+  "state_storage": {
+    "default_action": "Deny",
+    "ips": [
+      "167.103.65.36",
+      "167.103.66.248",
+      "167.103.66.93"
+    ]
+  },
+  "postgres_public_network_access": "Disabled",
+  "postgres_firewall_rule_count": 0,
+  "retained_private_db_proofs": {
+    "ingestion": {
+      "collected_at": "2026-10-27T03:56:11.308282+00:00",
+      "historical_not_fresh_db_read": true,
+      "table_privileges": {
+        "usage_records": {
+          "select": true,
+          "insert": true,
+          "update": true,
+          "delete": false
+        },
+        "safety_events": {
+          "select": true,
+          "insert": true,
+          "update": false,
+          "delete": false
+        },
+        "ingestion_state": {
+          "select": true,
+          "insert": true,
+          "update": true,
+          "delete": false
+        },
+        "team_subscriptions": {
+          "select": true,
+          "insert": false,
+          "update": false,
+          "delete": false
+        },
+        "model_prices": {
+          "select": true,
+          "insert": false,
+          "update": false,
+          "delete": false
+        }
+      },
+      "checkpoint": null,
+      "all_time": {
+        "requests": 0,
+        "first_request_at": null,
+        "latest_request_at": null,
+        "last_ingested_at": null
+      },
+      "runtime_ddl_or_ownership": false
+    },
+    "api": {
+      "collected_at": "2026-10-27T03:58:42.395998+00:00",
+      "historical_not_fresh_db_read": true,
+      "table_privileges": {
+        "usage_records": {
+          "select": true,
+          "insert": true,
+          "update": true,
+          "delete": true
+        },
+        "safety_events": {
+          "select": true,
+          "insert": true,
+          "update": true,
+          "delete": true
+        },
+        "ingestion_state": {
+          "select": true,
+          "insert": true,
+          "update": true,
+          "delete": true
+        },
+        "team_subscriptions": {
+          "select": true,
+          "insert": true,
+          "update": true,
+          "delete": true
+        },
+        "model_prices": {
+          "select": true,
+          "insert": true,
+          "update": true,
+          "delete": true
+        }
+      },
+      "checkpoint": null,
+      "all_time": {
+        "requests": 0,
+        "first_request_at": null,
+        "latest_request_at": null,
+        "last_ingested_at": null
+      },
+      "runtime_ddl_or_ownership": false
+    }
+  },
+  "retained_db_evidence_sha256": "41adf508f217ded3c18ad360f29858da105b8c4b1331659cd36f1f7ade0a5482",
+  "intent": {
+    "mode": "forward_only_delegated",
+    "historical_cutoff_approved": false,
+    "historical_requests_deferred": 156,
+    "historical_tokens_deferred": 11143,
+    "activation_start_at": null,
+    "boundary_selection": "after_catalog_gate_before_host_start",
+    "existing_watermark_must_be_preserved": true
+  },
+  "cloud_writes": 0,
+  "database_writes": 0,
+  "new_builds": 0,
+  "new_runners": 0,
+  "scheduled_successes_verified": 0,
+  "live_ingestion_accepted": false
+}

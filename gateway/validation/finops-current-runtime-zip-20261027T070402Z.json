@@ -1,0 +1,22 @@
+{
+  "at_utc": "2026-10-27T07:04:00.696396+00:00",
+  "host_keys_read": 0,
+  "manual_timer_invocations": 0,
+  "status": 200,
+  "bytes": 2832,
+  "file_count": 1,
+  "ready_results": [],
+  "expected_digest_seen": true,
+  "diagnostic_categories": [
+    "network",
+    "startup_complete"
+  ],
+  "fixed_counts": {
+    "http_binding_error": 0,
+    "ready_executed": 0,
+    "ready_failed": 0,
+    "ready_succeeded": 0,
+    "sql_error": 0,
+    "http_trigger_invocations": 0
+  }
+}

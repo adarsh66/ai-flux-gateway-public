@@ -11,6 +11,7 @@ from sqlalchemy.sql import ColumnElement, Select
 
 from aiflux.models import IngestionState, ModelPrice, UsageRecord
 from aiflux.schemas import PriceCreate
+from aiflux.display_pricing import detail_estimates, estimate_summary
 
 
 def aware(value: datetime) -> datetime:
@@ -149,10 +150,14 @@ def usage_response(
     offset: int,
     limit: int,
     model: str | None = None,
+    start: datetime | None = None,
+    end: datetime | None = None,
 ) -> dict[str, Any]:
+    end = end or datetime.now(UTC)
+    start = start or end - timedelta(days=days)
     conditions = [
         *usage_conditions(organization_id, subscription_id, model),
-        UsageRecord.occurred_at >= datetime.now(UTC) - timedelta(days=days),
+        UsageRecord.occurred_at >= start, UsageRecord.occurred_at < end,
     ]
     aggregates = db.execute(
         select(
@@ -165,6 +170,8 @@ def usage_response(
             func.sum(case((UsageRecord.completeness != "complete", 1), else_=0)),
             func.sum(case((UsageRecord.status_code >= 400, 1), else_=0)),
             func.sum(case((UsageRecord.status_code == 429, 1), else_=0)),
+            func.sum(cast(UsageRecord.input_tokens, BigInteger) + cast(UsageRecord.output_tokens, BigInteger)),
+            func.sum(case((UsageRecord.input_tokens.is_(None) | UsageRecord.output_tokens.is_(None), 1), else_=0)),
         ).where(*conditions)
     ).one()
     latency_conditions = [*conditions, UsageRecord.e2e_ms.is_not(None)]
@@ -183,7 +190,7 @@ def usage_response(
         else None
     )
     state = db.get(IngestionState, "native-llm")
-    count, inputs, outputs, cost, currencies, currency, incomplete, failed, throttled = aggregates
+    count, inputs, outputs, cost, currencies, currency, incomplete, failed, throttled, total_tokens, missing_tokens = aggregates
     rows = db.scalars(
         select(UsageRecord)
         .where(*conditions)
@@ -194,11 +201,18 @@ def usage_response(
         .offset(offset)
         .limit(limit)
     ).all()
+    estimates = detail_estimates(db, [row.id for row in rows])
+    estimated_summary = estimate_summary(db, conditions)[0]
+    estimated_summary.pop("group")
     return {
         "summary": {
+            **estimated_summary,
             "requests": count,
             "input_tokens": inputs,
             "output_tokens": outputs,
+            "total_tokens": total_tokens,
+            "measured_requests": count - (missing_tokens or 0),
+            "missing_token_requests": missing_tokens or 0,
             "known_cost": str(cost) if cost is not None and currencies == 1 else None,
             "currency": currency if currencies == 1 else None,
             "incomplete_requests": incomplete or 0,
@@ -212,8 +226,9 @@ def usage_response(
                 )
             )),
             "last_ingested_at": aware(state.last_success_at).isoformat() if state else None,
+            "health": ingestion_health(db, organization_id, subscription_id),
         },
-        "items": [usage_dict(row) for row in rows],
+        "items": [usage_dict(row) | estimates[row.id] for row in rows],
         "total": count,
     }
 
@@ -224,8 +239,10 @@ def usage_csv(
     days: int,
     subscription_id: str | None,
     model: str | None = None,
+    start: datetime | None = None,
+    end: datetime | None = None,
 ) -> str:
-    result = usage_response(db, organization_id, days, subscription_id, 0, 10001, model)
+    result = usage_response(db, organization_id, days, subscription_id, 0, 10001, model, start, end)
     if result["total"] > 10000:
         raise ValueError("Export exceeds 10000 records; narrow the time, subscription or model filter")
     output = io.StringIO(newline="")
@@ -246,6 +263,9 @@ def usage_csv(
         "e2e_ms",
         "ttft_ms",
         "completeness",
+        "estimated_cost_usd",
+        "estimate_basis",
+        "pricing_revision",
     ]
     writer = csv.DictWriter(output, fieldnames=fields)
     writer.writeheader()
@@ -335,7 +355,7 @@ def token_bucket_interval(start: datetime, end: datetime) -> int:
 
 
 def model_token_query(
-    dialect: str, organization_id: str, subscription_id: str | None,
+    dialect: str, organization_id: str | None, subscription_id: str | None,
     start: datetime, end: datetime, interval_seconds: int, model: str | None = None,
 ) -> Select:
     if interval_seconds not in TOKEN_BUCKET_INTERVALS:
@@ -365,6 +385,8 @@ def model_token_query(
             func.sum(
                 cast(UsageRecord.input_tokens, BigInteger) + cast(UsageRecord.output_tokens, BigInteger),
             ).label("total_tokens"),
+            func.sum(cast(UsageRecord.input_tokens, BigInteger)).label("input_tokens"),
+            func.sum(cast(UsageRecord.output_tokens, BigInteger)).label("output_tokens"),
             func.sum(cast(case((missing, 1), else_=0), BigInteger)).label("missing_token_requests"),
         )
         .where(
@@ -376,10 +398,20 @@ def model_token_query(
 
 
 def model_token_response(
-    db: Session, organization_id: str, subscription_id: str | None,
-    start: datetime, end: datetime, model: str | None = None,
+    db: Session, organization_id: str | None, subscription_id: str | None,
+    start: datetime, end: datetime, model: str | None = None, granularity: str = "auto",
 ) -> dict[str, Any]:
-    interval = token_bucket_interval(start, end)
+    start, end = aware(start), aware(end)
+    if start >= end:
+        raise ValueError("Usage window end must be after start")
+    if granularity not in ("auto", "hour", "day"):
+        raise ValueError("Granularity must be hour, day or auto")
+    interval = token_bucket_interval(start, end) if granularity == "auto" else (
+        3600 if granularity == "hour" else 86400)
+    buckets = math.ceil((end - TOKEN_BUCKET_EPOCH).total_seconds() / interval) - math.floor(
+        (start - TOKEN_BUCKET_EPOCH).total_seconds() / interval)
+    if buckets > 744:
+        raise ValueError("Requested granularity exceeds 744 buckets; narrow the viewport or select Daily")
     query = model_token_query(
         db.get_bind().dialect.name, organization_id, subscription_id, start, end, interval, model,
     )
@@ -391,5 +423,28 @@ def model_token_response(
             "end": min(end, bucket_start + timedelta(seconds=interval)),
             "model": row["model"], "requests": row["requests"],
             "total_tokens": row["total_tokens"], "missing_token_requests": row["missing_token_requests"],
+            "input_tokens": row["input_tokens"], "output_tokens": row["output_tokens"],
+            "measured_requests": row["requests"] - row["missing_token_requests"],
+            "partial_bucket": bucket_start < start or bucket_start + timedelta(seconds=interval) > end,
         })
-    return {"items": items, "start": start, "end": end, "interval_seconds": interval}
+    return {"items": items, "start": start, "end": end, "interval_seconds": interval,
+            "granularity": granularity, "health": ingestion_health(db, organization_id, subscription_id)}
+
+
+def ingestion_health(db: Session, organization_id: str | None, subscription_id: str | None = None) -> dict:
+    """Strictly read-only, scoped row timestamps; never seed budgets or expose raw failures.
+
+    Absence of a checkpoint is unverified, not proof of disabled ingestion. The API
+    process cannot infer another app's timer settings from its own environment.
+    """
+    state = db.get(IngestionState, "native-llm")
+    latest = db.scalar(select(func.max(UsageRecord.ingested_at)).where(
+        *usage_conditions(organization_id, subscription_id)))
+    now = datetime.now(UTC)
+    lag = max(0, int((now - aware(state.watermark)).total_seconds())) if state else None
+    success_lag = max(0, int((now - aware(state.last_success_at)).total_seconds())) if state else None
+    status = "unverified" if not state else "stale" if max(lag or 0, success_lag or 0) > 900 else "healthy"
+    return {"status": status, "watermark": aware(state.watermark) if state else None,
+            "last_query_success_at": aware(state.last_success_at) if state else None,
+            "last_row_ingested_at": aware(latest) if latest else None,
+            "lag_seconds": lag, "stale_after_seconds": 900, "expected_delay_seconds": 300}

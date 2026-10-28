@@ -1,0 +1,75 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "verifiedImageDigest": {
+      "type": "string",
+      "minLength": 64,
+      "maxLength": 64
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.ContainerInstance/containerGroups",
+      "apiVersion": "2023-05-01",
+      "name": "poc-ids-token-ex-finops-probe-b70760141b5d-ingestion",
+      "location": "southeastasia",
+      "tags": {
+        "finops-owner": "b70760141b5d"
+      },
+      "identity": {
+        "type": "UserAssigned",
+        "userAssignedIdentities": {
+          "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.ManagedIdentity/userAssignedIdentities/poc-ids-token-ex-ingestion-identity": {}
+        }
+      },
+      "properties": {
+        "osType": "Linux",
+        "restartPolicy": "Never",
+        "subnetIds": [
+          {
+            "id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Network/virtualNetworks/poc-ids-token-ex-vnet/subnets/poc-ids-token-ex-finops-probe-b70760141b5d-subnet"
+          }
+        ],
+        "dnsConfig": {
+          "nameServers": [
+            "168.63.129.16"
+          ]
+        },
+        "imageRegistryCredentials": [
+          {
+            "server": "pocidstokenexacr.azurecr.io",
+            "identity": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.ManagedIdentity/userAssignedIdentities/poc-ids-token-ex-ingestion-identity"
+          }
+        ],
+        "containers": [
+          {
+            "name": "probe",
+            "properties": {
+              "image": "[concat('pocidstokenexacr.azurecr.io/aiflux-finops-probe@sha256:', parameters('verifiedImageDigest'))]",
+              "command": [
+                "python",
+                "-I",
+                "/probe/entrypoint.py",
+                "--probe-sha256",
+                "5404c3718bb6765c6c9c5c16df0d81019e510c86f67c74fdc9476f79c3bfc6cd",
+                "--identity",
+                "ingestion"
+              ],
+              "resources": {
+                "requests": {
+                  "cpu": 1,
+                  "memoryInGB": 1.5
+                },
+                "limits": {
+                  "cpu": 1,
+                  "memoryInGB": 1.5
+                }
+              }
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

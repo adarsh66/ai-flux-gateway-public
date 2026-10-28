@@ -73,6 +73,7 @@ export class ControlApi {
 
   me = () => this.json<Me>("/me");
   models = () => this.json<Paged<CatalogModel>>("/models");
+  modelDeployments = () => this.json<{ items: { id: string; provider: string; model_name: string; model_version: string; role: string; status: string; chat_selectable: boolean; pricing_status: string; credential_healthy?: boolean; limitation?: string | null }[]; verified_at: string; auto_enabled: boolean }>("/model-deployments");
   subscriptions = (offset = 0, limit = 50) => this.json<Paged<Subscription>>(`/subscriptions${qs({ offset, limit })}`);
   adminSubscriptions = (offset = 0, limit = 50, organizationId?: string) =>
     this.json<Paged<AdminSubscription>>(`/admin/subscriptions${qs({ offset, limit, organization_id: organizationId })}`);
@@ -90,23 +91,25 @@ export class ControlApi {
     this.json<AdminSubscription>(`/admin/subscriptions/${encodeURIComponent(id)}/state`, { method: "PUT", json: { state } });
   reconcile = (id: string) => this.json<AdminSubscription>(`/admin/subscriptions/${encodeURIComponent(id)}/reconcile`, { method: "POST" });
 
-  usage = (q: UsageQuery) => this.json<UsagePage>(`/usage${qs({ days: q.days, subscription_id: q.subscription_id, model: q.model, offset: q.offset, limit: q.limit })}`);
+  usage = (q: UsageQuery) => this.json<UsagePage>(`/usage${qs({ days: q.days, subscription_id: q.subscription_id, model: q.model, offset: q.offset, limit: q.limit, start: q.start, end: q.end })}`);
   adminUsage = (q: UsageQuery) =>
-    this.json<UsagePage>(`/admin/usage${qs({ days: q.days, subscription_id: q.subscription_id, organization_id: q.organization_id, model: q.model, offset: q.offset, limit: q.limit })}`);
+    this.json<UsagePage>(`/admin/usage${qs({ days: q.days, subscription_id: q.subscription_id, organization_id: q.organization_id, model: q.model, offset: q.offset, limit: q.limit, start: q.start, end: q.end })}`);
   usageModels = (q: Omit<UsageFilters, "model">) =>
     this.json<Paged<string>>(`/usage/models${qs({ days: q.days, subscription_id: q.subscription_id })}`);
   adminUsageModels = (q: Omit<UsageFilters, "model">) =>
     this.json<Paged<string>>(`/admin/usage/models${qs({ days: q.days, subscription_id: q.subscription_id, organization_id: q.organization_id })}`);
   usageSeries = (q: UsageSeriesQuery) =>
     this.json<UsageSeries>(`/usage/timeseries${qs({ days: q.days, subscription_id: q.subscription_id, model: q.model, start: q.start, end: q.end })}`);
-  modelTokens = (q: UsageSeriesQuery) =>
-    this.json<ModelTokenSeries>(`/usage/model-tokens${qs({ days: q.days, subscription_id: q.subscription_id, model: q.model, start: q.start, end: q.end })}`);
+  modelTokens = (q: UsageSeriesQuery & { granularity?: "hour" | "day" }) =>
+    this.json<ModelTokenSeries>(`/usage/model-tokens${qs({ days: q.days, subscription_id: q.subscription_id, model: q.model, start: q.start, end: q.end, granularity: q.granularity })}`);
+  adminModelTokens = (q: UsageSeriesQuery & { granularity?: "hour" | "day" }) =>
+    this.json<ModelTokenSeries>(`/admin/usage/model-tokens${qs({ days: q.days, subscription_id: q.subscription_id, organization_id: q.organization_id, model: q.model, start: q.start, end: q.end, granularity: q.granularity })}`);
   adminUsageSeries = (q: UsageSeriesQuery) =>
     this.json<UsageSeries>(`/admin/usage/timeseries${qs({ days: q.days, subscription_id: q.subscription_id, organization_id: q.organization_id, model: q.model, start: q.start, end: q.end })}`);
 
   /** Authenticated CSV export; the token travels only in the Authorization header. */
   async exportCsv(admin: boolean, q: UsageFilters): Promise<Blob> {
-    const path = `${admin ? "/admin" : ""}/usage/export${qs({ days: q.days, subscription_id: q.subscription_id, organization_id: admin ? q.organization_id : undefined, model: q.model })}`;
+    const path = `${admin ? "/admin" : ""}/usage/export${qs({ days: q.days, subscription_id: q.subscription_id, organization_id: admin ? q.organization_id : undefined, model: q.model, start: q.start, end: q.end })}`;
     const res = await this.send(path, { headers: { Accept: "text/csv" } });
     return res.blob();
   }
@@ -136,8 +139,8 @@ export class ControlApi {
   gatewayTargets = (offset = 0, limit = 100, organizationId?: string) =>
     this.json<Paged<GatewayTarget>>(`/admin/gateway-targets${qs({ offset, limit, organization_id: organizationId })}`);
   contentSafetySettings = () => this.json<Paged<GatewaySettings>>("/admin/content-safety-settings");
-  saveContentSafetySettings = (scope: GatewayScope, expectedVersion: number, configuration: SafetyConfiguration, reason: string, acknowledgeRelaxation: boolean) =>
-    this.json<GatewaySettings>(`/admin/content-safety-settings/${scope}`, { method: "PUT", json: { expected_version: expectedVersion, configuration, reason, acknowledge_relaxation: acknowledgeRelaxation } });
+  saveContentSafetySettings = (scope: GatewayScope, expectedVersion: number, configuration: SafetyConfiguration, reason: string, acknowledgeRelaxation: boolean, target?: { organization_id: string | null; subscription_id: string | null; inherit: boolean }) =>
+    this.json<GatewaySettings>(`/admin/content-safety-settings/${scope}`, { method: "PUT", json: { expected_version: expectedVersion, configuration, reason, acknowledge_relaxation: acknowledgeRelaxation, ...target } });
   reconcileContentSafetySettings = (scope: GatewayScope, expectedVersion: number) =>
     this.json<GatewaySettings>(`/admin/content-safety-settings/${scope}/reconcile`, { method: "POST", json: { expected_version: expectedVersion } });
   contentSafetySettingsHistory = (scope: GatewayScope, offset = 0, limit = 10) =>

@@ -1,0 +1,77 @@
+{
+  "at": "2026-10-27T12:14:06.809557+00:00",
+  "plan_sha256": "3bb86f17090387efcb6bc65dec8eea2727d0677609f694057933cddcc6b7e8a4",
+  "manifest_sha256": "0aec80e69631e8cfccfde7844f6d83379df2e551283dd323809e9ae764573b15",
+  "guard": "exact_three_images_only",
+  "backend_tests": 117,
+  "ui_tests": 107,
+  "ui_files": 13,
+  "native_linux_typecheck_and_both_builds": true,
+  "state_addresses": 70,
+  "policy_assignments_reviewed": 1,
+  "existing_acr_pull": [
+    "api",
+    "admin",
+    "customer"
+  ],
+  "live_rate_sku_versions": [
+    {
+      "model": "gpt-5.6-luna",
+      "sku": "GlobalStandard",
+      "version": "2026-07-09"
+    },
+    {
+      "model": "gpt-6.1-sol",
+      "sku": "GlobalStandard",
+      "version": "2026-09-29"
+    },
+    {
+      "model": "gpt-5.4-mini",
+      "sku": "GlobalStandard",
+      "version": "2026-03-17"
+    },
+    {
+      "model": "gpt-4o",
+      "sku": "GlobalStandard",
+      "version": "2024-11-20"
+    },
+    {
+      "model": "DeepSeek-V4-Flash",
+      "sku": "GlobalStandard",
+      "version": "2026-04-23"
+    },
+    {
+      "model": "DeepSeek-V4-Pro",
+      "sku": "GlobalStandard",
+      "version": "2026-04-23"
+    },
+    {
+      "model": "Kimi-K2.7-Code",
+      "sku": "GlobalStandard",
+      "version": "2026-06-12"
+    },
+    {
+      "model": "grok-4.3",
+      "sku": "GlobalStandard",
+      "version": "1"
+    },
+    {
+      "model": "grok-4-20-reasoning",
+      "sku": "GlobalStandard",
+      "version": "1"
+    },
+    {
+      "model": "grok-4-1-fast-reasoning",
+      "sku": "GlobalStandard",
+      "version": "1"
+    }
+  ],
+  "protected_sha256": "c4d897c1e05859431230e4724879d411bb6223f1ddc83edef3b147530dee61c1",
+  "images": {
+    "api": "pocidstokenexacr.azurecr.io/aiflux-api@sha256:04ba655c24a87d30f3a47dbf091d2df03f52b2172f8d80b00f9eada7273eeb44",
+    "admin": "pocidstokenexacr.azurecr.io/aiflux-admin@sha256:8950baf1fa8c5e8b0762c3b1069251706fe043dbca9c060b31c77092ba9f6ca0",
+    "customer": "pocidstokenexacr.azurecr.io/aiflux-customer@sha256:072fe85e23168d20081894357ac87aa036e14363eb031e796e68686f4d357594"
+  },
+  "checks_passed": true,
+  "known_dependency_warning": "Existing npm audit reports 1 moderate, 1 high, 2 critical; no dependency changes in pricing release; not a clean vulnerability scan claim."
+}

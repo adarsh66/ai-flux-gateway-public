@@ -1,0 +1,27 @@
+{
+  "at_utc": "2026-10-28T03:06:19.925508+00:00",
+  "read_only": true,
+  "console_http_status": 200,
+  "expected_ingestion_image_seen_in_console": true,
+  "scheduled_since_image_apply": {
+    "starts": [],
+    "executions": [],
+    "successes": 0,
+    "failures": 0
+  },
+  "log_categories_historical_not_current_failure_assertions": [
+    "azure_error_codes",
+    "exception_classes",
+    "host_context",
+    "http_statuses",
+    "services_seen",
+    "sqlstates",
+    "stages_seen"
+  ],
+  "manual_invocations": 0,
+  "configuration_writes": 0,
+  "host_status": {
+    "state": "Running",
+    "version": "4.1055.150.0"
+  }
+}

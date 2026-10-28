@@ -186,6 +186,25 @@ def test_provider_usage_trace_prices_cache_and_reports_support(env):
     assert response["summary"]["cache_tokens_supported"] is True
 
 
+@pytest.mark.parametrize("model", ["glm-5.3", "test-alias"])
+def test_trace_only_provider_counters_survive_late_llm_enrichment_without_duplicates(env, model):
+    key = create_key(env)
+    source = {"subscription_id": key["id"], "correlation_id": "trace-only-" + model,
+              "resource_id": env.settings.apim_resource_id, "occurred_at": datetime.now(UTC),
+              "status_code": 200, "trace_records": usage_trace(model=model, input_tokens=13, output_tokens=9)}
+    with Session(env.db_engine) as db:
+        catalog = Catalog.load(env.settings.catalog_path)
+        ingest_rows(db, [source], catalog)
+        db.commit()
+        # A late native LLM join enriches the same request, never adds a request.
+        source.update(model=model, input_tokens=1300, output_tokens=900)
+        ingest_rows(db, [source], catalog)
+        db.commit()
+        rows = list(db.scalars(select(UsageRecord)))
+        assert len(rows) == 1
+        assert rows[0].model == model and rows[0].input_tokens == 13 and rows[0].output_tokens == 9
+
+
 @pytest.mark.parametrize("changes", [
     {"schema": "unsupported"}, {"attempts": 0}, {"attempts": True},
     {"cached_input_tokens": -1}, {"output_tokens": "20"}, {"model": None},

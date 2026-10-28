@@ -235,6 +235,12 @@ export async function chatCompletion(opts: StreamOptions): Promise<ChatResult> {
       acc.result.finishReason = c?.finish_reason ?? null;
       acc.result.usage = json.usage ?? null;
       acc.result.sawDone = true;
+      if (!acc.result.content.trim() && acc.result.toolCalls.length === 0) {
+        acc.result.outcome = "abnormal";
+        acc.result.errorMessage = "No visible assistant text was returned within the output allowance. The request was not retried; a higher reasoning allowance requires operator approval.";
+        emit();
+        return acc.result;
+      }
       const done = acc.finalize();
       emit();
       return done;

@@ -40,10 +40,40 @@ export interface AdminSubscription extends Subscription {
   gateway_message: string | null;
 }
 
-export interface UsageSummary {
+export interface DisplayEstimate {
+  estimated_cost_usd?: string | null;
+  estimated_requests?: number;
+  unestimated_requests?: number;
+  approximate_requests?: number;
+  pricing_revision?: string | null;
+}
+
+export interface DisplayPrice {
+  input: string;
+  output: string;
+  cached?: string;
+  write?: string;
+  currency: string;
+  status: string;
+  source_url: string;
+  checked_at: string;
+  revision: string;
+  model_version: string;
+  sku: string;
+  source_model: string;
+  assumption?: string;
+  assumptions: string;
+  basis: string;
+}
+
+export interface UsageSummary extends DisplayEstimate {
   requests: number;
   input_tokens: number;
   output_tokens: number;
+  total_tokens?: number | null;
+  measured_requests?: number;
+  missing_token_requests?: number;
+  health?: ModelTokenSeries["health"];
   known_cost: string | null;
   currency: string | null;
   incomplete_requests: number;
@@ -55,7 +85,8 @@ export interface UsageSummary {
   last_ingested_at: string | null;
 }
 
-export interface UsageItem {
+export interface UsageItem extends DisplayEstimate {
+  estimate_basis?: string;
   id: string;
   subscription_id: string;
   model: string;
@@ -103,6 +134,10 @@ export interface ModelTokenBucket {
   requests: number;
   total_tokens: number | null;
   missing_token_requests: number;
+  input_tokens?: number | null;
+  output_tokens?: number | null;
+  measured_requests?: number;
+  partial_bucket?: boolean;
 }
 
 export interface ModelTokenSeries {
@@ -110,6 +145,15 @@ export interface ModelTokenSeries {
   start: string;
   end: string;
   interval_seconds: number;
+  granularity?: "auto" | "hour" | "day";
+  health?: {
+    status: "healthy" | "stale" | "unverified" | "disabled" | "error";
+    last_query_success_at: string | null;
+    last_row_ingested_at: string | null;
+    watermark: string | null;
+    lag_seconds: number | null;
+    expected_delay_seconds: number;
+  } | null;
 }
 
 export interface UsageFilters {
@@ -117,6 +161,8 @@ export interface UsageFilters {
   subscription_id?: string;
   organization_id?: string;
   model?: string;
+  start?: string;
+  end?: string;
 }
 
 export interface UsageQuery extends UsageFilters {
@@ -211,9 +257,13 @@ export interface ManagedGatewayConfiguration {
   subscriptions: SubscriptionGatewayLimits[];
   safety: SafetyConfiguration;
 }
-export type GatewayConfigurationUnion = GatewayConfiguration | ManagedGatewayConfiguration;
+export interface PocLimits { rpm: number; tpm: number; token_quota: number; request_quota: number }
+export interface PocOverride { organization_id: string; subscription_id: string | null; limits: PocLimits | null; safety: SafetyConfiguration | null }
+export interface PocGatewayConfiguration { schema_version: 3; defaults: PocLimits; safety: SafetyConfiguration; overrides: PocOverride[] }
+export type GatewayConfigurationUnion = GatewayConfiguration | ManagedGatewayConfiguration | PocGatewayConfiguration;
 export interface GatewayCapabilities {
   managed_controls_enabled: boolean;
+  poc_controls_enabled?: boolean;
   concurrency_tiers: number[];
   protected_material_available: boolean;
   safety_relaxation_allowed: boolean;
@@ -245,10 +295,13 @@ export interface GatewaySettings {
   version: number;
   published_version: number | null;
   desired: GatewayRevision | null;
+  effective_defaults?: PocGatewayConfiguration | null;
+  published?: GatewayRevision | null;
   capabilities?: GatewayCapabilities;
 }
 
 export interface ModelGardenItem {
+  display_price?: DisplayPrice | null;
   id: string;
   display_name: string;
   provider: string;
@@ -256,10 +309,10 @@ export interface ModelGardenItem {
   region: string;
   backend_model: string;
   endpoint_url: string;
-  context_window: number;
+  context_window: number | null;
   max_completion_tokens: number;
-  input_per_million: string;
-  output_per_million: string;
+  input_per_million: string | null;
+  output_per_million: string | null;
   cached_input_per_million: string | null;
   currency: string;
   capabilities: string[];
@@ -279,8 +332,10 @@ export interface CreditBudget {
   monthly_budget_usd: string;
   credit_allocation: string;
   used_credits: string;
-  remaining_credits: string;
-  utilization_pct: number;
+  remaining_credits: string | null;
+  utilization_pct: number | null;
+  unpriced_requests?: number;
+  cost_complete?: boolean;
   low_credit_alert: boolean;
   alert_threshold_pct: number;
   allowed_models: string[];
@@ -302,7 +357,7 @@ export interface CreditBudgetUpdateInput {
   hard_stop_enabled: boolean;
 }
 
-export interface ModelUsageBreakdownItem {
+export interface ModelUsageBreakdownItem extends DisplayEstimate {
   model: string;
   provider: string;
   vendor: string;
@@ -310,37 +365,42 @@ export interface ModelUsageBreakdownItem {
   input_tokens: number;
   output_tokens: number;
   total_tokens: number;
-  cost_usd: string;
+  cost_usd: string | null;
+  unpriced_requests?: number;
   share_pct: number;
 }
 
-export interface ProductUsageBreakdownItem {
+export interface ProductUsageBreakdownItem extends DisplayEstimate {
   subscription_id: string;
   subscription_name: string;
   team: string;
   product_name: string;
   requests: number;
   total_tokens: number;
-  cost_usd: string;
+  cost_usd: string | null;
+  unpriced_requests?: number;
   share_pct: number;
 }
 
-export interface ChannelUsageBreakdownItem {
+export interface ChannelUsageBreakdownItem extends DisplayEstimate {
   channel: string;
   requests: number;
   total_tokens: number;
-  cost_usd: string;
+  cost_usd: string | null;
+  unpriced_requests?: number;
   share_pct: number;
 }
 
-export interface CreditSummary {
+export interface CreditSummary extends DisplayEstimate {
   organization_id: string;
   organization_name: string;
   currency: string;
   total_credits: string;
   used_credits: string;
-  remaining_credits: string;
-  utilization_pct: number;
+  remaining_credits: string | null;
+  utilization_pct: number | null;
+  unpriced_requests?: number;
+  cost_complete?: boolean;
   alert_threshold_pct: number;
   low_credit_alert: boolean;
   hard_stop_enabled: boolean;
@@ -407,7 +467,7 @@ export interface PlaygroundChatResult {
   input_tokens: number;
   output_tokens: number;
   total_tokens: number;
-  estimated_cost_usd: string;
+  estimated_cost_usd: string | null;
   latency_ms: number;
 }
 

@@ -1,6 +1,12 @@
 FROM python:3.11-slim-bookworm
 LABEL com.azure.containerizationassist.createdby="containerization-assist"
 ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1
+# Metadata freshness is independent of the persistent POC's no-expiry policy.
+# Operators must refresh real deployment evidence; never restamp old evidence.
+ENV AIFLUX_FOUNDRY_INVENTORY_PATH=/app/gateway/catalog/foundry-inventory-20261026.json \
+    AIFLUX_EXTERNAL_INVENTORY_PATH=/app/gateway/catalog/external-inventory.json \
+    AIFLUX_FOUNDRY_INVENTORY_MAX_AGE_SECONDS=86400 \
+    AIFLUX_GATEWAY_MAX_COMPLETION_TOKENS=1024
 WORKDIR /app
 RUN apt-get update && apt-get install -y --no-install-recommends curl ca-certificates unixodbc \
     && curl -fsSL https://packages.microsoft.com/config/debian/12/packages-microsoft-prod.deb -o /app/ms.deb \

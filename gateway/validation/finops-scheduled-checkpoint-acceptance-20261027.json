@@ -1,0 +1,87 @@
+{
+  "status": "live_scheduled_ingestion_and_customer_charts_verified",
+  "scope": "authenticated_customer_api_and_rendered_customer_ui",
+  "observed_at_utc": "2026-10-27T09:15:23.607Z",
+  "two_distinct_scheduled_checkpoint_successes_verified": true,
+  "checkpoint_advance_seconds": 300.642696,
+  "manual_timer_invocations_this_verification": 0,
+  "inference_requests_this_verification": 0,
+  "cloud_configuration_writes_this_verification": 0,
+  "new_probe_resources": 0,
+  "cutoff_utc": "2026-10-27T06:06:02.045288+00:00",
+  "health_observations": [
+    {
+      "observed_at_utc": "2026-10-27T09:10:29.952Z",
+      "endpoint": "/api/usage/health",
+      "http_status": 200,
+      "status": "healthy",
+      "watermark": "2026-10-27T09:05:00.191316Z",
+      "last_query_success_at": "2026-10-27T09:10:00.191316Z",
+      "last_row_ingested_at": "2026-10-27T09:10:03.936714Z",
+      "lag_seconds": 330,
+      "expected_delay_seconds": 300,
+      "stale_after_seconds": 900
+    },
+    {
+      "observed_at_utc": "2026-10-27T09:15:16.047Z",
+      "endpoint": "/api/usage/health",
+      "http_status": 200,
+      "status": "healthy",
+      "watermark": "2026-10-27T09:10:00.834012Z",
+      "last_query_success_at": "2026-10-27T09:15:00.834012Z",
+      "last_row_ingested_at": "2026-10-27T09:15:11.131357Z",
+      "lag_seconds": 315,
+      "expected_delay_seconds": 300,
+      "stale_after_seconds": 900
+    }
+  ],
+  "earlier_rendered_observation": {
+    "viewport_end_utc": "2026-10-27T09:06:00Z",
+    "last_ingested_display": "10/27/2026, 5:05:00 PM",
+    "precision": "display_seconds_only_local_UTC_plus_8",
+    "meaning": "summary.last_ingested_at maps to global IngestionState.last_success_at; not an exact microsecond API checkpoint observation"
+  },
+  "customer_usage": {
+    "observed_at_utc": "2026-10-27T09:15:23.607Z",
+    "http_status": 200,
+    "total": 20,
+    "rows_in_page": 20,
+    "requests": 20,
+    "input_tokens": 1080,
+    "output_tokens": 1727,
+    "total_tokens": 2807,
+    "measured_requests": 20,
+    "missing_token_requests": 0,
+    "failed_requests": 1,
+    "throttled_requests": 0,
+    "incomplete_requests": 20,
+    "known_cost": null,
+    "currency": null,
+    "first_occurred_at": "2026-10-27T06:23:48.351824Z",
+    "last_occurred_at": "2026-10-27T08:39:20.508650Z",
+    "records_before_cutoff": 0
+  },
+  "rendered_model_token_totals": {
+    "DeepSeek-V4-Flash": 97,
+    "Kimi-K2.7-Code": 143,
+    "glm-5.3": 1524,
+    "gpt-4o": 79,
+    "gpt-5.4-mini": 61,
+    "gpt-5.6-luna": 165,
+    "gpt-6.1-sol": 204,
+    "grok-4-1-fast-reasoning": 457,
+    "grok-4.3": 77
+  },
+  "limitations": [
+    "Customer usage totals are organization-scoped, not asserted as global database totals.",
+    "Global native-llm checkpoint is exposed through the authenticated customer health DTO.",
+    "Costs remain unknown; all 20 requests are incomplete for pricing or attribution despite complete measured tokens. No price was invented or changed.",
+    "Current console logs remain stale and are not the source of success or failure attribution.",
+    "Existing Always On change was ARM, not a validated Terraform apply; original deviation disclosure remains valid."
+  ],
+  "authentication": "Existing customer client request authentication reused only within browser execution; no token, cookie, secret, identifier rows or DSN exported.",
+  "protected_state_evidence": "gateway/validation/finops-always-on-reconciliation-20261027.json",
+  "protected_state_reconciled_at_utc": "2026-10-27T09:14:24.104987+00:00",
+  "all_four_app_settings_hashes_and_full_protected_baseline_match": true,
+  "focused_regression_tests_passed": 164
+}

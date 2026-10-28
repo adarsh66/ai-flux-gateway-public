@@ -1,0 +1,100 @@
+{
+  "at_utc": "2026-10-27T08:28:15.643496+00:00",
+  "timer_enabled": true,
+  "timer_enabled_at_utc": "2026-10-27T08:15:04.204310+00:00",
+  "enabled_at_semantics": "exact_saved_plan_apply_completed_UTC",
+  "plan_sha256": "3fa962d8fb7c9c2cf35d54d83a8075610ebb7292168b2c9abb03c060ba375ba8",
+  "timer_disabled_setting_readback": "false",
+  "changed_setting_names": [
+    "AzureWebJobs.ingest_usage.Disabled"
+  ],
+  "settings_hashes_before": {
+    "api": "a4d40a5dbdca329f84e4f23a5c9663192d00eb8af932290d0cad970c19e930fd",
+    "ingestion": "8d9eb39a189c8024c5288c86b125a2897ae95974be868f4f66f3aa8c2434d410",
+    "admin": "8819a64ec5c3e2933d1c451928622977b589e62e843136dc100aee46ba2a3b6e",
+    "customer": "5086ea9867a7b132a493ac263cb13bd09af81ba97f9c8b092249f7322ab2490a"
+  },
+  "settings_hashes_after": {
+    "api": "a4d40a5dbdca329f84e4f23a5c9663192d00eb8af932290d0cad970c19e930fd",
+    "ingestion": "2d084cb4efb6b9f8b23be9e61e609b2c378544e8b16b1cd5e61b5fc21650bc5d",
+    "admin": "8819a64ec5c3e2933d1c451928622977b589e62e843136dc100aee46ba2a3b6e",
+    "customer": "5086ea9867a7b132a493ac263cb13bd09af81ba97f9c8b092249f7322ab2490a"
+  },
+  "protected_baseline_and_all_four_images": "verified_unchanged",
+  "start_at_unchanged": "2026-10-27T06:06:02.045288+00:00",
+  "catalog_configured": "true",
+  "image": "pocidstokenexacr.azurecr.io/aiflux-ingestion@sha256:d2bdae4edbd2faf0f6c5a5b28c83882e36222767f88de9625071b251d4114c0b",
+  "host_enabled": true,
+  "schedule_UTC": "0 */5 * * * *",
+  "next_scheduled_UTC": "2026-10-27T08:30:00+00:00",
+  "runOnStartup": false,
+  "manual_timer_invocations": 0,
+  "new_images": 0,
+  "network_changes": 0,
+  "role_changes": 0,
+  "historical_requests_deferred": 156,
+  "backfill_executed": false,
+  "watermark_reset": false,
+  "scheduled_successes_verified": 0,
+  "scheduled_failures_verified": 0,
+  "site": {
+    "enabled": true,
+    "state": "Running"
+  },
+  "host": {
+    "state": "Running",
+    "version": "4.1055.150.0"
+  },
+  "functions": [
+    {
+      "name": "ingestion_ready",
+      "disabled": false
+    },
+    {
+      "name": "ingest_usage",
+      "disabled": false
+    }
+  ],
+  "scheduled_console_evidence": {
+    "http_status": 200,
+    "raw_logs_exported": false,
+    "expected_digest_seen": true,
+    "starts": [],
+    "executions": [],
+    "current_failures": []
+  },
+  "scheduled_aggregate_telemetry": {
+    "partial": true,
+    "tables": [
+      {
+        "name": "PrimaryResult",
+        "columns": [
+          {
+            "name": "records",
+            "type": "long"
+          },
+          {
+            "name": "scheduled_starts",
+            "type": "long"
+          },
+          {
+            "name": "handler_successes",
+            "type": "long"
+          },
+          {
+            "name": "handler_failures",
+            "type": "long"
+          }
+        ],
+        "rows": [
+          [
+            0,
+            0,
+            0,
+            0
+          ]
+        ]
+      }
+    ]
+  }
+}

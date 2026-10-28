@@ -1,0 +1,151 @@
+{
+  "date": "2026-10-27",
+  "status": "CORRECTION_APPLIED_CUSTOMER_USAGE_PASS_CATALOG_503_ADMIN_401_BLOCKED",
+  "observed_from": "2026-10-27T13:08:34.856Z",
+  "observed_through": "2026-10-27T13:09:13.669Z",
+  "scope": "Read-only live browser acceptance and local documentation/evidence edits only. No build, plan, apply, restart, configuration/resource write, inference, auth-storage/header/token/key/password extraction or authentication bypass.",
+  "release": {
+    "proof": "gateway/validation/catalog-pricing-correction-release-20261027.json",
+    "proof_at": "2026-10-27T12:57:38.532119+00:00",
+    "plan_sha256": "aacc34680e9c8b8f96e0e2eed89a51d4bcee3f68a5f7ff9715b932efda8f8a8c",
+    "api_image": "pocidstokenexacr.azurecr.io/aiflux-api@sha256:5df0ba96cbf9f6d40a593345734c5427a5f24a5d2be2066901f3b9d48424f1f6",
+    "manifest_sha256": "0aec80e69631e8cfccfde7844f6d83379df2e551283dd323809e9ae764573b15",
+    "protected_equal_except_one_api_image": true,
+    "all_four_appsettings_hashes_unchanged": true,
+    "unchanged_image_digests": {
+      "admin": "8950baf1fa8c5e8b0762c3b1069251706fe043dbca9c060b31c77092ba9f6ca0",
+      "customer": "072fe85e23168d20081894357ac87aa036e14363eb031e796e68686f4d357594",
+      "ingestion": "d2bdae4edbd2faf0f6c5a5b28c83882e36222767f88de9625071b251d4114c0b"
+    },
+    "fresh_arm_or_container_digest_read": false,
+    "response_proves_image_digest_or_unique_backend_version": false,
+    "later_prepared_renewal_plan_treated_as_applied": false
+  },
+  "method": {
+    "authentication": "Existing authenticated Caldova and Contoso customer UI sessions; existing admin session returned 401.",
+    "capture": "Response waiters around normal browser navigation/reload; only safe pricing/error/aggregate fields retained.",
+    "catalog_navigation": "Known Model Catalog sidebar href /models. Hidden-tab click attempts timed out; normal URL navigation/reload used.",
+    "request_interception_or_window_override_added": false,
+    "window": "Actual usage GET start/end reported below; not forced to earlier historical windows.",
+    "inference_generated": false
+  },
+  "customers": {
+    "Contoso": {
+      "captured_at": "2026-10-27T13:08:43.309Z",
+      "http_status": 200,
+      "start": "2026-09-27T11:52:00.000Z",
+      "end": "2026-10-27T11:52:00.000Z",
+      "days": 30,
+      "subscriptions": "all_owned",
+      "models": "all",
+      "requests": 7,
+      "input_tokens": 61,
+      "output_tokens": 445,
+      "total_tokens": 506,
+      "missing_token_requests": 0,
+      "failed_requests": 3,
+      "estimated_cost_usd": "0.001787028571",
+      "matches_previous_independent_expected_total": true,
+      "same_window_as_previous_acceptance": false,
+      "rendered_estimated_cost": "USD 0.00178703",
+      "pricing_revision": "poc-public-20261027-v1",
+      "estimated_requests": 4,
+      "unestimated_requests": 3,
+      "approximate_requests": 2,
+      "known_cost": null,
+      "rendered_unknown_present": true,
+      "tbc_wording_in_usage": false,
+      "health_lag_seconds": 523
+    },
+    "Caldova": {
+      "captured_at": "2026-10-27T13:08:50.602Z",
+      "http_status": 200,
+      "start": "2026-09-27T11:52:00.000Z",
+      "end": "2026-10-27T11:52:00.000Z",
+      "days": 30,
+      "subscriptions": "all_owned",
+      "models": "all",
+      "requests": 21,
+      "input_tokens": 1087,
+      "output_tokens": 1739,
+      "total_tokens": 2826,
+      "missing_token_requests": 0,
+      "failed_requests": 1,
+      "estimated_cost_usd": "0.007271089999",
+      "matches_previous_independent_expected_total": true,
+      "same_window_as_previous_acceptance": false,
+      "rendered_estimated_cost": "USD 0.00727109",
+      "pricing_revision": "poc-public-20261027-v1",
+      "estimated_requests": 19,
+      "unestimated_requests": 2,
+      "approximate_requests": 10,
+      "known_cost": null,
+      "rendered_unknown_present": true,
+      "tbc_wording_in_usage": false,
+      "health_lag_seconds": 530
+    }
+  },
+  "ingestion": {
+    "source": "Authenticated usage summary.health, not a new ARM timer/configuration read",
+    "status": "healthy",
+    "last_query_success_at": "2026-10-27T13:05:00.839702Z",
+    "watermark": "2026-10-27T13:00:00.839702Z",
+    "stale_after_seconds": 900
+  },
+  "catalog": {
+    "endpoint": "/api/model-garden",
+    "status": "BLOCKED_INVENTORY_VALIDATION_HTTP_503",
+    "observations": [
+      {"organization": "Caldova", "at": "2026-10-27T13:08:34.856Z", "http_status": 503},
+      {"organization": "Contoso", "at": "2026-10-27T13:09:13.669Z", "http_status": 503}
+    ],
+    "detail_and_rendered_error": "Verified Foundry deployment inventory is unavailable or expired",
+    "all_eleven_live_numeric_rates_verified": false,
+    "live_source_links_verified": false,
+    "live_glm_tbc_and_numeric_rates_verified": false,
+    "returned_price_cards_count": null,
+    "distinction_from_old_failure": "Current 503 fails before cards render; earlier 12:37 HTTP 200 with eleven null display prices is historical, not the current response.",
+    "specific_internal_inventory_failure_proven": false,
+    "source_contract": {
+      "projection": "services/control-plane/src/aiflux/turnstile_exchange.py:394-413",
+      "accepted_binding_lookup": "services/control-plane/src/aiflux/display_pricing.py:54-86",
+      "inventory_gate": "services/control-plane/src/aiflux/foundry_inventory.py:70-109",
+      "manifest": "services/control-plane/src/aiflux/pricing/rates-20261027.json",
+      "numeric_rate_count": 11,
+      "glm": {"input": "1.14285714", "output": "4", "cached": "0.28571429", "status": "tbc", "cny_per_usd_assumption": "7", "basis": "Publisher proxy, not ModelArts contract tariff or fetched FX quote"},
+      "source_urls": [
+        "https://azure.microsoft.com/en-us/pricing/details/cognitive-services/openai-service/",
+        "https://azure.microsoft.com/en-us/pricing/details/ai-foundry-models/deepseek/",
+        "https://azure.microsoft.com/en-us/pricing/details/ai-foundry-models/kimi/",
+        "https://azure.microsoft.com/en-us/pricing/details/ai-foundry-models/grok/",
+        "https://bigmodel.cn/pricing"
+      ],
+      "source_contract_is_not_live_acceptance": true
+    }
+  },
+  "admin": {
+    "captured_at": "2026-10-27T13:08:57.054Z",
+    "endpoint": "/api/admin/usage/models",
+    "http_status": 401,
+    "detail": "Invalid access token",
+    "existing_admin_pages_offered_by_browser": 1,
+    "other_valid_existing_admin_session_available": false,
+    "same_org_same_window_reconciliation_verified": false,
+    "status": "BLOCKED_VALID_ADMIN_UI_SIGN_IN_REQUIRED"
+  },
+  "tests": {
+    "rerun": false,
+    "correction_xml": {"path": "gateway/validation/catalog-pricing-correction-tests-20261027.xml", "tests": 66, "failures": 0, "errors": 0, "skipped": 0},
+    "evidence_renewal_xml": {"path": "gateway/validation/catalog-pricing-evidence-tests-20261027.xml", "tests": 121, "failures": 0, "errors": 0, "skipped": 0},
+    "suites_overlap_do_not_sum_unique_counts": true,
+    "historical_backend_passed": 117,
+    "historical_native_linux_portal_passed": 107,
+    "passing_tests_do_not_override_live_blockers": true
+  },
+  "historical_acceptance": "gateway/validation/display-pricing-live-acceptance-20261027.json",
+  "overall_acceptance_complete": false,
+  "follow_up_not_executed": [
+    "Resolve catalog verified-inventory availability/freshness under separate authorization; then repeat all-eleven rates, source links and GLM TBC live acceptance.",
+    "Valid admin UI sign-in, followed by same-organization same-UTC-window reconciliation."
+  ]
+}

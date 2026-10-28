@@ -1,0 +1,10 @@
+{
+  "at_utc": "2026-10-27T14:49:02.515931+00:00",
+  "exit_code": 0,
+  "run_id": "cm28",
+  "no_push": true,
+  "deployed": false,
+  "scope": "api-only",
+  "migration_source_changes": 0,
+  "sources_sha256": "236417984733d20d66f593bb8f2a6708eaf44bad150983773ec89a15d29fbdbc"
+}

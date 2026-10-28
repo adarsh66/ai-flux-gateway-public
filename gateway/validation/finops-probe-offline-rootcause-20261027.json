@@ -1,0 +1,89 @@
+{
+  "observed_at_utc": "2026-10-27T02:51:52.399644+00:00",
+  "mode": "offline_source_dependency_and_synthetic_contract_review",
+  "session_reviewed": "9461fb0c1a35",
+  "historical_root_cause": "unknown_information_destroyed_by_sanitizer",
+  "confirmed_defects": [
+    {
+      "classification": "postgres_numeric_aggregate_serialization_rejected",
+      "reproduction": "Real psycopg NumericLoader(1700) yields Decimal for PostgreSQL SUM(bigint); historical probe json.dumps(default=str) emits strings; historical supervisor rejects these instead of accepting integral counts.",
+      "historical_source_hash_verified": true,
+      "reproduced_arm_output_bytes": 130,
+      "reproduced_arm_output_sha256": "b4fa436c81cd365dc673b823a466a84420a4311431a2990b521f9ba8e0db6282",
+      "matches_both_recorded_arm_outputs": true,
+      "alternative_swallowed_exception_yields_identical_output": true,
+      "proves_actual_database_success": false,
+      "fix": "Lossless finite nonnegative integral Decimal-to-int conversion before serialization; fractional, nonfinite, negative and excessive counts fail closed."
+    },
+    {
+      "classification": "blocked_failure_classification_discarded_twice",
+      "fix": "Finite stage, exception-type, guard-reason and SQLSTATE allowlists survive worker-to-supervisor exit 2 and supervisor-to-controller exit 0. No raw messages, DSN, tokens, hosts, usernames, SQL or traceback output. SDK worker logging disabled."
+    }
+  ],
+  "dependency_checks": {
+    "all_retained_wheel_sha256_match_image_manifest": true,
+    "azure_identity": "1.23.0",
+    "msal": "1.39.0",
+    "image_pyjwt": "2.15.1",
+    "local_pyjwt": "2.10.1",
+    "exact_retained_pure_wheels_used_in_isolated_child": true,
+    "selected_managed_identity_client_id_and_scope_with_fake_transport": "passed",
+    "jwt_token_string_and_claim_validation": "passed",
+    "workstation_socket_connect_and_dns_forbidden_in_dependency_test": true,
+    "local_psycopg": "3.2.9",
+    "local_sqlalchemy": "2.0.41",
+    "real_libpq_option_parser": "passed_verify_full_ca_hostaddr_readonly_timeouts",
+    "sql_driver": "psycopg_cursor_positional_tuples_not_sqlalchemy_connection_execute",
+    "pydantic_or_application_imported_by_probe": false,
+    "query_columns_checked_against_source_models": true,
+    "historical_linux_import_and_pip_check_evidence": "cm1h",
+    "fresh_linux_native_dependency_validation": false,
+    "fresh_linux_ca_bundle_validation": false,
+    "live_imds_tls_database_schema_and_grants_verified": false
+  },
+  "validation": {
+    "tests": 390,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "existing_deprecation_warnings": 1,
+    "duration_seconds": 32.255,
+    "junit": "gateway/validation/finops-probe-offline-rootcause-tests-20261027.xml",
+    "changed_python_files_compiled": 4,
+    "editor_errors": 0,
+    "initial_numeric_reproduction_failed_before_fix": true,
+    "scoped_whitespace_check_passed": true
+  },
+  "source_sha256": {
+    "scripts/deployment/finops_private_probe.py": "4b46a88af661066d68c4a3e3ea3a136862d511c5553c9664daf95e47c7d5730c",
+    "infra/finops-runner/entrypoint.py": "e4cfe0aac2c7b2c67233ae1dd2280875e947b49b7c9b8a488606c25a95186ce0",
+    "infra/finops-runner/Dockerfile": "4ade24f9253802165ab464c1fc116f558d9d3f0e3dbd99787fa7651760ca8f6e",
+    "infra/finops-runner/requirements.txt": "d1c3da00f0eb7f918b2a100931b160d9f8c5b0d6de3c5d6ea3c630eb534d652b",
+    "tests/unit/test_finops_probe_runtime.py": "ed23fa2e0694fb1c200133df992f9fd2b0aac70049e793ca2a8c8fa9fbb48348",
+    "tests/unit/test_finops_probe_diagnostics.py": "7d16fe93927966a060624dcbd764fdfb4913d9c7afb47ee1a98a2c8e07d35e85"
+  },
+  "deployment_status": {
+    "source_fix_not_deployed": true,
+    "old_image_contains_fix": false,
+    "new_verified_immutable_image": null,
+    "cloud_build_runs": 0,
+    "remote_validation_runs": 0,
+    "image_pushes": 0,
+    "new_runner_executions": 0,
+    "new_resource_creates": 0,
+    "database_writes": 0,
+    "configuration_writes": 0,
+    "rbac_writes": 0,
+    "probe_retries": 0,
+    "incremental_cloud_cost_incurred_by_this_investigation_usd": 0,
+    "existing_apps_and_images_unchanged": true,
+    "main_review_required_before_any_runner_execution": true
+  },
+  "cleanup_evidence": {
+    "source": "gateway/validation/finops-fresh-final-9461fb0c1a35.json",
+    "read_only_offline_review_not_new_live_verification": true,
+    "fresh_six_ids_http_404_at_utc": "2026-10-27T02:40:16+00:00",
+    "legacy_six_ids_http_404_at_utc": "2026-10-27T02:40:23+00:00",
+    "outstanding_resource_ids": []
+  }
+}

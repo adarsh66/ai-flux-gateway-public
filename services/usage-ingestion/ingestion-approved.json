@@ -1,0 +1,157 @@
+{
+  "models": [
+    {
+      "id": "gpt-5.6-luna",
+      "provider": "OpenAI",
+      "enabled": true,
+      "capabilities": [
+        "chat"
+      ],
+      "backend_model": "gpt-5.6-luna",
+      "region": "eastus",
+      "max_completion_tokens": 1024
+    },
+    {
+      "id": "gpt-6.1-sol",
+      "provider": "OpenAI",
+      "enabled": true,
+      "capabilities": [
+        "chat"
+      ],
+      "backend_model": "gpt-6.1-sol",
+      "region": "eastus",
+      "max_completion_tokens": 1024
+    },
+    {
+      "id": "gpt-5.4-mini",
+      "provider": "OpenAI",
+      "enabled": true,
+      "capabilities": [
+        "chat"
+      ],
+      "backend_model": "gpt-5.4-mini",
+      "region": "eastus",
+      "max_completion_tokens": 1024
+    },
+    {
+      "id": "gpt-4o",
+      "provider": "OpenAI",
+      "enabled": true,
+      "capabilities": [
+        "chat"
+      ],
+      "backend_model": "gpt-4o",
+      "region": "eastus",
+      "max_completion_tokens": 1024
+    },
+    {
+      "id": "DeepSeek-V4-Flash",
+      "provider": "DeepSeek",
+      "enabled": true,
+      "capabilities": [
+        "chat"
+      ],
+      "backend_model": "DeepSeek-V4-Flash",
+      "region": "eastus",
+      "max_completion_tokens": 1024
+    },
+    {
+      "id": "DeepSeek-V4-Pro",
+      "provider": "DeepSeek",
+      "enabled": true,
+      "capabilities": [
+        "chat"
+      ],
+      "backend_model": "DeepSeek-V4-Pro",
+      "region": "eastus",
+      "max_completion_tokens": 1024
+    },
+    {
+      "id": "Kimi-K2.7-Code",
+      "provider": "MoonshotAI",
+      "enabled": true,
+      "capabilities": [
+        "chat"
+      ],
+      "backend_model": "Kimi-K2.7-Code",
+      "region": "eastus",
+      "max_completion_tokens": 1024
+    },
+    {
+      "id": "grok-4.3",
+      "provider": "xAI",
+      "enabled": true,
+      "capabilities": [
+        "chat"
+      ],
+      "backend_model": "grok-4.3",
+      "region": "eastus",
+      "max_completion_tokens": 1024
+    },
+    {
+      "id": "grok-4-20-reasoning",
+      "provider": "xAI",
+      "enabled": true,
+      "capabilities": [
+        "chat"
+      ],
+      "backend_model": "grok-4-20-reasoning",
+      "region": "eastus",
+      "max_completion_tokens": 1024
+    },
+    {
+      "id": "grok-4-1-fast-reasoning",
+      "provider": "xAI",
+      "enabled": true,
+      "capabilities": [
+        "chat"
+      ],
+      "backend_model": "grok-4-1-fast-reasoning",
+      "region": "eastus",
+      "max_completion_tokens": 1024
+    },
+    {
+      "id": "FW-GLM-5.3",
+      "provider": "Fireworks",
+      "enabled": true,
+      "capabilities": [
+        "chat"
+      ],
+      "backend_model": "FW-GLM-5.3",
+      "region": "eastus",
+      "max_completion_tokens": 1024
+    },
+    {
+      "id": "FW-MiniMax-M3",
+      "provider": "Fireworks",
+      "enabled": true,
+      "capabilities": [
+        "chat"
+      ],
+      "backend_model": "FW-MiniMax-M3",
+      "region": "eastus",
+      "max_completion_tokens": 1024
+    },
+    {
+      "id": "glm-5.3",
+      "provider": "ModelArts",
+      "enabled": true,
+      "capabilities": [
+        "chat"
+      ],
+      "backend_model": "glm-5.3",
+      "region": "ap-southeast-1",
+      "max_completion_tokens": 1024
+    },
+    {
+      "id": "Decision-1",
+      "provider": "Microsoft",
+      "enabled": false,
+      "capabilities": [
+        "routing"
+      ],
+      "backend_model": "Decision-1",
+      "region": "eastus"
+    }
+  ]
+}

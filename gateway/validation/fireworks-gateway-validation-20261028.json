@@ -1,0 +1,40 @@
+{
+  "at_utc": "2026-10-28T01:16:58.909364+00:00",
+  "plan_sha256": "9f32083df4f47c2a5b93ee56bfa4d783446d6f54cbbbb1e33f56731a192dff66",
+  "sources": {
+    "infra/project-route/external.tf": "2fd15d00fca4f7d2a5b5a49941d9c7790a089043d1f4c41538088cacc38a98b6",
+    "infra/project-route/fireworks.tf": "ed8879d3a303e6f7d502695541ced78166c410d3b95f60afb6000d0eaa70f921",
+    "infra/project-route/main.tf": "ef92535d46ff2d4ed7ea046483c1578790cf07c922b579b465c72c8683111faa",
+    "infra/project-route/poc-controls.tf": "baf1f5e538e83108c6ddcab9a5e034469d3459f1b57241f5dac3d0ab82e04553",
+    "infra/project-route/.terraform.lock.hcl": "62b18dc7053b49e98e968540cb1ebbe94e3254be1c0a0acb32eef09d8b369bb9",
+    "gateway/policies/dev-openai.xml.tftpl": "25cc3bc402378ed9519a23a5ec5b6541d7f3ef00661b6da1dad9100d13f37795",
+    "gateway/catalog/fireworks-candidate-routes.json": "ec4e21735b64ff27103ff3f236f469bad518a1a69fff9ceb9e92bb6309fbfd22",
+    "gateway/catalog/project-routes.json": "9bf47527698688af63c865e70e2e735aaeb4afb9f70b55fbedf2b092eed3c1ad",
+    "scripts/deployment/fireworks_release.py": "88a7c4279e02f32ff26baadcc5c36fd3a64d7930383c742df98dc9459498d652",
+    ".deployment/fireworks-models-20261028-formatted/inputs.tfvars.json": "a8094090cb1d699d06aba20a3f3a291a66271304ddf31f7c566ff9ceaedf15be"
+  },
+  "before_policy_sha256": "cbdaae044da1ce9b14a3b562ca74cbce2f9e5d1d1c985addb93282686908241f",
+  "after_policy_sha256": "509c48ed61fd9eda2a9acf06ea1c9b6478f76c7d99425528a49bee61a078d4b2",
+  "scope": {
+    "azapi_resource.fireworks_backend[0]": [
+      "create"
+    ],
+    "azapi_resource.project_policy[0]": [
+      "update"
+    ]
+  },
+  "guard_verified": true,
+  "validated_at_utc": "2026-10-28T01:24:03.823610+00:00",
+  "checks_passed": true,
+  "focused_tests": 228,
+  "all_plan_checks_pass": true,
+  "operator_actions": {
+    "Microsoft.ApiManagement/service/backends/read": true,
+    "Microsoft.ApiManagement/service/backends/write": true,
+    "Microsoft.ApiManagement/service/apis/policies/read": true,
+    "Microsoft.ApiManagement/service/apis/policies/write": true
+  },
+  "images_required": false,
+  "cloud_writes": 0,
+  "inference_requests": 0
+}

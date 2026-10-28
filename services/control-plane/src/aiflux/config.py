@@ -28,6 +28,7 @@ class Settings(BaseSettings):
     apim_product_id: str = "aiflux"
     gateway_settings_scopes: list[Literal["dev-openai", "dev-unified"]] = []
     gateway_controls_v2_enabled: bool = False
+    gateway_controls_poc_enabled: bool = False
     gateway_protected_material_available: bool = False
     gateway_monthly_request_quota_available: bool = False
     gateway_safety_relaxation_allowed: bool = False
@@ -37,6 +38,14 @@ class Settings(BaseSettings):
     log_workspace_id: str = ""
     catalog_path: Path = Path("gateway/catalog/models.json")
     catalog_configured: bool = False
+    foundry_project_endpoint: str = "https://poc-ids-token-ex-foundry.services.ai.azure.com/api/projects/poc-ids-token-ex-foundry-project"
+    foundry_project_resource_id: str = (
+        "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/"
+        "providers/Microsoft.CognitiveServices/accounts/poc-ids-token-ex-foundry/projects/poc-ids-token-ex-foundry-project"
+    )
+    foundry_inventory_path: Path | None = None
+    external_inventory_path: Path | None = None
+    foundry_inventory_max_age_seconds: int = Field(default=3600, ge=1, le=86400)
     acme_challenge_enabled: bool = False
     acme_challenge_directory: Path = Path("/home/aiflux-acme-challenges")
     cors_origins: list[str] = []
@@ -56,11 +65,11 @@ class Settings(BaseSettings):
     decision_router_endpoint: str = "/providers/microsoft/v1/systemone"
     decision_router_default_model: str = "gpt-5.4-mini"
     local_auth_enabled: bool = False
-    local_jwt_secret: str = "turnstile-local-postgres-jwt-signing-secret-key-2026"
+    local_jwt_secret: str = Field(default="turnstile-local-postgres-jwt-signing-secret-key-2026", repr=False)
     bootstrap_admin_email: str = "admin@tokenx-ids.com"
-    bootstrap_admin_password: str = "tokenx-admin"
+    bootstrap_admin_password: str = Field(default="tokenx-admin", repr=False)
     bootstrap_customer_email: str = "developer@caldova.com"
-    bootstrap_customer_password: str = "caldova-pass"
+    bootstrap_customer_password: str = Field(default="caldova-pass", repr=False)
     bootstrap_customer_org: str = "Caldova"
     upstream_apim_url: str = ""
     upstream_apim_key: str = ""
@@ -82,7 +91,7 @@ class Settings(BaseSettings):
         is_pg = self.database_url.startswith(("postgresql://", "postgresql+psycopg://"))
         if is_pg and self.environment != "production":
             self.local_auth_enabled = True
-        if self.local_auth_enabled and self.database_url:
+        if self.local_auth_enabled and self.database_url and self.environment != "production":
             if not self.home_tenant_id:
                 self.home_tenant_id = "00000000-0000-0000-0000-000000000001"
             if not self.entra_audience:
@@ -91,6 +100,14 @@ class Settings(BaseSettings):
 
     def identity_errors(self) -> list[str]:
         errors = []
+        if self.environment == "production" and self.local_auth_enabled:
+            if (
+                self.local_jwt_secret == type(self).model_fields["local_jwt_secret"].default
+                or self.local_jwt_secret.startswith("@Microsoft.KeyVault(")
+                or len(self.local_jwt_secret) < 32
+                or len(set(self.local_jwt_secret)) < 16
+            ):
+                errors.append("production local authentication requires a resolved, strong JWT signing secret")
         for name in ("database_url", "entra_audience", "home_tenant_id"):
             if not getattr(self, name):
                 errors.append(f"{name} is required")

@@ -1,0 +1,145 @@
+{
+  "status": "runtime_catalog_normal_playground_and_scheduled_reporting_verified_with_explicit_ui_method_limitations",
+  "final_observed_at_utc": "2026-10-28T03:10:36.794Z",
+  "release_replay_prohibited": true,
+  "runtime": {
+    "plan_sha256": "f099f30da4bdef7b31570562d275530ea075d55bbad1e95f473d1a4103d92420",
+    "applied_at_utc": "2026-10-28T02:57:25.945420+00:00",
+    "independent_verification_at_utc": "2026-10-28T03:01:20.527545+00:00",
+    "verification_artifact": ".deployment/fireworks-live-20261028/preserved-image-plan/verification.json",
+    "api_digest": "sha256:dd8b048b8a189061d870ca9011c3d8e0152ff63712ee6d61fe3f2a37af3b0a33",
+    "ingestion_digest": "sha256:fad3faca72297752779b0ecddee05bf50a5504670ebc0b5a4222c7dddc6e8b90",
+    "protected_equal_except_two_images": true,
+    "all_four_settings_hashes_equal": true,
+    "native_no_push_run_retained": "cm2b",
+    "release_regressions_retained": 269
+  },
+  "admin_sync": {
+    "status": "completed_preexisting_authenticated_audited_endpoint_not_repeated",
+    "at_utc": "2026-10-28T03:02:23.744Z",
+    "http_status": 200,
+    "accepted_model_count": 13,
+    "changed": ["FW-GLM-5.3", "FW-MiniMax-M3", "router:default"],
+    "auto_enabled": false,
+    "prices_changed": false,
+    "gateway_published": false,
+    "visible_ui_sync_control_verified": false,
+    "limitation": "Current normal admin catalog has no sync button. Saved operation used existing authenticated admin client endpoint; do not claim a UI-control click."
+  },
+  "catalog": {
+    "observed_at_utc": "2026-10-28T03:09:23.359Z",
+    "customer_active_count": 13,
+    "playground_selector_count": 13,
+    "admin_both_fireworks_gateway_verified": true,
+    "external_modelarts_glm_retained_separately": true,
+    "fireworks_prices": "unknown_not_free",
+    "external_glm_price": "publisher_proxy_TBC_not_Fireworks_tariff",
+    "decision1": "routing_only_integration_unavailable_auto_disabled",
+    "fresh_external_credential_health_tested": false
+  },
+  "normal_playground": {
+    "evidence_artifact": "gateway/validation/fireworks-runtime-live-final-20261028.json",
+    "organization": "Caldova",
+    "subscription": "Caldova-AI",
+    "unmodified_selector_and_send": true,
+    "configured_request_cap": 1024,
+    "requested_512_cap_proven_by_normal_ui": false,
+    "limitation": "Normal deployed Playground exposes a fixed 1024 cap and no cap input. Both actual outputs below 512; no new above-512-capped request or body override performed in this continuation.",
+    "requests": [
+      {"alias": "FW-GLM-5.3", "completed_at_utc": "2026-10-28T03:03:44.874Z", "http_status": 200, "response_model": "FW-GLM-5.3", "assistant_nonempty": true, "input_tokens": 24, "output_tokens": 333, "total_tokens": 357},
+      {"alias": "FW-MiniMax-M3", "completed_at_utc": "2026-10-28T03:03:55.045Z", "http_status": 200, "response_model": "FW-MiniMax-M3", "assistant_nonempty": true, "input_tokens": 139, "output_tokens": 102, "total_tokens": 241}
+    ]
+  },
+  "scheduled_reporting": {
+    "status": "verified_new_playground_requests_via_normal_scheduled_ingestion",
+    "customer_read_at_utc": "2026-10-28T03:10:19.887Z",
+    "admin_read_at_utc": "2026-10-28T03:10:24.568Z",
+    "organization": "Caldova",
+    "organization_id": "00b30bd3-bf91-470d-b336-a192be32996e",
+    "subscription_id": "e9f2abb0-930b-598a-b210-0ab0b279127f",
+    "utc_window": {"start": "2026-10-27T03:11:00Z", "end_exclusive": "2026-10-28T03:11:00Z"},
+    "read_method": "Responses captured from ordinary authenticated customer Usage and admin Showback refresh controls; no request interception or authentication inspection",
+    "customer_admin_summary_equal_except_read_time_health_lag": true,
+    "customer_admin_request_rows_equal": true,
+    "customer_admin_summary": {
+      "requests": 25,
+      "input_tokens": 1413,
+      "output_tokens": 2483,
+      "total_tokens": 3896,
+      "measured_requests": 25,
+      "missing_token_requests": 0,
+      "estimated_cost_usd": "0.007271089999",
+      "estimated_requests": 19,
+      "unestimated_requests": 6,
+      "approximate_requests": 10,
+      "recorded_cost": null,
+      "failed_requests": 1,
+      "throttled_requests": 0
+    },
+    "health": {
+      "status": "healthy",
+      "previous_last_query_success_at": "2026-10-28T03:05:00.248644Z",
+      "previous_watermark": "2026-10-28T03:00:00.248644Z",
+      "last_query_success_at": "2026-10-28T03:10:00.147098Z",
+      "watermark": "2026-10-28T03:05:00.147098Z",
+      "last_row_ingested_at": "2026-10-28T03:10:01.452734Z",
+      "customer_lag_seconds": 320,
+      "admin_lag_seconds": 325,
+      "stale_after_seconds": 900
+    },
+    "new_requests": [
+      {"alias": "FW-GLM-5.3", "record_id": "be0c9363872fa39ad7d1b764e619b4a8cdb3b0c395743e8f414602d720968f8c", "occurred_at": "2026-10-28T03:03:38.275776Z", "provider": "Fireworks", "region": "eastus", "http_status": 200, "input_tokens": 24, "output_tokens": 333, "total_tokens": 357, "cached_input_tokens": 0, "completeness": "price_missing", "estimated_cost_usd": null, "recorded_cost": null, "occurrences_each_dashboard": 1},
+      {"alias": "FW-MiniMax-M3", "record_id": "53b3881c0a7efb8a40abbabe1db641645834d082bd72655abdd8dd6c4986a84a", "occurred_at": "2026-10-28T03:03:53.561367Z", "provider": "Fireworks", "region": "eastus", "http_status": 200, "input_tokens": 139, "output_tokens": 102, "total_tokens": 241, "cached_input_tokens": 138, "completeness": "price_missing", "estimated_cost_usd": null, "recorded_cost": null, "occurrences_each_dashboard": 1}
+    ],
+    "new_request_delta": {"requests": 2, "input_tokens": 163, "output_tokens": 435, "total_tokens": 598},
+    "hourly_chart": {
+      "customer_observed_at_utc": "2026-10-28T03:10:31.710Z",
+      "admin_observed_at_utc": "2026-10-28T03:10:36.794Z",
+      "same_organization_and_utc_window": true,
+      "customer_admin_fireworks_buckets_equal": true,
+      "all_model_requests": 25,
+      "all_model_total_tokens": 3896,
+      "new_bucket_start": "2026-10-28T03:00:00Z",
+      "new_bucket_end": "2026-10-28T03:11:00Z",
+      "partial_bucket": true,
+      "FW-GLM-5.3": {"requests": 1, "input_tokens": 24, "output_tokens": 333, "total_tokens": 357},
+      "FW-MiniMax-M3": {"requests": 1, "input_tokens": 139, "output_tokens": 102, "total_tokens": 241}
+    },
+    "console_evidence_artifact": "gateway/validation/fireworks-scheduled-runtime-20261028.json",
+    "console_observed_at_utc": "2026-10-28T03:06:19.925508+00:00",
+    "host_running": true,
+    "expected_image_seen": true,
+    "paired_console_scheduled_successes": 0,
+    "old_probe_records_retained": true,
+    "old_probe_attribution": "backend_attribution_missing",
+    "manual_trigger": false,
+    "cursor_reset": false,
+    "backfill": false
+  },
+  "continuation_operations": {
+    "builds": 0,
+    "plans": 0,
+    "applies": 0,
+    "gateway_reapplies": 0,
+    "additional_syncs": 0,
+    "new_inference_requests": 0,
+    "rbac_writes": 0,
+    "network_writes": 0,
+    "database_migrations": 0,
+    "backfills": 0,
+    "auth_storage_inspected": false,
+    "keys_or_tokens_extracted": false
+  },
+  "remaining_steps": [
+    "Strict 512-configured-cap normal-selector proof is unavailable in the unchanged deployed UI; retain explicit limitation rather than intercepting its request.",
+    "UI-control sync proof is unavailable because current normal admin page has no sync button; existing audited authenticated sync is already complete and must not be replayed."
+  ],
+  "completed_steps": [
+    "Reconciled existing once-applied runtime and independent protected baseline without release replay.",
+    "Confirmed saved audited authenticated admin sync and current 13-model catalog with external ModelArts GLM retained.",
+    "Read current normal 13-model Playground selector and retained actual unmodified-selector HTTP 200 nonempty-response proofs.",
+    "Observed normal 03:10 scheduled query/watermark advance and two newly ingested request rows with exact measured tokens and Fireworks attribution.",
+    "Confirmed identical customer/admin organization, UTC window, request rows, summary totals and hourly model buckets.",
+    "Kept missing Fireworks prices Unknown, historical unattributed probe rows unchanged, and source/TBC provenance explicit."
+  ]
+}

@@ -1,0 +1,72 @@
+{
+  "at_utc": "2026-10-27T04:16:25.016961+00:00",
+  "acr_pull": {
+    "api": true,
+    "admin": true,
+    "customer": true,
+    "ingestion": true
+  },
+  "retention_and_roles": {
+    "managed_identity_data_plane_verified": false,
+    "api_workspace_matches": true,
+    "workspace_retention_days": 30,
+    "tables": {
+      "ApiManagementGatewayLogs": {
+        "retentionInDays": 30,
+        "totalRetentionInDays": 30,
+        "plan": "Analytics"
+      },
+      "ApiManagementGatewayLlmLog": {
+        "retentionInDays": 30,
+        "totalRetentionInDays": 30,
+        "plan": "Analytics"
+      }
+    },
+    "roles": {
+      "api": {
+        "monitor_workspace": {
+          "known_builtin_role_names": [
+            "Log Analytics Reader"
+          ],
+          "other_assignment_count": 0
+        },
+        "function_host_storage": {
+          "known_builtin_role_names": [
+            "Storage Table Data Contributor"
+          ],
+          "other_assignment_count": 0
+        }
+      },
+      "ingestion": {
+        "monitor_workspace": {
+          "known_builtin_role_names": [
+            "Log Analytics Reader"
+          ],
+          "other_assignment_count": 0
+        },
+        "function_host_storage": {
+          "known_builtin_role_names": [
+            "Storage Blob Data Owner",
+            "Storage Queue Data Contributor",
+            "Storage Table Data Contributor"
+          ],
+          "other_assignment_count": 0
+        }
+      }
+    }
+  },
+  "postgres_public": "Disabled",
+  "postgres_rules": 0,
+  "state_storage": {
+    "default_action": "Deny",
+    "approved_ips_present": [
+      "167.103.65.36",
+      "167.103.66.248",
+      "167.103.66.93"
+    ],
+    "other_ip_rule_count": 0,
+    "container_metadata_access": {
+      "status": "verified"
+    }
+  }
+}

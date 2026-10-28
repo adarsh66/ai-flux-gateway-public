@@ -1,3 +1,4 @@
+import json
 from datetime import UTC, datetime, timedelta
 from types import SimpleNamespace
 from uuid import uuid4
@@ -16,6 +17,38 @@ HOME = "11111111-1111-4111-8111-111111111111"
 CUSTOMER = "22222222-2222-4222-8222-222222222222"
 ADMIN_USER = "33333333-3333-4333-8333-333333333333"
 CUSTOMER_USER = "44444444-4444-4444-8444-444444444444"
+
+
+def install_inventory(settings, path, entries):
+    """Explicit synthetic deployments/acceptance, never a production bypass."""
+    account = settings.foundry_project_resource_id.rsplit("/projects/", 1)[0]
+    deployments = []
+    routes = []
+    for alias, backend, endpoint, capabilities, limit in entries:
+        deployment_id = account + "/deployments/" + backend
+        if not any(d["id"] == deployment_id for d in deployments):
+            deployments.append({
+                "id": deployment_id, "name": backend, "model_name": "synthetic-" + backend,
+                "model_version": "test-version", "model_format": "Test",
+                "provisioning_state": "Succeeded", "capacity": 1, "chat_completion": True,
+            })
+        routes.append({
+            "alias": alias, "deployment_id": deployment_id, "backend_model": backend,
+            "model_name": "synthetic-" + backend, "model_version": "test-version",
+            "endpoint_url": endpoint, "api_format": "openai-chat-completions",
+            "capabilities": capabilities, "max_completion_tokens": limit, "gateway_validated": True,
+        })
+    data = {
+        "schema_version": 1, "verified_at": datetime.now(UTC).isoformat(),
+        "project_endpoint": settings.foundry_project_endpoint,
+        "project_resource_id": settings.foundry_project_resource_id, "account_resource_id": account,
+        "account_read": "Succeeded", "project_read": "Succeeded", "connections_read": "Succeeded",
+        "connection_ids": [], "project_deployments_read": "PermissionDenied",
+        "deployments": deployments, "routes": routes,
+    }
+    path.write_text(json.dumps(data), encoding="utf-8")
+    settings.foundry_inventory_path = path
+    return data
 
 
 class FakeApim:
@@ -66,6 +99,9 @@ def env(tmp_path):
         log_workspace_id=HOME,
     )
     engine = engine_for(settings.database_url)
+    install_inventory(settings, tmp_path / "inventory.json", [
+        ("test-alias", "test-model", "https://gateway.test/v1", ["chat", "stream"], 4096),
+    ])
     Base.metadata.drop_all(engine)
     Base.metadata.create_all(engine)
     with Session(engine, expire_on_commit=False) as db:

@@ -1,0 +1,28 @@
+{
+  "at_utc": "2026-10-27T08:36:10.757685+00:00",
+  "resource_id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Web/sites/poc-ids-token-ex-ingestion/config/web",
+  "approved_scope": "existing_dedicated_plan_always_on_only",
+  "changed_fields": [
+    "alwaysOn"
+  ],
+  "before": false,
+  "after": true,
+  "before_web_sha256": "9b9c7a82c76b7ce618ea89fc8d0cda4c0089753736f49c4f5243707f5b82e8a6",
+  "target_web_sha256": "f57edb05408c93c1f7f454b72dbbaa86ff74232b720b7d0944daa50e3a60b892",
+  "settings_sha256": {
+    "api": "a4d40a5dbdca329f84e4f23a5c9663192d00eb8af932290d0cad970c19e930fd",
+    "ingestion": "2d084cb4efb6b9f8b23be9e61e609b2c378544e8b16b1cd5e61b5fc21650bc5d",
+    "admin": "8819a64ec5c3e2933d1c451928622977b589e62e843136dc100aee46ba2a3b6e",
+    "customer": "5086ea9867a7b132a493ac263cb13bd09af81ba97f9c8b092249f7322ab2490a"
+  },
+  "plan_sku": {
+    "name": "B1",
+    "tier": "Basic",
+    "size": "B1",
+    "family": "B",
+    "capacity": 1
+  },
+  "new_resources": 0,
+  "timer_invocations": 0,
+  "plan_sha256": "de9dfe306fb177c8d1fb8030d17314ae782f4fbe33a8f7febdaee9aaeee0de13"
+}

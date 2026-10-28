@@ -1,0 +1,63 @@
+{
+  "at_utc": "2026-10-27T07:23:55.731580+00:00",
+  "read_only": true,
+  "workspace_guid_matches": true,
+  "workspace_query_public_network": "Enabled",
+  "selected_identity_attached": true,
+  "host_storage_identity_matches": true,
+  "host_storage_managedidentity": true,
+  "host_storage_uris_expected": true,
+  "timer_disabled": true,
+  "catalog_enabled": true,
+  "cutoff_preserved": true,
+  "roles": {
+    "monitor": [
+      {
+        "role": "Log Analytics Reader",
+        "condition_present": false
+      }
+    ],
+    "host_storage": [
+      {
+        "role": "Storage Blob Data Owner",
+        "condition_present": false
+      },
+      {
+        "role": "Storage Queue Data Contributor",
+        "condition_present": false
+      },
+      {
+        "role": "Storage Table Data Contributor",
+        "condition_present": false
+      }
+    ]
+  },
+  "legacy_dashboard_setting_present": false,
+  "host_secret_storage_explicit_files": false,
+  "host_status": {
+    "state": "Running",
+    "version": "4.1055.150.0"
+  },
+  "state_storage": {
+    "default_action": "Deny",
+    "approved_ips_present": [
+      "167.103.65.36",
+      "167.103.66.248",
+      "167.103.66.93"
+    ],
+    "other_ip_rule_count": 0,
+    "container_metadata_access": {
+      "status": "verified"
+    }
+  },
+  "postgres_public_network": "Disabled",
+  "postgres_firewall_rules": 0,
+  "prepared_runner_absence": {
+    "ingestion": true,
+    "api": true,
+    "subnet": true,
+    "nsg": true,
+    "nat": true,
+    "pip": true
+  }
+}

@@ -13,6 +13,7 @@ export const isManaged = (c: GatewayConfigurationUnion | null | undefined): c is
 /** Legacy-shaped view used by the legacy form, even when the latest snapshot is managed. */
 export function legacyOf(c: GatewayConfigurationUnion | null | undefined): GatewayConfiguration | undefined {
   if (!c) return undefined;
+  if ("schema_version" in c && c.schema_version === 3) return undefined;
   if (!isManaged(c)) return c;
   const { rpm, tpm, token_quota, quota_period } = c.defaults;
   return { safety_threshold: c.safety.hate, rpm, tpm, token_quota, quota_period };
@@ -31,7 +32,7 @@ export const migrateLegacySafety = (threshold: number): SafetyConfiguration => (
 });
 
 export const currentSafety = (c: GatewayConfigurationUnion | null | undefined, initialThreshold?: number): SafetyConfiguration | undefined =>
-  isManaged(c) ? c.safety : migrateLegacySafety(c ? c.safety_threshold : initialThreshold ?? 1);
+  c && "schema_version" in c ? c.safety : migrateLegacySafety(c ? c.safety_threshold : initialThreshold ?? 1);
 
 export const SAFETY_CATEGORIES = ["hate", "violence", "sexual", "self_harm"] as const;
 export const SAFETY_TOGGLES = ["prompt_attack", "protected_material", "input_filtering", "output_filtering"] as const;
@@ -109,6 +110,7 @@ export const teamKey = (org: string, team: string) => `${org}/${team}`;
 export const subKey = (org: string, sub: string) => `${org}/${sub}`;
 
 export function managedDraftOf(c: GatewayConfigurationUnion | null | undefined): ManagedDraft {
+  if (c && "schema_version" in c && c.schema_version === 3) return { defaults: emptyLimitsDraft(), teams: {}, subscriptions: {} };
   if (!c) return { defaults: emptyLimitsDraft(), teams: {}, subscriptions: {} };
   if (!isManaged(c)) return { defaults: limitsDraftOfLegacy(c), teams: {}, subscriptions: {} };
   return {

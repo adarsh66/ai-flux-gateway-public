@@ -16,6 +16,8 @@ from sqlalchemy.orm import Session
 from aiflux.auth import Principal, hash_password, issue_local_jwt, verify_password
 from aiflux.config import Settings
 from aiflux.finops import aware
+from aiflux.display_pricing import accepted_catalog_price, estimate_summary
+from aiflux.external_inventory import AcceptedInventory, ExternalRoute, GATEWAY
 from aiflux.models import (
     Base,
     CreditBudget,
@@ -389,7 +391,11 @@ def model_garden_item_dict(row: ManagedModelEndpoint) -> ModelGardenItemOutput:
     )
 
 
-def list_model_garden(db: Session, *, include_disabled: bool = True) -> list[ModelGardenItemOutput]:
+def list_model_garden(
+    db: Session, settings: Settings, *, include_disabled: bool = True
+) -> list[ModelGardenItemOutput]:
+    inventory = AcceptedInventory.load(settings)
+    accepted_aliases = inventory.accepted_aliases(settings)
     ensure_model_garden_seeded(db)
     query = select(ManagedModelEndpoint).order_by(
         ManagedModelEndpoint.priority.asc(), ManagedModelEndpoint.id.asc()
@@ -399,12 +405,41 @@ def list_model_garden(db: Session, *, include_disabled: bool = True) -> list[Mod
             (ManagedModelEndpoint.enabled.is_(True)) | (ManagedModelEndpoint.coming_soon.is_(True))
         )
     rows = db.scalars(query).all()
-    return [model_garden_item_dict(row) for row in rows]
+    items = []
+    for row in rows:
+        item = model_garden_item_dict(row)
+        # Display-only provenance; never update ManagedModelEndpoint economics.
+        item.display_price = accepted_catalog_price(inventory, row.id, row.backend_model, row.endpoint_url)
+        route = inventory.route(row.id)
+        if isinstance(route, ExternalRoute):
+            item.context_window = None
+            item.input_per_million = None
+            item.output_per_million = None
+            item.cached_input_per_million = None
+        if route is not None:
+            item.capabilities = [cap for cap in item.capabilities if cap in route.capabilities]
+            item.max_completion_tokens = min(item.max_completion_tokens, route.max_completion_tokens)
+        item.enabled = (
+            row.id in accepted_aliases and row.enabled and not row.coming_soon and "chat" in item.capabilities
+            and inventory.matches(row.id, row.backend_model, [row.endpoint_url])
+            and (row.id != "auto" or get_router_config_output(db, settings).enabled)
+        )
+        if settings.gateway_max_completion_tokens is not None:
+            item.max_completion_tokens = min(item.max_completion_tokens, settings.gateway_max_completion_tokens)
+        if include_disabled or item.enabled:
+            items.append(item)
+    return items
 
 
 def upsert_model_garden_item(
     db: Session, principal: Principal, payload: ModelGardenUpsert
 ) -> ModelGardenItemOutput:
+    if payload.id == "glm-5.3" and (
+        payload.endpoint_url != GATEWAY or payload.backend_model != "glm-5.3"
+        or payload.provider != "ModelArts" or payload.vendor != "ModelArts"
+        or payload.capabilities != ["chat"] or payload.max_completion_tokens > 1024
+    ):
+        raise HTTPException(422, "External GLM metadata requires its fixed gateway binding and chat-only capability")
     ensure_model_garden_seeded(db)
     row = db.get(ManagedModelEndpoint, payload.id)
     now = datetime.now(UTC)
@@ -461,6 +496,16 @@ def ensure_organization_budget(db: Session, organization_id: str) -> CreditBudge
 
 
 def _used_credits_for(db: Session, organization_id: str, subscription_id: str | None = None) -> Decimal:
+    """Recorded priced usage for display only. Never synthesize prices."""
+    conditions = [UsageRecord.organization_id == organization_id, UsageRecord.currency == "USD"]
+    if subscription_id is not None:
+        conditions.append(UsageRecord.subscription_id == subscription_id)
+    total = db.scalar(select(func.sum(UsageRecord.cost)).where(*conditions))
+    return Decimal(total or 0).quantize(Decimal("0.0001"))
+
+
+def _enforcement_used_credits_for(db: Session, organization_id: str, subscription_id: str | None = None) -> Decimal:
+    """Legacy hard-stop economics retained pending separate business approval."""
     conditions = [UsageRecord.organization_id == organization_id]
     if subscription_id is not None:
         conditions.append(UsageRecord.subscription_id == subscription_id)
@@ -480,6 +525,12 @@ def _budget_output(db: Session, row: CreditBudget) -> CreditBudgetOutput:
     org = db.get(Organization, row.organization_id)
     sub = db.get(TeamSubscription, row.subscription_id) if row.subscription_id else None
     used = _used_credits_for(db, row.organization_id, row.subscription_id)
+    conditions = [UsageRecord.organization_id == row.organization_id]
+    if row.subscription_id is not None:
+        conditions.append(UsageRecord.subscription_id == row.subscription_id)
+    unpriced = db.scalar(select(func.count()).select_from(UsageRecord).where(
+        *conditions, UsageRecord.cost.is_(None) | UsageRecord.currency.is_(None)
+        | (UsageRecord.currency != "USD"))) or 0
     allocated = Decimal(row.credit_allocation)
     remaining = max(Decimal("0.0000"), allocated - used)
     utilization = float((used / allocated * Decimal(100)) if allocated > 0 else Decimal(0))
@@ -492,8 +543,10 @@ def _budget_output(db: Session, row: CreditBudget) -> CreditBudgetOutput:
         monthly_budget_usd=f"{Decimal(row.monthly_budget_usd):.2f}",
         credit_allocation=f"{allocated:.2f}",
         used_credits=f"{used:.4f}",
-        remaining_credits=f"{remaining:.4f}",
-        utilization_pct=round(utilization, 2),
+        unpriced_requests=unpriced,
+        cost_complete=unpriced == 0,
+        remaining_credits=f"{remaining:.4f}" if not unpriced else None,
+        utilization_pct=round(utilization, 2) if not unpriced else None,
         low_credit_alert=utilization >= row.alert_threshold_pct,
         alert_threshold_pct=row.alert_threshold_pct,
         allowed_models=json.loads(row.allowed_models_json or '["*"]'),
@@ -563,10 +616,11 @@ def credit_summary_response(
     budget = ensure_organization_budget(db, organization_id)
     org = db.get(Organization, organization_id)
     cutoff = datetime.now(UTC) - timedelta(days=days)
-    conditions = [UsageRecord.organization_id == organization_id, UsageRecord.occurred_at >= cutoff]
+    conditions = [UsageRecord.organization_id == organization_id, UsageRecord.occurred_at >= cutoff,
+                  UsageRecord.occurred_at < cutoff + timedelta(days=days)]
     if subscription_id is not None:
         conditions.append(UsageRecord.subscription_id == subscription_id)
-    rows = db.scalars(select(UsageRecord).where(*conditions)).all()
+    rows = db.scalars(select(UsageRecord).where(*conditions)).yield_per(500)
     endpoints = {m.id: m for m in db.scalars(select(ManagedModelEndpoint)).all()}
     subs = {
         s.id: s
@@ -580,22 +634,20 @@ def credit_summary_response(
     channel_buckets: dict[str, dict[str, Any]] = {}
     total_tokens_all = 0
     total_cost_all = Decimal("0.0000")
+    request_count = 0
+    unpriced = 0
 
     for r in rows:
+        request_count += 1
+        unpriced += int(r.cost is None or r.currency != "USD")
         inp = r.input_tokens or 0
         out = r.output_tokens or 0
-        toks = inp + out
+        toks = inp + out if r.input_tokens is not None and r.output_tokens is not None else 0
         total_tokens_all += toks
         endpoint = endpoints.get(r.model)
-        if r.cost is not None:
-            row_cost = Decimal(r.cost)
-        elif endpoint is not None:
-            row_cost = (
-                Decimal(inp) * Decimal(endpoint.input_per_million)
-                + Decimal(out) * Decimal(endpoint.output_per_million)
-            ) / Decimal(1_000_000)
-        else:
-            row_cost = Decimal(toks) * Decimal("0.0000015")
+        # Null is unknown, not free. Only recorded prices contribute to known cost.
+        usd_priced = r.cost is not None and r.currency == "USD"
+        row_cost = Decimal(r.cost) if usd_priced else Decimal(0)
         total_cost_all += row_cost
 
         vendor = endpoint.vendor if endpoint else r.provider
@@ -617,6 +669,7 @@ def credit_summary_response(
         m_entry["output_tokens"] += out
         m_entry["total_tokens"] += toks
         m_entry["cost"] += row_cost
+        m_entry["unpriced"] = m_entry.get("unpriced", 0) + int(not usd_priced)
 
         sub = subs.get(r.subscription_id)
         p_entry = product_buckets.setdefault(
@@ -634,6 +687,7 @@ def credit_summary_response(
         p_entry["requests"] += 1
         p_entry["total_tokens"] += toks
         p_entry["cost"] += row_cost
+        p_entry["unpriced"] = p_entry.get("unpriced", 0) + int(not usd_priced)
 
         channel_name = (
             "playground"
@@ -647,6 +701,7 @@ def credit_summary_response(
         c_entry["requests"] += 1
         c_entry["total_tokens"] += toks
         c_entry["cost"] += row_cost
+        c_entry["unpriced"] = c_entry.get("unpriced", 0) + int(not usd_priced)
 
     allocated = Decimal(budget.credit_allocation)
     remaining = max(Decimal("0.0000"), allocated - total_cost_all)
@@ -662,7 +717,8 @@ def credit_summary_response(
             input_tokens=item["input_tokens"],
             output_tokens=item["output_tokens"],
             total_tokens=item["total_tokens"],
-            cost_usd=f"{item['cost']:.4f}",
+            cost_usd=f"{item['cost']:.4f}" if item["unpriced"] < item["requests"] else None,
+            unpriced_requests=item["unpriced"],
             share_pct=round(item["total_tokens"] / denom_tokens * 100.0, 1),
         )
         for item in sorted(model_buckets.values(), key=lambda x: x["total_tokens"], reverse=True)
@@ -675,7 +731,8 @@ def credit_summary_response(
             product_name=item["product_name"],
             requests=item["requests"],
             total_tokens=item["total_tokens"],
-            cost_usd=f"{item['cost']:.4f}",
+            cost_usd=f"{item['cost']:.4f}" if item["unpriced"] < item["requests"] else None,
+            unpriced_requests=item["unpriced"],
             share_pct=round(item["total_tokens"] / denom_tokens * 100.0, 1),
         )
         for item in sorted(product_buckets.values(), key=lambda x: x["total_tokens"], reverse=True)
@@ -685,24 +742,51 @@ def credit_summary_response(
             channel=item["channel"],
             requests=item["requests"],
             total_tokens=item["total_tokens"],
-            cost_usd=f"{item['cost']:.4f}",
+            cost_usd=f"{item['cost']:.4f}" if item["unpriced"] < item["requests"] else None,
+            unpriced_requests=item["unpriced"],
             share_pct=round(item["total_tokens"] / denom_tokens * 100.0, 1),
         )
         for item in sorted(channel_buckets.values(), key=lambda x: x["total_tokens"], reverse=True)
     ]
 
+    estimates = estimate_summary(db, conditions)[0]
+    estimates.pop("group")
+    for items, group in ((by_model, UsageRecord.model), (by_product, UsageRecord.subscription_id)):
+        grouped = {e["group"][0]: e for e in estimate_summary(db, conditions, group)}
+        for item in items:
+            key = item.model if isinstance(item, ModelUsageBreakdownItem) else item.subscription_id
+            e = grouped[key]
+            item.estimated_cost_usd = e["estimated_cost_usd"]
+            item.unestimated_requests = e["unestimated_requests"]
+            item.approximate_requests = e["approximate_requests"]
+    # Channel classification matches the existing grouping, without materializing
+    # all usage records or using client-side row pricing.
+    channel_estimates = estimate_summary(db, conditions, UsageRecord.completeness)
+    for item in by_channel:
+        relevant = [e for e in channel_estimates if (
+            "playground" if e["group"][0] == "playground" else (
+                "auto-router" if e["group"][0] == "auto_routed" else "api-gateway")
+        ) == item.channel]
+        values = [Decimal(e["estimated_cost_usd"]) for e in relevant if e["estimated_cost_usd"] is not None]
+        item.estimated_cost_usd = f"{sum(values):.12f}" if values else None
+        item.unestimated_requests = sum(e["unestimated_requests"] for e in relevant)
+        item.approximate_requests = sum(e["approximate_requests"] for e in relevant)
+
     return CreditSummaryOutput(
+        **estimates,
         organization_id=organization_id,
         organization_name=org.name if org else organization_id,
         currency="USD",
         total_credits=f"{allocated:.2f}",
         used_credits=f"{total_cost_all:.4f}",
-        remaining_credits=f"{remaining:.4f}",
-        utilization_pct=round(utilization, 2),
+        unpriced_requests=unpriced,
+        cost_complete=unpriced == 0,
+        remaining_credits=f"{remaining:.4f}" if not unpriced else None,
+        utilization_pct=round(utilization, 2) if not unpriced else None,
         alert_threshold_pct=budget.alert_threshold_pct,
         low_credit_alert=utilization >= budget.alert_threshold_pct,
         hard_stop_enabled=budget.hard_stop_enabled,
-        total_requests=len(rows),
+        total_requests=request_count,
         total_tokens=total_tokens_all,
         by_model=by_model,
         by_product=by_product,
@@ -712,13 +796,32 @@ def credit_summary_response(
 
 def get_router_config_output(db: Session, settings: Settings) -> ModelRouterConfigOutput:
     row = ensure_router_config(db, settings)
+    inventory = AcceptedInventory.load(settings)
+    accepted_aliases = inventory.accepted_aliases(settings)
+    active = {
+        m.id for m in db.scalars(select(ManagedModelEndpoint)).all()
+        if m.id != "auto" and m.id in accepted_aliases and m.enabled and not m.coming_soon
+        and "chat" in json.loads(m.capabilities_json or "[]")
+        and inventory.matches(m.id, m.backend_model, [m.endpoint_url])
+    }
+    candidates = [alias for alias in json.loads(row.candidate_models_json or "[]") if alias in active]
+    auto = db.get(ManagedModelEndpoint, "auto")
+    auto_route = inventory.route("auto")
+    enabled = bool(
+        settings.decision_router_enabled and row.enabled and auto and auto.enabled
+        and "auto" in accepted_aliases
+        and not auto.coming_soon and auto_route
+        and inventory.matches("auto", auto.backend_model, [auto.endpoint_url])
+        and row.decision_endpoint.rstrip("/") == auto_route.endpoint_url.rstrip("/")
+        and row.default_model in candidates and candidates
+    )
     rules = [RouterRuleItem.model_validate(item) for item in json.loads(row.rules_json or "[]")]
     return ModelRouterConfigOutput(
-        enabled=row.enabled,
+        enabled=enabled,
         strategy=row.strategy,  # type: ignore[arg-type]
         decision_endpoint=row.decision_endpoint,
         default_model=row.default_model,
-        candidate_models=json.loads(row.candidate_models_json or "[]"),
+        candidate_models=candidates,
         rules=rules,
         updated_at=aware(row.updated_at),
     )
@@ -744,6 +847,9 @@ def decide_model_route(
     db: Session, settings: Settings, payload: RouterDecisionRequest
 ) -> RouterDecisionOutput:
     config = get_router_config_output(db, settings)
+    if not config.enabled:
+        raise HTTPException(503, "Auto routing has no verified deployed route and candidate models")
+    inventory = AcceptedInventory.load(settings)
     strategy = payload.strategy or config.strategy
     prompt_lower = payload.prompt.lower()
     endpoints = {
@@ -753,10 +859,16 @@ def decide_model_route(
                 ManagedModelEndpoint.enabled.is_(True), ManagedModelEndpoint.id != "auto"
             )
         ).all()
+        if not m.coming_soon and m.id in config.candidate_models
+        and inventory.matches(m.id, m.backend_model, [m.endpoint_url])
     }
     candidates = [m for m in config.candidate_models if m in endpoints]
+    if strategy == "cost-optimized":
+        # No verified external price: never rank GLM as free/cheapest from SQL defaults.
+        candidates = [m for m in candidates if not isinstance(inventory.route(m), ExternalRoute)]
+        endpoints = {m: row for m, row in endpoints.items() if m in candidates}
     if not candidates:
-        candidates = list(endpoints.keys()) or ["gpt-5.4-mini"]
+        raise HTTPException(503, "Auto routing has no verified deployed candidates")
 
     selected_id = config.default_model if config.default_model in endpoints else candidates[0]
     category = "fast_general_qa"
@@ -918,9 +1030,12 @@ def _evaluate_content_safety(text_input: str) -> tuple[Literal["passed", "blocke
 def run_playground_chat(
     db: Session, settings: Settings, principal: Principal, payload: PlaygroundChatRequest
 ) -> PlaygroundChatResponse:
+    inventory = AcceptedInventory.load(settings)
+    if payload.model not in inventory.accepted_aliases(settings):
+        raise HTTPException(422, "Model has no accepted verified deployment route")
     ensure_model_garden_seeded(db)
     budget = ensure_organization_budget(db, principal.organization_id)
-    used = _used_credits_for(db, principal.organization_id)
+    used = _enforcement_used_credits_for(db, principal.organization_id)
     if budget.hard_stop_enabled and used >= Decimal(budget.credit_allocation):
         raise HTTPException(402, "Organization credit allocation exhausted; contact administrator")
 
@@ -965,7 +1080,12 @@ def run_playground_chat(
         selected_model_id = requested_model
 
     endpoint = db.get(ManagedModelEndpoint, selected_model_id)
-    if endpoint is None or not endpoint.enabled or endpoint.coming_soon:
+    external = isinstance(inventory.route(selected_model_id), ExternalRoute)
+    if (
+        endpoint is None or not endpoint.enabled or endpoint.coming_soon
+        or "chat" not in json.loads(endpoint.capabilities_json or "[]")
+        or not inventory.matches(endpoint.id, endpoint.backend_model, [endpoint.endpoint_url])
+    ):
         raise HTTPException(422, f"Model '{selected_model_id}' is not currently enabled in the Model Garden")
 
     allowed = json.loads(budget.allowed_models_json or '["*"]')
@@ -1017,19 +1137,20 @@ def run_playground_chat(
         and settings.upstream_apim_key
         and settings.environment != "testing"
     ):
-        live_deployments = {"gpt-5.4-mini", "gpt-5.4", "DeepSeek-V3.2-Speciale"}
-        target_dep = endpoint.id if endpoint.id in live_deployments else (
-            "gpt-5.4" if "sonnet" in endpoint.id else "gpt-5.4-mini"
-        )
-        base_apim = settings.upstream_apim_url.rstrip("/")
-        apim_url = f"{base_apim}/openai/deployments/{target_dep}/chat/completions?api-version=2024-10-21"
+        # The accepted route is exact. Never silently substitute another model
+        # or synthesize a provider API path from a UI alias.
+        route = inventory.route(endpoint.id)
+        if route is None:
+            raise HTTPException(503, "Verified model route is unavailable")
+        apim_url = route.endpoint_url.rstrip("/") + "/chat/completions"
         req_body: dict[str, Any] = {
+            "model": endpoint.backend_model,
             "messages": [{"role": m.role, "content": m.content} for m in payload.messages],
+            "max_completion_tokens": min(
+                payload.max_completion_tokens, endpoint.max_completion_tokens,
+                route.max_completion_tokens, settings.gateway_max_completion_tokens or route.max_completion_tokens,
+            ),
         }
-        if target_dep == "DeepSeek-V3.2-Speciale":
-            req_body["max_tokens"] = max(512, payload.max_completion_tokens)
-        else:
-            req_body["max_completion_tokens"] = max(64, payload.max_completion_tokens)
         t0 = time.monotonic()
         try:
             resp = httpx.post(
@@ -1041,9 +1162,18 @@ def run_playground_chat(
                 },
                 json=req_body,
                 timeout=30.0,
+                follow_redirects=False,
             )
             if resp.status_code == 200:
                 data = resp.json()
+                if external:
+                    usage = data.get("usage") or {}
+                    prompt, completion, total = (usage.get(k) for k in
+                        ("prompt_tokens", "completion_tokens", "total_tokens"))
+                    if not (type(prompt) is int and type(completion) is int and type(total) is int
+                            and prompt >= 0 and 1 <= completion <= req_body["max_completion_tokens"]
+                            and total == prompt + completion and data.get("model") == endpoint.backend_model):
+                        raise HTTPException(503, "External model response is missing verified token accounting")
                 latency_ms = max(50, int((time.monotonic() - t0) * 1000))
                 msg_obj = (data.get("choices") or [{}])[0].get("message") or {}
                 raw_content = str(msg_obj.get("content") or "")
@@ -1063,6 +1193,8 @@ def run_playground_chat(
             reply_text = ""
 
     if not reply_text:
+        if external or settings.environment != "testing":
+            raise HTTPException(503, "Verified model upstream is unavailable; no completion was generated")
         if routing_decision is not None:
             reply_text = (
                 f"[{endpoint.display_name} · routed via Microsoft Decision-1 ({routing_decision.category})] "
@@ -1081,7 +1213,7 @@ def run_playground_chat(
         Decimal(input_tokens) * Decimal(endpoint.input_per_million)
         + Decimal(output_tokens) * Decimal(endpoint.output_per_million)
     ) / Decimal(1_000_000)
-    cost = cost.quantize(Decimal("0.00000001"))
+    cost = None if external else cost.quantize(Decimal("0.00000001"))
 
     usage_id = str(uuid4())
     db.add(
@@ -1102,7 +1234,7 @@ def run_playground_chat(
             status_code=200,
             e2e_ms=latency_ms,
             ttft_ms=max(80, latency_ms // 3),
-            completeness="auto_routed" if requested_model == "auto" else "playground",
+            completeness="unpriced_external" if external else "auto_routed" if requested_model == "auto" else "playground",
             ingested_at=now,
         )
     )
@@ -1121,7 +1253,7 @@ def run_playground_chat(
         input_tokens=input_tokens,
         output_tokens=output_tokens,
         total_tokens=input_tokens + output_tokens,
-        estimated_cost_usd=f"{cost:.8f}",
+        estimated_cost_usd=f"{cost:.8f}" if cost is not None else None,
         latency_ms=latency_ms,
     )
 
@@ -1243,6 +1375,11 @@ def render_turnstile_exchange_policy(db: Session, settings: Settings) -> Turnsti
 
 
 def ensure_local_users_seeded(db: Session, settings: Settings) -> None:
+    if settings.environment == "production":
+        if settings.identity_errors():
+            raise ValueError("Production identity/local-auth configuration is incomplete")
+        # Production schema and accounts are provisioned separately, never by runtime callers.
+        return
     Base.metadata.create_all(db.get_bind(), checkfirst=True)
     home_tid = settings.home_tenant_id or "00000000-0000-0000-0000-000000000001"
     home_org = db.scalar(select(Organization).where(Organization.tenant_id == home_tid))
@@ -1282,8 +1419,9 @@ def ensure_local_users_seeded(db: Session, settings: Settings) -> None:
 
     admin_accounts = [
         (settings.bootstrap_admin_email.lower(), settings.bootstrap_admin_password, "IDS Platform Admin"),
-        ("admin@turnstile.local", "turnstile-admin", "Platform Admin"),
     ]
+    if settings.environment != "production":
+        admin_accounts.append(("admin@turnstile.local", "turnstile-admin", "Platform Admin"))
     for email, pwd, dname in admin_accounts:
         if db.scalar(select(LocalUser).where(func.lower(LocalUser.email) == email)) is None:
             db.add(
@@ -1304,9 +1442,12 @@ def ensure_local_users_seeded(db: Session, settings: Settings) -> None:
             settings.bootstrap_customer_password,
             "Caldova Lead Developer",
         ),
-        ("customer@caldova.com", settings.bootstrap_customer_password, "Caldova Operations"),
-        ("customer@opco.local", "turnstile-customer", "Caldova Developer"),
     ]
+    if settings.environment != "production":
+        customer_accounts.extend([
+            ("customer@caldova.com", settings.bootstrap_customer_password, "Caldova Operations"),
+            ("customer@opco.local", "turnstile-customer", "Caldova Developer"),
+        ])
     for email, pwd, dname in customer_accounts:
         if db.scalar(select(LocalUser).where(func.lower(LocalUser.email) == email)) is None:
             db.add(

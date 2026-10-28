@@ -5,6 +5,7 @@ import { useSession } from "../session";
 import { legacyOf } from "../managed";
 import type { GatewayConfiguration, GatewaySettings, QuotaPeriod } from "../types";
 import { ManagedGatewayForm } from "./ManagedGatewayForm";
+import { PocControlsForm } from "./PocControlsForm";
 
 const periods: QuotaPeriod[] = ["Hourly", "Daily", "Weekly", "Monthly", "Yearly"];
 type Draft = Record<keyof GatewayConfiguration, string>;
@@ -143,6 +144,7 @@ export function GatewaySettingsPage() {
         const managed = data.filter((row) => row.capabilities?.managed_controls_enabled);
         const shared = managed.find((row) => row.scope === "dev-openai") ?? managed[0];
         return <>
+          {data.filter((row) => row.capabilities?.poc_controls_enabled).map((row) => <PocControlsForm key={row.scope} row={row} refresh={refresh} />)}
           {shared && <>
             <div className="gateway-interfaces" aria-label="Configured interfaces">
               {managed.map((row) => <section className="panel" key={row.scope}>
@@ -152,7 +154,7 @@ export function GatewaySettingsPage() {
             <p className="muted">Settings below apply to {managed.length > 1 ? "both interfaces" : "this interface"}.</p>
             <ManagedGatewayForm key={shared.scope} row={shared} refresh={refresh} />
           </>}
-          {data.filter((row) => !row.capabilities?.managed_controls_enabled).map((row) =>
+          {data.filter((row) => !row.capabilities?.managed_controls_enabled && !row.capabilities?.poc_controls_enabled).map((row) =>
             <SettingsForm key={row.scope} row={row} refresh={refresh} />)}
         </>;
       }}

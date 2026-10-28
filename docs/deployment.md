@@ -68,9 +68,11 @@ The custom subscription-manager role is assignable only within this resource
 group and permits APIM service/products/subscriptions read, APIM subscription
 write, listSecrets and primary/secondary key regeneration. It does **not**
 manage Azure subscriptions. The optional gateway-settings role permits only
-APIM policy fragment read/write. The exact least-privilege definitions remain
-commented in `infra/terraform/rbac.tf` and `gateway-settings.tf` for administrator
-review; Terraform must not be used to create them from this root.
+APIM policy fragment read/write. The data-only `central_rbac_handoff` output
+lists the requested actions, resource scopes, and identity principal IDs for
+administrator review; Terraform must not create these roles or assignments.
+See [the central-team handoff](central-rbac-handoff.md) for the resource-first
+process and the safeguards required when applications already exist in state.
 
 The administrator should record the principal ID, resource scope, role ID and
 verified effective assignment for every grant through the approved internal
@@ -83,8 +85,8 @@ change: discard and regenerate them before review or apply.
 Azure Owner/Contributor also does not confer Entra app-registration/consent rights,
 SQL data-plane administration, model entitlements or DNS/certificate authority.
 Use the [security and approval matrix](security-and-approvals.md) for customer
-directory/admin/CISO review. Runtime identities retain their existing narrow
-Terraform roles, not the operator's deployment rights.
+directory/admin/CISO review. Runtime identities use narrow, externally managed
+roles, not the operator's deployment rights.
 
 Install the listed tools through approved customer channels. From the repository:
 

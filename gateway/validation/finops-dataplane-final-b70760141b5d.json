@@ -1,0 +1,252 @@
+{
+  "at_utc": "2026-10-27T07:52:52.223624+00:00",
+  "owner_nonce": "b70760141b5d",
+  "mode": "read_only_independent_reconciliation_no_probe_retry",
+  "identity_source": "explicit_ingestion_managed_identity",
+  "identity_scope": "existing_ingestion_UAMI_only",
+  "three_checks": {
+    "postgres": {
+      "status": "passed",
+      "stage": "complete",
+      "http_status": null,
+      "azure_error_code": null,
+      "reason": "verified",
+      "claims_verified": true,
+      "started_at_utc": "2026-10-27T07:50:26.218312+00:00",
+      "finished_at_utc": "2026-10-27T07:50:26.824650+00:00"
+    },
+    "monitor": {
+      "status": "passed",
+      "stage": "complete",
+      "http_status": 200,
+      "azure_error_code": null,
+      "reason": "verified",
+      "claims_verified": true,
+      "started_at_utc": "2026-10-27T07:50:26.824669+00:00",
+      "finished_at_utc": "2026-10-27T07:50:29.543623+00:00"
+    },
+    "host_storage": {
+      "status": "passed",
+      "services": {
+        "blob": {
+          "status": "passed",
+          "stage": "complete",
+          "http_status": 200,
+          "azure_error_code": null,
+          "reason": "verified",
+          "claims_verified": true,
+          "started_at_utc": "2026-10-27T07:50:29.543642+00:00",
+          "finished_at_utc": "2026-10-27T07:50:30.166016+00:00"
+        },
+        "queue": {
+          "status": "passed",
+          "stage": "complete",
+          "http_status": 200,
+          "azure_error_code": null,
+          "reason": "verified",
+          "claims_verified": true,
+          "started_at_utc": "2026-10-27T07:50:30.166033+00:00",
+          "finished_at_utc": "2026-10-27T07:50:30.291042+00:00"
+        },
+        "table": {
+          "status": "passed",
+          "stage": "complete",
+          "http_status": 200,
+          "azure_error_code": null,
+          "reason": "verified",
+          "claims_verified": true,
+          "started_at_utc": "2026-10-27T07:50:30.291059+00:00",
+          "finished_at_utc": "2026-10-27T07:50:30.447215+00:00"
+        }
+      },
+      "read_metadata_only": true,
+      "write_permission_proven": false
+    }
+  },
+  "build": {
+    "run_id": "cm1x",
+    "image": "pocidstokenexacr.azurecr.io/aiflux-finops-probe@sha256:e9581bd671ec154a0b27b1a8edd280c4b0dae5b7bf0a862fcda2c5b59ccbcf68",
+    "source_sha256": "5404c3718bb6765c6c9c5c16df0d81019e510c86f67c74fdc9476f79c3bfc6cd",
+    "entrypoint_sha256": "e7f1a396ba9da3b5cf6736df791759eaef3cb81ab2e96f02833646a071dc47c0",
+    "context_manifest_sha256": "7ccb244cc898167905b660a0c859fdb19f82a7e57bebefb86853ad3c61f95f0e",
+    "started_at_utc": "2026-10-27T07:45:17.174630+00:00",
+    "finished_at_utc": "2026-10-27T07:45:56.979288+00:00",
+    "linux_native_SDK_contract_and_pip_check": true,
+    "prior_failed_run_retained_not_replayed": "cm1w"
+  },
+  "tests": {
+    "tests": 150,
+    "failures": 0,
+    "errors": 0,
+    "junit_sha256": "62a0cd28dd64eb292d373b6db26022ecfebe93afff0f3503a4d203553b129dbb"
+  },
+  "created_resource_ids": [
+    "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Network/publicIPAddresses/poc-ids-token-ex-finops-probe-b70760141b5d-pip",
+    "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Network/networkSecurityGroups/poc-ids-token-ex-finops-probe-b70760141b5d-nsg",
+    "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Network/natGateways/poc-ids-token-ex-finops-probe-b70760141b5d-nat",
+    "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Network/virtualNetworks/poc-ids-token-ex-vnet/subnets/poc-ids-token-ex-finops-probe-b70760141b5d-subnet",
+    "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.ContainerInstance/containerGroups/poc-ids-token-ex-finops-probe-b70760141b5d-ingestion"
+  ],
+  "deleted_resource_ids": [
+    "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.ContainerInstance/containerGroups/poc-ids-token-ex-finops-probe-b70760141b5d-ingestion",
+    "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Network/virtualNetworks/poc-ids-token-ex-vnet/subnets/poc-ids-token-ex-finops-probe-b70760141b5d-subnet",
+    "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Network/networkSecurityGroups/poc-ids-token-ex-finops-probe-b70760141b5d-nsg",
+    "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Network/natGateways/poc-ids-token-ex-finops-probe-b70760141b5d-nat",
+    "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Network/publicIPAddresses/poc-ids-token-ex-finops-probe-b70760141b5d-pip"
+  ],
+  "resource_lifetimes": {
+    "ingestion": {
+      "created_at_utc": "2026-10-27T07:49:26.118667+00:00",
+      "delete_response_at_utc": "2026-10-27T07:50:37.717367+00:00",
+      "get404_at_utc": "2026-10-27T07:50:37.805548+00:00",
+      "observed_lifetime_seconds": 71.686881
+    },
+    "subnet": {
+      "created_at_utc": "2026-10-27T07:48:52.442955+00:00",
+      "delete_response_at_utc": "2026-10-27T07:50:38.330763+00:00",
+      "get404_at_utc": "2026-10-27T07:50:41.561540+00:00",
+      "observed_lifetime_seconds": 109.118585
+    },
+    "nsg": {
+      "created_at_utc": "2026-10-27T07:48:38.352714+00:00",
+      "delete_response_at_utc": "2026-10-27T07:50:41.911563+00:00",
+      "get404_at_utc": "2026-10-27T07:50:42.076638+00:00",
+      "observed_lifetime_seconds": 123.723924
+    },
+    "nat": {
+      "created_at_utc": "2026-10-27T07:48:39.516341+00:00",
+      "delete_response_at_utc": "2026-10-27T07:50:42.357979+00:00",
+      "get404_at_utc": "2026-10-27T07:50:42.536807+00:00",
+      "observed_lifetime_seconds": 123.020466
+    },
+    "pip": {
+      "created_at_utc": "2026-10-27T07:48:37.578875+00:00",
+      "delete_response_at_utc": "2026-10-27T07:50:43.043415+00:00",
+      "get404_at_utc": "2026-10-27T07:50:43.200929+00:00",
+      "observed_lifetime_seconds": 125.622054
+    }
+  },
+  "independent_exact_id_gets": [
+    {
+      "at_utc": "2026-10-27T07:52:20.380282+00:00",
+      "method": "GET",
+      "resource_id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.ContainerInstance/containerGroups/poc-ids-token-ex-finops-probe-b70760141b5d-ingestion",
+      "http_status": 404,
+      "error_codes": [],
+      "action": null
+    },
+    {
+      "at_utc": "2026-10-27T07:52:20.466306+00:00",
+      "method": "GET",
+      "resource_id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.ContainerInstance/containerGroups/poc-ids-token-ex-finops-probe-b70760141b5d-api",
+      "http_status": 404,
+      "error_codes": [],
+      "action": null
+    },
+    {
+      "at_utc": "2026-10-27T07:52:20.554253+00:00",
+      "method": "GET",
+      "resource_id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Network/virtualNetworks/poc-ids-token-ex-vnet/subnets/poc-ids-token-ex-finops-probe-b70760141b5d-subnet",
+      "http_status": 404,
+      "error_codes": [],
+      "action": null
+    },
+    {
+      "at_utc": "2026-10-27T07:52:20.623535+00:00",
+      "method": "GET",
+      "resource_id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Network/networkSecurityGroups/poc-ids-token-ex-finops-probe-b70760141b5d-nsg",
+      "http_status": 404,
+      "error_codes": [],
+      "action": null
+    },
+    {
+      "at_utc": "2026-10-27T07:52:20.843956+00:00",
+      "method": "GET",
+      "resource_id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Network/natGateways/poc-ids-token-ex-finops-probe-b70760141b5d-nat",
+      "http_status": 404,
+      "error_codes": [],
+      "action": null
+    },
+    {
+      "at_utc": "2026-10-27T07:52:20.973677+00:00",
+      "method": "GET",
+      "resource_id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Network/publicIPAddresses/poc-ids-token-ex-finops-probe-b70760141b5d-pip",
+      "http_status": 404,
+      "error_codes": [],
+      "action": null
+    }
+  ],
+  "outstanding_resource_ids": [],
+  "provisioning_and_probe_no_retries": true,
+  "API_identity_attached": false,
+  "actual_result_persisted_before_deletion": true,
+  "probe_state": "Terminated",
+  "restart_count": 0,
+  "actual_probe_evidence_sha256": "e4eff01fc0580ed7d37d5782f1b5887ad8ae5e6c92dda0c0752a51bcee40d2e9",
+  "protected_metadata_after": {
+    "at_utc": "2026-10-27T07:52:52.197249+00:00",
+    "workspace_guid": "004a359b-dde6-40fb-843c-4d5651785e17",
+    "storage_private_ips": {
+      "blob": "10.240.3.6",
+      "queue": "10.240.3.7",
+      "table": "10.240.3.8"
+    },
+    "identity_client_object_tenant_verified": true,
+    "assignments": [
+      {
+        "scope": "host_storage",
+        "role_definition": "b7e6dc6d-f1e8-4753-8033-0f276bb0955b",
+        "condition_present": false
+      },
+      {
+        "scope": "host_storage",
+        "role_definition": "974c5e8b-45b9-4653-ba55-5f855dd0fb88",
+        "condition_present": false
+      },
+      {
+        "scope": "host_storage",
+        "role_definition": "0a9a7e1f-b9d0-4cc4-a60d-0319b160aaa3",
+        "condition_present": false
+      },
+      {
+        "scope": "monitor",
+        "role_definition": "73c42c96-874c-492b-b04d-ab87d138a893",
+        "condition_present": false
+      }
+    ],
+    "timer_disabled": true,
+    "catalog_enabled": true,
+    "cutoff_preserved": true
+  },
+  "preservation_after": {
+    "at_utc": "2026-10-27T07:53:03.643662+00:00",
+    "postgres_public_network_access": "Disabled",
+    "postgres_firewall_rule_count": 0,
+    "state_storage_default_action": "Deny",
+    "state_storage_approved_ips": [
+      "167.103.65.36",
+      "167.103.66.248",
+      "167.103.66.93"
+    ],
+    "configuration_writes": 0,
+    "preservation_verified": true
+  },
+  "database_writes": 0,
+  "storage_writes": 0,
+  "new_roles": 0,
+  "production_changes": 0,
+  "timer_activated": false,
+  "host_table_write_error_resolved": false,
+  "watchdog": {
+    "pid": 16796,
+    "stopped": false,
+    "deadline_utc": "2026-10-27T08:48:31.466998+00:00",
+    "exact_owned_ids_now_independently_absent": true
+  },
+  "limits": [
+    "Storage reads do not prove create/write/lease permissions or resolution of existing host Table logging errors.",
+    "Monitor print proves MI query authorization, not actual ingestion KQL/telemetry semantics.",
+    "PostgreSQL proves SELECT with explicit MI and private TLS; no worker initialization or ingestion was run.",
+    "No timer plan, activation, scheduled write, replay, inference, API/UI acceptance or runtime remediation performed."
+  ]
+}

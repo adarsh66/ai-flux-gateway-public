@@ -1,0 +1,53 @@
+{
+  "at_utc": "2026-10-27T04:49:37.169496+00:00",
+  "tag": "finops-20261027t040422z",
+  "stage_directory": ".deployment/finops/finops-20261027t040422z/disabled-stage-preserved-config",
+  "plan_sha256": "6e8232a8fc591894b43d1557ecc9721c1e110349eaef80c34ffbd80775d6d090",
+  "images": {
+    "api": "pocidstokenexacr.azurecr.io/aiflux-api@sha256:7c8b9c715963a1a365895c38f2e79cb1bbfff0b4e166a57cec6e16df9f05ffce",
+    "ingestion": "pocidstokenexacr.azurecr.io/aiflux-ingestion@sha256:81b2c6a96c8a82807eb9bec6098fc305af664b55d97e44e1a3b226e8f3efd56f",
+    "admin": "pocidstokenexacr.azurecr.io/aiflux-admin@sha256:4606e769e95ac647c7ba175f5c0e152baf16dbf02a78fd5d1c3f1a6be289baed",
+    "customer": "pocidstokenexacr.azurecr.io/aiflux-customer@sha256:568cd3f1d4d88cf59ff63528f4baa6b84827a3da45e6ede5da13395d06de29a1"
+  },
+  "source_manifest_sha256": "cf3a01e1f2e2f58fa751499c959cb03427d45e59be87548fe7df4f3beb038b2f",
+  "controller_sha256": "41f9bd56b9c491296780f7bd1cdf4f1feb7331f9e13e185385373f2020f08c3b",
+  "terraform_validate_exit": 0,
+  "exact_guard": "passed",
+  "updates": [
+    "azurerm_linux_function_app.ingestion[0]",
+    "azurerm_linux_web_app.main[\"admin\"]",
+    "azurerm_linux_web_app.main[\"api\"]",
+    "azurerm_linux_web_app.main[\"customer\"]"
+  ],
+  "focused_tests_passed": 61,
+  "linux_validation_run": "cm1n",
+  "linux_validation_status": "Succeeded",
+  "ui_tests_passed": 103,
+  "ui_test_files": 12,
+  "acr_pull": {
+    "api": true,
+    "ingestion": true,
+    "admin": true,
+    "customer": true
+  },
+  "protected_baseline_verified": true,
+  "all_settings_hashes_verified": true,
+  "changed_setting_names": [
+    "AIFLUX_APIM_PRODUCT_ID",
+    "AIFLUX_APIM_RESOURCE_ID",
+    "AIFLUX_CATALOG_CONFIGURED",
+    "AIFLUX_CATALOG_PATH",
+    "AIFLUX_DATABASE_URL",
+    "AIFLUX_ENVIRONMENT",
+    "AIFLUX_LOG_WORKSPACE_ID",
+    "AZURE_CLIENT_ID",
+    "WEBSITES_ENABLE_APP_SERVICE_STORAGE"
+  ],
+  "host_enabled": false,
+  "timer_disabled": true,
+  "catalog_configured": "false",
+  "cutoff_selected": false,
+  "applied": false,
+  "new_builds": 0,
+  "network_rbac_database_writes": 0
+}

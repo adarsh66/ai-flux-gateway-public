@@ -1,0 +1,81 @@
+{
+  "at_utc": "2026-10-27T07:18:13.511098+00:00",
+  "status": 200,
+  "raw_logs_exported": false,
+  "host_keys_read": 0,
+  "expected_digest_seen": true,
+  "ready_results": [],
+  "executions": [
+    {
+      "at_utc": "2026-10-27T07:12:44.5738389Z",
+      "function": "ingestion_ready",
+      "result": "Failed",
+      "invocation_id": "7fee8ec9-fba4-47f3-a390-70ffaefe9627"
+    }
+  ],
+  "scheduled_starts": [],
+  "failures": [
+    {
+      "at_utc": "2026-10-27T07:11:55.2041066Z",
+      "category": "monitor_access_error"
+    },
+    {
+      "at_utc": "2026-10-27T07:12:25.7934995Z",
+      "category": "monitor_access_error"
+    },
+    {
+      "at_utc": "2026-10-27T07:12:55.2527276Z",
+      "category": "monitor_access_error"
+    },
+    {
+      "at_utc": "2026-10-27T07:13:25.2270178Z",
+      "category": "monitor_access_error"
+    },
+    {
+      "at_utc": "2026-10-27T07:13:55.2253992Z",
+      "category": "monitor_access_error"
+    },
+    {
+      "at_utc": "2026-10-27T07:14:25.4652997Z",
+      "category": "monitor_access_error"
+    },
+    {
+      "at_utc": "2026-10-27T07:14:55.2692918Z",
+      "category": "monitor_access_error"
+    },
+    {
+      "at_utc": "2026-10-27T07:15:25.2540105Z",
+      "category": "monitor_access_error"
+    },
+    {
+      "at_utc": "2026-10-27T07:15:55.1952185Z",
+      "category": "monitor_access_error"
+    },
+    {
+      "at_utc": "2026-10-27T07:16:25.1899970Z",
+      "category": "monitor_access_error"
+    },
+    {
+      "at_utc": "2026-10-27T07:16:55.1897972Z",
+      "category": "monitor_access_error"
+    },
+    {
+      "at_utc": "2026-10-27T07:17:25.1926991Z",
+      "category": "monitor_access_error"
+    },
+    {
+      "at_utc": "2026-10-27T07:17:55.1893112Z",
+      "category": "monitor_access_error"
+    }
+  ],
+  "finite_diagnostics": {
+    "azure_error_codes": [
+      "AuthorizationPermissionMismatch"
+    ],
+    "http_statuses": [],
+    "sqlstates": [],
+    "services_seen": [],
+    "exception_classes": [],
+    "stages_seen": []
+  }
+}

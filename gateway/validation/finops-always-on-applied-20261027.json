@@ -1,0 +1,17 @@
+{
+  "at_utc": "2026-10-27T08:36:45.514331+00:00",
+  "http_status": 200,
+  "plan_sha256": "de9dfe306fb177c8d1fb8030d17314ae782f4fbe33a8f7febdaee9aaeee0de13",
+  "changed_fields": [
+    "alwaysOn",
+    "remoteDebuggingVersion",
+    "virtualApplications"
+  ],
+  "always_on": true,
+  "all_four_settings_unchanged": true,
+  "plan_sku_unchanged": true,
+  "all_four_images_unchanged": true,
+  "manual_timer_invocations": 0,
+  "network_changes": 0,
+  "role_changes": 0
+}
