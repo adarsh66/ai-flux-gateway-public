@@ -1,0 +1,25 @@
+{
+  "revision": "successor22-mistral-medium-3-5-20261031-v1",
+  "checked_at": "2026-10-31",
+  "currency": "USD",
+  "unit": "per_million_tokens",
+  "applicable_from": "2026-10-27T06:06:02.045288Z",
+  "basis": "Frozen best-estimate onboarding scope only; not a verified Azure or Mistral Medium 3.5 tariff, invoice, ledger or enforcement price.",
+  "assumptions": "Official Mistral pricing and Medium 3.5 model card fetched during preparation. Neither exposed a verifiable Medium 3.5 input/output tariff. Freeze the existing Mistral Large family planning proxy (USD0.50 input/USD1.50 output per million) as an explicitly labelled platform estimate, not model-specific provider pricing. Do not use unverified USD0.27/0.81. Do not infer cache discounts. Official model card says deprecated 2026-10-31, replacement Large4; this does not prove the already Succeeded Azure deployment is unavailable and does not authorize replacing it. Activation is separate and requires genuine future gateway acceptance.",
+  "sources": {
+    "successor22-mistral-pricing": "https://mistral.ai/pricing",
+    "successor22-mistral-card": "https://docs.mistral.ai/models/model-cards/mistral-medium-3-5-26-04",
+    "successor22-mistral-api": "https://docs.mistral.ai/api/endpoint/chat"
+  },
+  "rates": [{
+    "model": "mistral-medium-3-5", "deployment_model": "mistral-medium-3-5",
+    "provider": "Mistral AI", "region": "eastus", "model_version": "1", "sku": "GlobalStandard",
+    "source": "successor22-mistral-pricing",
+    "source_model": "Platform best estimate: frozen existing Mistral Large family proxy, NOT a Medium 3.5 tariff",
+    "status": "platform_default", "input": "0.50", "output": "1.50",
+    "input_includes_cached": true, "usage_input_includes_cached": true,
+    "max_input_tokens": 128000,
+    "context_applicability": "Conservative text-only estimate for inclusive prompt <=128000. Not a verified model context tariff or capacity claim.",
+    "checked_at": "2026-10-31"
+  }]
+}

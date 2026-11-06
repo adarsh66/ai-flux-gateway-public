@@ -5,13 +5,14 @@ from datetime import UTC, datetime, timedelta
 from decimal import Decimal
 from typing import Any
 
-from sqlalchemy import BigInteger, DateTime, Float, case, cast, func, literal_column, select
+from sqlalchemy import BigInteger, DateTime, Float, String, case, cast, func, literal_column, select
 from sqlalchemy.orm import Session
 from sqlalchemy.sql import ColumnElement, Select
 
-from aiflux.models import IngestionState, ModelPrice, UsageRecord
+from aiflux.models import IngestionState, ModelPrice, Organization, TeamSubscription, UsageRecord
 from aiflux.schemas import PriceCreate
-from aiflux.display_pricing import detail_estimates, estimate_summary
+from aiflux.customer_pricing import customer_safe, detail_estimates, estimate_summary
+from aiflux.external_pricing import PricingContext
 
 
 def aware(value: datetime) -> datetime:
@@ -129,17 +130,76 @@ def usage_conditions(
 
 def usage_models(
     db: Session, organization_id: str | None, days: int, subscription_id: str | None,
+    start: datetime | None = None, end: datetime | None = None,
+    *, current_models: list[str] | None = None,
 ) -> dict[str, Any]:
+    # Customer history discovery retains its existing relative-period behavior;
+    # admin callers explicitly supply both validated viewport bounds.
+    start = start or (end or datetime.now(UTC)) - timedelta(days=days)
     items = list(db.scalars(
         select(UsageRecord.model)
         .where(
             *usage_conditions(organization_id, subscription_id),
-            UsageRecord.occurred_at >= datetime.now(UTC) - timedelta(days=days),
+            UsageRecord.occurred_at >= start,
+            *([UsageRecord.occurred_at < end] if end is not None else []),
         )
         .distinct()
         .order_by(UsageRecord.model)
     ))
+    # Selector coverage is not synthetic usage. Keep historical in-scope
+    # aliases discoverable while adding all currently accepted selectable chat
+    # aliases, even for an organization/subscription with zero usage.
+    items = sorted(set(items) | set(current_models or []))
     return {"items": items, "total": len(items)}
+
+
+def usage_rankings(
+    db: Session, dimension: str, organization_id: str | None,
+    start: datetime, end: datetime, model: str | None, offset: int, limit: int,
+) -> dict[str, Any]:
+    """Two bounded SQL reads, independent of group count and detail pagination.
+
+    Total tokens follow usage/chart semantics: only paired input/output observations.
+    Component sums retain NULL when none are observed; cache tokens are subsets,
+    not additional consumption. Only groups with matching requests are ranked.
+    """
+    entity = Organization if dimension == "organizations" else TeamSubscription
+    group_id = UsageRecord.organization_id if dimension == "organizations" else UsageRecord.subscription_id
+    missing = UsageRecord.input_tokens.is_(None) | UsageRecord.output_tokens.is_(None)
+    grouped = select(
+        group_id.label("id"), entity.name.label("name"),
+        func.count(UsageRecord.id).label("requests"),
+        func.sum(cast(UsageRecord.input_tokens, BigInteger)).label("input_tokens"),
+        func.sum(cast(UsageRecord.output_tokens, BigInteger)).label("output_tokens"),
+        func.sum(cast(UsageRecord.input_tokens, BigInteger) + cast(UsageRecord.output_tokens, BigInteger)).label("total_tokens"),
+        func.sum(case((missing, 1), else_=0)).label("missing_token_requests"),
+        func.sum(case((UsageRecord.completeness != "complete", 1), else_=0)).label("incomplete_requests"),
+    ).select_from(UsageRecord).join(entity, entity.id == group_id).where(
+        *usage_conditions(organization_id if dimension == "subscriptions" else None, None, model),
+        UsageRecord.occurred_at >= start, UsageRecord.occurred_at < end,
+    ).group_by(group_id, entity.name).subquery()
+    summary = db.execute(select(
+        func.count().label("total"),
+        *(func.sum(grouped.c[name]).label(name) for name in (
+            "requests", "input_tokens", "output_tokens", "total_tokens",
+            "missing_token_requests", "incomplete_requests",
+        )),
+    ).select_from(grouped)).mappings().one()
+    totals = dict(summary)
+    count = totals.pop("total")
+    for key in ("requests", "missing_token_requests", "incomplete_requests"):
+        totals[key] = totals[key] or 0
+    rows = db.execute(select(grouped).order_by(
+        func.coalesce(grouped.c.total_tokens, -1).desc(), grouped.c.id,
+    ).offset(offset).limit(limit)).mappings().all()
+    denominator = totals["total_tokens"]
+    return {
+        "items": [dict(row) | {"share": row["total_tokens"] / denominator
+                  if denominator and row["total_tokens"] is not None else None} for row in rows],
+        "total": count, "totals": totals, "dimension": dimension,
+        "organization_id": organization_id if dimension == "subscriptions" else None,
+        "start": start, "end": end,
+    }
 
 
 def usage_response(
@@ -152,6 +212,7 @@ def usage_response(
     model: str | None = None,
     start: datetime | None = None,
     end: datetime | None = None,
+    *, pricing_context: PricingContext | None = None,
 ) -> dict[str, Any]:
     end = end or datetime.now(UTC)
     start = start or end - timedelta(days=days)
@@ -201,10 +262,10 @@ def usage_response(
         .offset(offset)
         .limit(limit)
     ).all()
-    estimates = detail_estimates(db, [row.id for row in rows])
-    estimated_summary = estimate_summary(db, conditions)[0]
+    estimates = detail_estimates(db, [row.id for row in rows], pricing_context=pricing_context)
+    estimated_summary = estimate_summary(db, conditions, pricing_context=pricing_context)[0]
     estimated_summary.pop("group")
-    return {
+    result = {
         "summary": {
             **estimated_summary,
             "requests": count,
@@ -231,6 +292,7 @@ def usage_response(
         "items": [usage_dict(row) | estimates[row.id] for row in rows],
         "total": count,
     }
+    return customer_safe(result) if pricing_context is not None else result
 
 
 def usage_csv(
@@ -241,8 +303,10 @@ def usage_csv(
     model: str | None = None,
     start: datetime | None = None,
     end: datetime | None = None,
+    *, pricing_context: PricingContext | None = None,
 ) -> str:
-    result = usage_response(db, organization_id, days, subscription_id, 0, 10001, model, start, end)
+    result = usage_response(db, organization_id, days, subscription_id, 0, 10001, model, start, end,
+                            pricing_context=pricing_context)
     if result["total"] > 10000:
         raise ValueError("Export exceeds 10000 records; narrow the time, subscription or model filter")
     output = io.StringIO(newline="")
@@ -267,6 +331,8 @@ def usage_csv(
         "estimate_basis",
         "pricing_revision",
     ]
+    if pricing_context is not None:
+        fields.remove("cost")
     writer = csv.DictWriter(output, fieldnames=fields)
     writer.writeheader()
     for row in result["items"]:
@@ -285,9 +351,15 @@ def usage_series_query(
     start: datetime,
     end: datetime,
     model: str | None = None,
+    granularity: str | None = None,
+    time_zone: str = "UTC",
 ) -> Select:
+    origin = bucket_origin(time_zone)
     timestamp = UsageRecord.occurred_at
-    if dialect == "mssql":
+    if granularity is not None:
+        interval = usage_bucket_interval(granularity)
+        minute = bucket_expression(dialect, interval, origin)
+    elif dialect == "mssql":
         epoch = literal_column("CONVERT(datetime2, '20000101', 112)", type_=DateTime())
         minute = func.dateadd(
             literal_column("minute"), func.datediff(literal_column("minute"), epoch, timestamp), epoch,
@@ -328,54 +400,104 @@ def usage_series_response(
     start: datetime,
     end: datetime,
     model: str | None = None,
+    granularity: str | None = None,
+    time_zone: str = "UTC",
 ) -> dict[str, Any]:
+    start, end = aware(start), aware(end)
+    if start >= end:
+        raise ValueError("Usage window end must be after start")
+    origin = bucket_origin(time_zone)
+    interval = 60 if granularity is None else usage_bucket_interval(granularity)
+    if granularity is not None:
+        limit = 10080 if granularity == "minute" else 744
+        if bucket_count(start, end, interval, origin) > limit:
+            raise ValueError(
+                f"Requested {granularity} granularity exceeds {limit} buckets including partial edges; "
+                "narrow the viewport or select a coarser granularity"
+            )
     query = usage_series_query(
         db.get_bind().dialect.name, organization_id, subscription_id, start, end, model,
+        granularity, time_zone,
     )
     items = []
     for row in db.execute(query).mappings():
         item = dict(row)
         minute = item["minute"]
-        item["minute"] = aware(datetime.fromisoformat(minute) if isinstance(minute, str) else minute)
+        if granularity is None:
+            item["minute"] = aware(datetime.fromisoformat(minute) if isinstance(minute, str) else minute)
+        else:
+            bucket_start = origin + timedelta(seconds=int(minute) * interval)
+            item["minute"] = max(start, bucket_start)
+            item["end"] = min(end, bucket_start + timedelta(seconds=interval))
+            item["partial_bucket"] = bucket_start < start or bucket_start + timedelta(seconds=interval) > end
         items.append(item)
-    return {"items": items, "start": start, "end": end, "interval_seconds": 60}
+    return {"items": items, "start": start, "end": end, "interval_seconds": interval,
+            "time_zone": time_zone, "bucket_origin": origin}
 
 
 TOKEN_BUCKET_EPOCH = datetime(2000, 1, 1, tzinfo=UTC)
 TOKEN_BUCKET_INTERVALS = (60, 300, 900, 3600, 21600, 43200, 86400, 604800)
 
 
-def token_bucket_interval(start: datetime, end: datetime) -> int:
-    first = (start - TOKEN_BUCKET_EPOCH).total_seconds()
-    last = (end - TOKEN_BUCKET_EPOCH).total_seconds()
+def bucket_origin(time_zone: str = "UTC") -> datetime:
+    """Fixed Singapore UTC+8 calendar origin, without a timezone database dependency."""
+    if time_zone not in ("UTC", "Asia/Singapore"):
+        raise ValueError("Time zone must be UTC or Asia/Singapore")
+    return TOKEN_BUCKET_EPOCH - timedelta(hours=8) if time_zone == "Asia/Singapore" else TOKEN_BUCKET_EPOCH
+
+
+def usage_bucket_interval(granularity: str) -> int:
+    if granularity not in ("minute", "hour", "day"):
+        raise ValueError("Usage granularity must be minute, hour or day")
+    return {"minute": 60, "hour": 3600, "day": 86400}[granularity]
+
+
+def bucket_count(start: datetime, end: datetime, interval: int, origin: datetime) -> int:
+    return math.ceil((aware(end) - origin).total_seconds() / interval) - math.floor(
+        (aware(start) - origin).total_seconds() / interval)
+
+
+def token_bucket_interval(start: datetime, end: datetime, time_zone: str = "UTC") -> int:
+    origin = bucket_origin(time_zone)
     for seconds in TOKEN_BUCKET_INTERVALS:
-        if math.ceil(last / seconds) - math.floor(first / seconds) <= 120:
+        if bucket_count(start, end, seconds, origin) <= 120:
             return seconds
     raise ValueError("Token chart viewport exceeds the supported range")
 
 
-def model_token_query(
-    dialect: str, organization_id: str | None, subscription_id: str | None,
-    start: datetime, end: datetime, interval_seconds: int, model: str | None = None,
-) -> Select:
+def bucket_expression(dialect: str, interval_seconds: int, origin: datetime) -> ColumnElement:
     if interval_seconds not in TOKEN_BUCKET_INTERVALS:
         raise ValueError("Unsupported model token bucket interval")
     timestamp = UsageRecord.occurred_at
     if dialect == "mssql":
         epoch = literal_column("CONVERT(datetime2, '20000101', 112)", type_=DateTime())
+        if origin != TOKEN_BUCKET_EPOCH:
+            epoch = func.dateadd(literal_column("hour"), literal_column("-8"), epoch)
         minutes = func.datediff(literal_column("minute"), epoch, timestamp)
         # Positional parameters in repeated GROUP BY expressions are distinct
         # to SQL Server. Only validated server-owned interval constants are inlined.
-        bucket = func.floor(cast(minutes, Float) / literal_column(str(interval_seconds // 60)))
+        return func.floor(cast(minutes, Float) / literal_column(str(interval_seconds // 60)))
     elif dialect == "postgresql":
-        epoch_seconds = int(TOKEN_BUCKET_EPOCH.timestamp())
+        epoch_seconds = int(origin.timestamp())
         pg_seconds = cast(func.extract("epoch", timestamp), Float) - literal_column(str(epoch_seconds))
-        bucket = func.floor(pg_seconds / literal_column(str(interval_seconds)))
+        return func.floor(pg_seconds / literal_column(str(interval_seconds)))
     elif dialect == "sqlite":
-        seconds = cast(func.strftime("%s", timestamp), BigInteger) - int(TOKEN_BUCKET_EPOCH.timestamp())
-        bucket = func.floor(cast(seconds, Float) / interval_seconds)
+        # SQLite's %s rounds .999999 into the next second. Truncate the stored
+        # fractional part first so records just before a boundary stay inside it.
+        seconds = cast(func.strftime("%s", func.substr(cast(timestamp, String), 1, 19)), BigInteger)
+        seconds = seconds - int(origin.timestamp())
+        return func.floor(cast(seconds, Float) / interval_seconds)
     else:
         raise ValueError(f"Model token aggregation does not support database dialect {dialect!r}")
+
+
+def model_token_query(
+    dialect: str, organization_id: str | None, subscription_id: str | None,
+    start: datetime, end: datetime, interval_seconds: int, model: str | None = None,
+    time_zone: str = "UTC",
+) -> Select:
+    bucket = bucket_expression(dialect, interval_seconds, bucket_origin(time_zone))
+    timestamp = UsageRecord.occurred_at
     missing = UsageRecord.input_tokens.is_(None) | UsageRecord.output_tokens.is_(None)
     return (
         select(
@@ -400,24 +522,25 @@ def model_token_query(
 def model_token_response(
     db: Session, organization_id: str | None, subscription_id: str | None,
     start: datetime, end: datetime, model: str | None = None, granularity: str = "auto",
+    time_zone: str = "UTC",
 ) -> dict[str, Any]:
     start, end = aware(start), aware(end)
     if start >= end:
         raise ValueError("Usage window end must be after start")
     if granularity not in ("auto", "hour", "day"):
         raise ValueError("Granularity must be hour, day or auto")
-    interval = token_bucket_interval(start, end) if granularity == "auto" else (
+    origin = bucket_origin(time_zone)
+    interval = token_bucket_interval(start, end, time_zone) if granularity == "auto" else (
         3600 if granularity == "hour" else 86400)
-    buckets = math.ceil((end - TOKEN_BUCKET_EPOCH).total_seconds() / interval) - math.floor(
-        (start - TOKEN_BUCKET_EPOCH).total_seconds() / interval)
+    buckets = bucket_count(start, end, interval, origin)
     if buckets > 744:
         raise ValueError("Requested granularity exceeds 744 buckets; narrow the viewport or select Daily")
     query = model_token_query(
-        db.get_bind().dialect.name, organization_id, subscription_id, start, end, interval, model,
+        db.get_bind().dialect.name, organization_id, subscription_id, start, end, interval, model, time_zone,
     )
     items = []
     for row in db.execute(query).mappings():
-        bucket_start = TOKEN_BUCKET_EPOCH + timedelta(seconds=int(row["bucket"]) * interval)
+        bucket_start = origin + timedelta(seconds=int(row["bucket"]) * interval)
         items.append({
             "start": max(start, bucket_start),
             "end": min(end, bucket_start + timedelta(seconds=interval)),
@@ -428,7 +551,8 @@ def model_token_response(
             "partial_bucket": bucket_start < start or bucket_start + timedelta(seconds=interval) > end,
         })
     return {"items": items, "start": start, "end": end, "interval_seconds": interval,
-            "granularity": granularity, "health": ingestion_health(db, organization_id, subscription_id)}
+            "granularity": granularity, "time_zone": time_zone, "bucket_origin": origin,
+            "health": ingestion_health(db, organization_id, subscription_id)}
 
 
 def ingestion_health(db: Session, organization_id: str | None, subscription_id: str | None = None) -> dict:

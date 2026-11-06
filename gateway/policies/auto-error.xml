@@ -1,0 +1,10 @@
+        <!-- Auto-only direct scoring errors never trigger a fallback, retry or API
+          resolver. Existing provider/safety/quota errors keep their normal path. -->
+        <choose><when condition='@(context.LastError.PolicyId == "aiflux-auto-auth" || context.LastError.PolicyId == "aiflux-auto-resolver" || context.LastError.PolicyId == "aiflux-auto-metadata")'>
+      <return-response>
+        <set-status code="503" reason="Auto routing unavailable" />
+        <set-header name="Content-Type" exists-action="override"><value>application/json</value></set-header>
+        <set-header name="Cache-Control" exists-action="override"><value>no-store</value></set-header>
+        <set-body>{"error":{"code":"auto_routing_unavailable","message":"Auto routing could not be safely completed."}}</set-body>
+      </return-response>
+    </when></choose>

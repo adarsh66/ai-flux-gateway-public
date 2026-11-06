@@ -120,7 +120,7 @@ def test_freshness_is_readonly_no_traffic_not_disabled_and_scoped(env):
         assert ingestion_health(db, env.orgs["customer"])["status"] == "stale"
 
 
-def test_unknown_prices_are_not_endpoint_rates_or_free_and_enforcement_unchanged(env):
+def test_unknown_prices_are_not_endpoint_rates_or_free_and_budget_advisory(env):
     sub = create_key(env)["id"]
     with Session(env.db_engine) as db:
         record(db, env.orgs["customer"], sub, datetime.now(UTC) - timedelta(minutes=5), "test-alias", 1000, 1000)
@@ -132,7 +132,7 @@ def test_unknown_prices_are_not_endpoint_rates_or_free_and_enforcement_unchanged
         assert summary.by_model[0].cost_usd is None
         assert summary.by_model[0].unpriced_requests == 1
         assert _used_credits_for(db, env.orgs["customer"]) == 0
-        assert _enforcement_used_credits_for(db, env.orgs["customer"]) == Decimal("0.0030")
+        assert _enforcement_used_credits_for(db, env.orgs["customer"]) == 0
         budget = db.scalar(select(CreditBudget).where(CreditBudget.organization_id == env.orgs["customer"]))
         assert _budget_output(db, budget).remaining_credits is None
 
@@ -159,5 +159,5 @@ def test_non_usd_cost_never_silently_converts_to_usd_credits(env):
         assert result.cost_complete is False and result.remaining_credits is None
         assert result.by_model[0].cost_usd is None
         assert _used_credits_for(db, env.orgs["customer"]) == 0
-        # Existing enforcement is deliberately not changed by display repair.
-        assert _enforcement_used_credits_for(db, env.orgs["customer"]) == 10
+        # Advisory compatibility calculation never falls back to internal cost.
+        assert _enforcement_used_credits_for(db, env.orgs["customer"]) == 0

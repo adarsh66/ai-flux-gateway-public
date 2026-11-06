@@ -1,4 +1,5 @@
 import { SseParser } from "./sse";
+import type { AutoRoutingMetadata, RoutingProfile } from "./autoRouting";
 
 export type ChatMessage =
   | { role: "system" | "user"; content: string }
@@ -11,6 +12,7 @@ export interface ChatRequest {
   tool_choice?: unknown;
   response_format?: unknown;
   max_completion_tokens?: number;
+  routing_profile?: RoutingProfile;
 }
 
 export function chatCompletionUrl(gatewayUrl: string): string {
@@ -18,6 +20,8 @@ export function chatCompletionUrl(gatewayUrl: string): string {
 }
 
 export function buildChatCompletionBody(request: ChatRequest, stream: boolean): Record<string, unknown> {
+  if (request.routing_profile !== undefined && request.model !== "auto") throw new Error("routing_profile is valid only for Auto");
+  if (request.model === "auto" && (stream || request.tools || request.tool_choice || request.response_format)) throw new Error("Auto supports non-streaming text only");
   const body: Record<string, unknown> = { ...request, stream };
   if (stream) body.stream_options = { include_usage: true };
   return body;
@@ -66,6 +70,8 @@ export interface ChatResult {
   httpStatus?: number;
   retryAfter?: string | null;
   sawDone: boolean;
+  actualModel?: string;
+  routing?: AutoRoutingMetadata;
 }
 
 export function emptyResult(): ChatResult {
@@ -228,6 +234,11 @@ export async function chatCompletion(opts: StreamOptions): Promise<ChatResult> {
         acc.result.outcome = "provider_error";
         acc.result.errorMessage = json.error.message ?? "The server reported an error.";
         return acc.result;
+      }
+      const metadata = json as typeof json & { model?: string; routing?: AutoRoutingMetadata };
+      if (opts.request.model === "auto") {
+        acc.result.actualModel = metadata.model;
+        acc.result.routing = metadata.routing;
       }
       const c = json.choices?.[0];
       acc.result.content = c?.message?.content ?? "";

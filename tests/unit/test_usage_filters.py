@@ -16,6 +16,7 @@ CSV_FIELDS = [
     "id", "subscription_id", "model", "provider", "region", "occurred_at",
     "input_tokens", "output_tokens", "cached_input_tokens", "cache_write_tokens",
     "cost", "currency", "status_code", "e2e_ms", "ttft_ms", "completeness",
+    "estimated_cost_usd", "estimate_basis", "pricing_revision",
 ]
 
 
@@ -78,7 +79,10 @@ def test_model_filter_consistent_across_summary_p95_series_rows_and_csv(env, usa
     summary = result["summary"]
     assert summary["requests"] == 3
     assert summary["input_tokens"] == 30 and summary["output_tokens"] == 10
-    assert Decimal(summary["known_cost"]) == Decimal("0.3")
+    if admin:
+        assert Decimal(summary["known_cost"]) == Decimal("0.3")
+    else:
+        assert "known_cost" not in summary
     assert summary["currency"] == "USD" and summary["incomplete_requests"] == 1
     assert summary["failed_requests"] == 2 and summary["throttled_requests"] == 1
     assert summary["e2e_p95_ms"] == 200 and summary["cache_tokens_supported"] is True
@@ -94,43 +98,55 @@ def test_model_filter_consistent_across_summary_p95_series_rows_and_csv(env, usa
     assert exported.status_code == 200
     reader = csv.DictReader(io.StringIO(exported.text))
     records = list(reader)
-    assert reader.fieldnames == CSV_FIELDS
+    assert reader.fieldnames == (CSV_FIELDS if admin else [f for f in CSV_FIELDS if f != "cost"])
     assert {r["id"] for r in records} == {r["id"] for r in matching}
     assert {r["model"] for r in records} == {"'" + MODEL}
     assert {r["provider"] for r in records} == {"'@provider"}
     assert {r["e2e_ms"] for r in records} == {"100", "200", ""}
     assert {r["ttft_ms"] for r in records} == {"", "25"}
-    assert sum(r["cost"] == "" for r in records) == 1
+    if admin:
+        assert sum(r["cost"] == "" for r in records) == 1
+    else:
+        assert all("cost" not in r for r in records)
     other = env.client.get(base, params={**params, "model": "other"}, headers=headers).json()
     assert other["total"] == 1 and other["summary"]["cache_tokens_supported"] is False
     unfiltered = env.client.get(base, params={k: v for k, v in params.items() if k != "model"},
                                 headers=headers).json()
     assert unfiltered["total"] == 4
-    assert unfiltered["summary"]["known_cost"] is None  # Never combine USD and SGD.
+    if admin:
+        assert unfiltered["summary"]["known_cost"] is None  # Never combine USD and SGD.
+    else:
+        assert "known_cost" not in unfiltered["summary"]
     empty = env.client.get(base, params={**params, "model": "not-in-catalog"}, headers=headers).json()
-    assert empty["total"] == 0 and empty["summary"]["known_cost"] is None
+    assert empty["total"] == 0
+    if admin:
+        assert empty["summary"]["known_cost"] is None
+    else:
+        assert "known_cost" not in empty["summary"]
     assert empty["summary"]["e2e_p95_ms"] is None
 
 
 def test_model_options_are_distinct_authorized_history_in_period_and_scope(env, usage_data):
     first, second, foreign, _ = usage_data
     options = env.client.get("/api/usage/models", params={"days": 7}, headers=env.customer).json()
-    assert options == {"items": sorted([MODEL, "other", "second-only"]), "total": 3}
+    assert options == {"items": sorted([MODEL, "other", "second-only", "test-alias"]), "total": 4}
     filtered = env.client.get("/api/usage/models",
                               params={"days": 7, "subscription_id": first, "model": MODEL, "limit": 1},
                               headers=env.customer).json()
-    assert filtered == {"items": [MODEL, "other"], "total": 2}
+    assert filtered == {"items": sorted([MODEL, "other", "test-alias"]), "total": 3}
     assert "old-only" in env.client.get("/api/usage/models", headers=env.customer).json()["items"]
     assert env.client.get("/api/usage/models", params={"subscription_id": second, "days": 7},
-                          headers=env.customer).json()["items"] == [MODEL, "second-only"]
+                          headers=env.customer).json()["items"] == sorted([MODEL, "second-only", "test-alias"])
     admin = env.client.get("/api/admin/usage/models", params={"days": 7}, headers=env.admin).json()
-    assert "foreign-only" in admin["items"]
+    assert admin == {
+        "items": sorted([MODEL, "other", "second-only", "foreign-only", "test-alias"]), "total": 5,
+    }
     scoped = env.client.get("/api/admin/usage/models",
                             params={"days": 7, "organization_id": env.orgs["customer"],
                                     "subscription_id": first}, headers=env.admin).json()
     assert scoped == filtered
     assert env.client.get("/api/admin/usage/models", params={"subscription_id": foreign, "days": 7},
-                          headers=env.admin).json()["items"] == [MODEL, "foreign-only"]
+                          headers=env.admin).json()["items"] == sorted([MODEL, "foreign-only", "test-alias"])
     with Session(env.db_engine) as db:
         db.execute(insert(UsageRecord), [
             row(env.orgs["customer"], first, f"historical-{i:02}") for i in range(65)
@@ -138,7 +154,10 @@ def test_model_options_are_distinct_authorized_history_in_period_and_scope(env, 
         db.commit()
     large = env.client.get("/api/usage/models", params={"days": 7, "subscription_id": first},
                            headers=env.customer).json()
-    assert large["total"] == 67 and large["items"] == sorted(large["items"])
+    assert large == {
+        "items": sorted([MODEL, "other", "test-alias", *(f"historical-{i:02}" for i in range(65))]),
+        "total": 68,
+    }
     assert "historical-64" in large["items"]
 
 

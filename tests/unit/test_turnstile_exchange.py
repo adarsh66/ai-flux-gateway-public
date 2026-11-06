@@ -131,6 +131,31 @@ def test_model_garden_pricing_cards_and_admin_onboarding(env, deployed_garden):
     assert enable_reai.json()["coming_soon"] is False
 
 
+def test_catalog_auto_presentation_never_initializes_router(env, deployed_garden):
+    from sqlalchemy import delete, event
+    from sqlalchemy.orm import Session
+    from aiflux.models import ModelRouterConfig
+    from aiflux.turnstile_exchange import list_model_garden
+
+    with Session(env.db_engine) as db:
+        db.execute(delete(ModelRouterConfig))
+        db.commit()
+        statements = []
+
+        def capture(conn, cursor, statement, parameters, context, executemany):
+            statements.append(statement)
+
+        event.listen(env.db_engine, "before_cursor_execute", capture)
+        try:
+            items = list_model_garden(db, env.settings)
+            assert not next(item for item in items if item.id == "auto").enabled
+            assert db.get(ModelRouterConfig, "default") is None
+            assert not any(statement.lstrip().upper().startswith(
+                ("INSERT", "UPDATE", "DELETE", "CREATE", "ALTER")) for statement in statements)
+        finally:
+            event.remove(env.db_engine, "before_cursor_execute", capture)
+
+
 def test_decision_router_auto_mode_and_playground_execution(env, deployed_garden):
     sub = create_key(env, "OpCo-Product-Alpha")
     code_route = env.client.post(

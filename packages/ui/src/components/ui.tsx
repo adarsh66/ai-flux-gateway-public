@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState, type DependencyList, type ReactNode } from "react";
 import { ApiError } from "../client";
+import { formatSgt } from "../time";
 
 export function BrandMark() {
   return (
@@ -132,7 +133,7 @@ export const fmtSecondsFromMs = (n: number | null | undefined) =>
 export const fmtDate = (s: string | null | undefined) => {
   if (!s) return NA;
   const d = new Date(s);
-  return Number.isNaN(d.getTime()) ? s : d.toLocaleString();
+  return Number.isNaN(d.getTime()) ? s : formatSgt(s, true);
 };
 
 export function downloadBlob(blob: Blob, filename: string) {

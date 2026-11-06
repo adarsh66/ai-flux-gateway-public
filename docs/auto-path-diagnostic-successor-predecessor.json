@@ -1,0 +1,16 @@
+{
+  "package": ".deployment/auto-path-diagnostic-20261029T1410225944396Z",
+  "manifest_sha256": "04c09dfb6c64b50a87f5a1e0ffebeeec01e1ec7232e2bcd82ba27318cc6eef91",
+  "verified_sha256": {
+    "install-global": "f981a56cda20542f4340061d9f133e9063392c2ba30e216f9b8dc649cbb54e23",
+    "install-revision": "6d747cc6fda5ee2086581b02641871b39afc4e5fdf454bfaae612e8541d7b931",
+    "online": "f61a317ffab39560e399fc8b3a77b23679dfd6550fe84ffcf173cf18128c4c1d",
+    "offline": "2d14357cb99b2ce9cf460b25f006f3cfaf15a77661c568a99915754f25fd0e61",
+    "restore-global": "fd829997c6f3d81068ddd61b087470713ed220d18a098e82ef6b6ead185039b7"
+  },
+  "reserve_failure_sha256": {
+    "browser-send-intent.json": "460d0c046c0eb34681cea54478bdf9650478e49fd21b20d04d445ef73cb0c802",
+    "reserve-before.json": "50bb594a4870602dcd726c674f5da07e4a1929511d374af5a17c115ef325167f"
+  },
+  "interpretation": "Five actual HTTP200 verified mutations across six reviewed stages. Reserve failed before reservation/claim. Historical scorer count unknown; one NEW attempt only. Not a new approval or browser preflight."
+}

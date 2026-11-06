@@ -1,0 +1,8 @@
+{
+  "as_of": "2026-11-04T08:15:01.032739+00:00",
+  "demo_subscription_id": "e9f2abb0-930b-598a-b210-0ab0b279127f",
+  "ownership_evidence": "gateway/validation/fireworks-live-acceptance-20261028.json scheduled_reporting",
+  "ownership_limit": "Authenticated October28 evidence, not a fresh November DB ownership check; subset only",
+  "all_organization_subscriptions_verified": false,
+  "ledger_rows_exported": false
+}

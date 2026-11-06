@@ -1,0 +1,35 @@
+{
+  "tables": [
+    {
+      "columns": [
+        {
+          "name": "category",
+          "type": "string"
+        },
+        {
+          "name": "traces",
+          "type": "long"
+        }
+      ],
+      "name": "PrimaryResult",
+      "rows": [
+        [
+          "ContentSafety",
+          7
+        ],
+        [
+          "ProviderResponse",
+          1
+        ],
+        [
+          "decision-overhead",
+          20
+        ],
+        [
+          "usage",
+          103
+        ]
+      ]
+    }
+  ]
+}

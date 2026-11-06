@@ -1,0 +1,63 @@
+<diagnostic>
+  <authentication-managed-identity id="auto-diagnostic-mi" resource="https://cognitiveservices.azure.com/" client-id="5792b72e-1605-4dce-a594-4c430a5af619" output-token-variable-name="auto-diagnostic-token" ignore-error="false" />
+  <send-request id="auto-diagnostic-score" mode="new" response-variable-name="auto-diagnostic-response" timeout="15" ignore-error="true">
+    <set-url>https://poc-ids-token-ex-foundry.services.ai.azure.com/providers/microsoft/v1/systemone</set-url>
+    <set-method>POST</set-method>
+    <set-header name="Content-Type" exists-action="override"><value>application/json</value></set-header>
+    <set-header name="Authorization" exists-action="override"><value>@("Bearer " + (string)context.Variables["auto-diagnostic-token"])</value></set-header>
+    <set-body>{"model":"Decision-1","state":"Please greet me in one short sentence.","questions":{"route":{"type":"choice","instructions":"Which task is requested?","criteria":{"greeting":"A short greeting","arithmetic":"A numerical calculation"}}}}</set-body>
+  </send-request>
+  <set-variable name="auto-diagnostic-summary" value='@{
+    var summary = new JObject {
+      ["scoring_status"] = JValue.CreateNull(), ["schema_valid"] = false,
+      ["body_within_bound"] = false, ["key_types"] = new JObject(),
+      ["probabilities"] = JValue.CreateNull(),
+      ["usage"] = new JObject { ["input_tokens"] = JValue.CreateNull(), ["output_tokens"] = JValue.CreateNull(), ["total_tokens"] = JValue.CreateNull() }
+    };
+    try {
+      var response = context.Variables.GetValueOrDefault&lt;IResponse&gt;("auto-diagnostic-response", null);
+      if (response == null) { return summary.ToString(Newtonsoft.Json.Formatting.None); }
+      summary["scoring_status"] = response.StatusCode;
+      long length;
+      if (!long.TryParse(response.Headers.GetValueOrDefault("Content-Length", ""), out length) || length &lt; 0 || length &gt; 65536) { return summary.ToString(Newtonsoft.Json.Formatting.None); }
+      var raw = response.Body.As&lt;string&gt;(preserveContent: false);
+      if (raw == null || System.Text.Encoding.UTF8.GetByteCount(raw) &gt; 65536) { return summary.ToString(Newtonsoft.Json.Formatting.None); }
+      summary["body_within_bound"] = true;
+      var result = JObject.Parse(raw);
+      var types = new JObject();
+      foreach (var name in new [] { "answers", "usage", "model", "id", "error" }) {
+        if (result[name] != null) { types[name] = result[name].Type.ToString(); }
+      }
+      summary["key_types"] = types;
+      var answers = result["answers"] as JObject;
+      var answer = answers == null ? null : answers["route"] as JObject;
+      var probabilities = answer == null ? null : answer["probabilities"] as JObject;
+      if (response.StatusCode == 200 &amp;&amp; answer != null &amp;&amp; (string)answer["type"] == "choice" &amp;&amp; probabilities != null &amp;&amp; probabilities.Properties().Count() == 2) {
+        var good = true;
+        var sum = 0.0;
+        var safe = new JObject();
+        foreach (var name in new [] { "greeting", "arithmetic" }) {
+          var score = probabilities[name];
+          if (score == null || (score.Type != JTokenType.Float &amp;&amp; score.Type != JTokenType.Integer) || !((double)score &gt;= 0 &amp;&amp; (double)score &lt;= 1)) { good = false; break; }
+          safe[name] = (double)score;
+          sum += (double)score;
+        }
+        if (good &amp;&amp; Math.Abs(sum - 1.0) &lt;= 0.02) { summary["probabilities"] = safe; summary["schema_valid"] = true; }
+      }
+      var usage = result["usage"] as JObject;
+      if (usage != null) {
+        foreach (var name in new [] { "input_tokens", "output_tokens", "total_tokens" }) {
+          var number = usage[name];
+          if (number != null &amp;&amp; number.Type == JTokenType.Integer &amp;&amp; (long)number &gt;= 0 &amp;&amp; (long)number &lt;= 2147483647) { summary["usage"][name] = (long)number; }
+        }
+      }
+    } catch { }
+    return summary.ToString(Newtonsoft.Json.Formatting.None);
+  }' />
+  <return-response>
+    <set-status code="200" reason="Diagnostic summary only" />
+    <set-header name="Content-Type" exists-action="override"><value>application/json</value></set-header>
+    <set-header name="Cache-Control" exists-action="override"><value>no-store</value></set-header>
+    <set-body>@((string)context.Variables["auto-diagnostic-summary"])</set-body>
+  </return-response>
+</diagnostic>

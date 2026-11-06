@@ -9,7 +9,9 @@ import {
   ContentSafetySettingsPage,
   GatewaySettingsPage,
   MembersPage,
+  ModelsPage,
   OrganizationsPage,
+  OrganizationModelAccessPage,
   PricesPage,
   SafetyPage,
   Shell,
@@ -20,7 +22,9 @@ import {
 
 const nav: NavItem[] = [
   { to: "/budgets", label: "OpCo budgets & FinOps", section: "FinOps & Routing" },
-  { to: "/model-router", label: "Model router & catalog", section: "FinOps & Routing" },
+  { to: "/model-router", label: "Model router", section: "FinOps & Routing" },
+  { to: "/models", label: "Model catalog", section: "FinOps & Routing" },
+  { to: "/model-access", label: "Organization model access", section: "Tenants & Access" },
   { to: "/prices", label: "Rate card & pricing", section: "FinOps & Routing" },
   { to: "/usage", label: "Showback", section: "FinOps & Routing" },
   { to: "/content-safety", label: "Content safety", section: "Guardrails & Traffic" },
@@ -41,6 +45,8 @@ createRoot(document.getElementById("root")!).render(
             <Route index element={<Navigate to="/budgets" replace />} />
             <Route path="/budgets" element={<AdminBudgetsAndFinOpsPage />} />
             <Route path="/model-router" element={<AdminModelRouterPage />} />
+            <Route path="/models" element={<ModelsPage admin />} />
+            <Route path="/model-access" element={<OrganizationModelAccessPage />} />
             <Route path="/local-users" element={<AdminLocalUsersPage />} />
             <Route path="/usage" element={<UsagePage admin />} />
             <Route path="/safety" element={<SafetyPage />} />

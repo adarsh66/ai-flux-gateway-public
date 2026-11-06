@@ -20,10 +20,16 @@ COPY services/usage-ingestion/ingest_usage ./ingest_usage
 COPY services/usage-ingestion/ingestion_ready ./ingestion_ready
 COPY services/usage-ingestion/ingestion-approved.json ./gateway/catalog/dev-models.json
 COPY services/usage-ingestion/ingestion-approved.json ./gateway/catalog/ingestion-approved.json
-COPY gateway/catalog/foundry-inventory-20261026.json gateway/catalog/project-routes.json gateway/catalog/external-inventory.json ./gateway/catalog/
+ARG APPROVED_CATALOG_PROFILE=historical
+ARG APPROVED_INVENTORY_PATH=gateway/catalog/foundry-inventory-20261026.json
+# Selection is build-time only. Preserve the configured runtime filename and
+# require accepted evidence; the builder never generates gateway acceptance.
+COPY ${APPROVED_INVENTORY_PATH} ./gateway/catalog/foundry-inventory-20261026.json
+COPY gateway/catalog/project-routes.json gateway/catalog/external-inventory.json ./gateway/catalog/
 COPY gateway/catalog/fireworks-candidate-routes.json ./gateway/catalog/
+COPY gateway/catalog/foundry-eight-candidate-routes.json ./gateway/catalog/
 COPY services/usage-ingestion/approved_catalog.py services/usage-ingestion/catalog-bindings.json ./services/usage-ingestion/
-RUN python services/usage-ingestion/approved_catalog.py \
+RUN python services/usage-ingestion/approved_catalog.py --profile "$APPROVED_CATALOG_PROFILE" \
     && python -c "import azure.functions, azure.identity, azure.monitor.query, psycopg; from aiflux.ingestion import extract_usage; from aiflux.config import Settings; s=Settings(_env_file=None, environment='development', ingestion_start_at='2026-10-27T00:00:00Z'); assert s.ingestion_start_at.tzinfo"
 # Listener liveness only: no authentication material, database or ingestion claim.
 HEALTHCHECK --interval=30s --timeout=5s --start-period=120s --retries=3 \

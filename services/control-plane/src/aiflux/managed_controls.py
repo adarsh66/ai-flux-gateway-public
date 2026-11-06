@@ -38,7 +38,8 @@ def validate_configuration(
     rows = db.execute(
         select(TeamSubscription, Organization)
         .join(Organization, TeamSubscription.organization_id == Organization.id)
-        .where(Organization.enabled == true())
+         .where(Organization.enabled == true(), Organization.deleted_at.is_(None),
+             TeamSubscription.deleted_at.is_(None), TeamSubscription.deletion_requested_at.is_(None))
         .order_by(TeamSubscription.id).limit(201),
     ).all()
     if len(rows) > 200:

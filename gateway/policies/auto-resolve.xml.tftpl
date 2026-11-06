@@ -1,0 +1,353 @@
+           <!-- Gateway-direct selection only. Response mapping remains a fixture
+             contract until separately verified on APIM. No retries or fallback. -->
+        <choose><when condition='@((bool)context.Variables["aiflux-auto"])'>
+          <set-header name="x-aiflux-subscription-id" exists-action="delete" />
+          <set-header name="x-aiflux-organization-id" exists-action="delete" />
+          <set-header name="x-aiflux-team-id" exists-action="delete" />
+          <set-header name="x-aiflux-routing-profile" exists-action="delete" />
+          <set-header name="x-aiflux-selected-model" exists-action="delete" />
+          <set-header name="x-aiflux-model" exists-action="delete" />
+          <set-header name="x-aiflux-routing" exists-action="delete" />
+          <set-header name="x-aiflux-config-version" exists-action="delete" />
+          <set-header name="x-aiflux-fallback-used" exists-action="delete" />
+          <set-header name="x-aiflux-original-body" exists-action="delete" />
+          <set-header name="x-aiflux-pii-response" exists-action="delete" />
+          <set-variable name="aiflux-auto-redacted" value='@(context.Request.Body.As&lt;string&gt;(preserveContent: true))' />
+          <set-variable name="aiflux-auto-profile" value='@((string)JObject.Parse((string)context.Variables["aiflux-request-json"])["routing_profile"] ?? "balanced")' />
+          <set-variable name="aiflux-auto-snapshot" value='@(System.Text.Encoding.UTF8.GetString(Convert.FromBase64String("${snapshot_base64}")))' />
+          <!-- Existing fragment authority, price-only mode: ALL detached controls
+               and quotas remain in its otherwise branch and never execute here. -->
+          <set-variable name="aiflux-auto-price-only" value="@(true)" />
+          <include-fragment fragment-id="${pricing_fragment}" />
+          <set-variable name="aiflux-auto-price-only" value="@(false)" />
+          <set-variable name="aiflux-auto-snapshot" value='@{
+            var snapshot = JObject.Parse((string)context.Variables["aiflux-auto-snapshot"]);
+            var candidates = (JObject)snapshot["candidates"];
+            var packaged = candidates.Properties().Select(p => p.Value["price"]).FirstOrDefault(p => p != null &amp;&amp; p.Type == JTokenType.Object);
+            snapshot["pricing_revision"] = packaged == null ? "packaged-default" : (string)packaged["revision"];
+            snapshot["pricing_source"] = "packaged-default";
+            snapshot["pricing_sha256"] = packaged == null ? "" : (string)packaged["manifest_sha256"];
+            snapshot["pricing_stale"] = JValue.CreateNull();
+            var raw = context.Variables.GetValueOrDefault&lt;string&gt;("aiflux-auto-price-projection", "");
+            try {
+              if (System.Text.Encoding.UTF8.GetByteCount(raw) > 24576) { throw new Exception("Pricing bound"); }
+              /* Prefix object string values before Json.NET reads them, so ISO
+                 provenance remains a string without unsupported settings types.
+                 This disposable parse view never changes the signed source. */
+              var parseText = new System.Text.StringBuilder();
+              var quoted = false;
+              var escaped = false;
+              var previous = (char)32;
+              foreach (var character in raw) {
+                parseText.Append(character);
+                if (quoted) {
+                  if (escaped) { escaped = false; }
+                  else if (character == (char)92) { escaped = true; }
+                  else if (character == (char)34) { quoted = false; }
+                } else if (character == (char)34) {
+                  quoted = true;
+                  if (previous == (char)58) { parseText.Append((char)126); }
+                }
+                if (!quoted &amp;&amp; !char.IsWhiteSpace(character)) { previous = character; }
+              }
+              var prices = Newtonsoft.Json.JsonConvert.DeserializeObject&lt;JObject&gt;(parseText.ToString());
+              foreach (var value in prices.Descendants().OfType&lt;JValue&gt;()) {
+                if (value.Type == JTokenType.String) {
+                  var text = (string)value;
+                  if (text.StartsWith("~", StringComparison.Ordinal)) { value.Value = text.Substring(1); }
+                }
+              }
+              var projected = prices["prices"] as JObject;
+              var envelopeFields = new [] { "schema", "pool_version", "rate_card_version", "revision", "source", "prices", "sha256" };
+              if (prices.Properties().Count() != envelopeFields.Length || prices.Properties().Any(p => !envelopeFields.Contains(p.Name)) ||
+                  prices["schema"].Type != JTokenType.Integer || (long)prices["schema"] != 1 ||
+                  prices["rate_card_version"].Type != JTokenType.Integer || (long)prices["rate_card_version"] &lt; 0 ||
+                  prices["source"].Type != JTokenType.String || (string)prices["source"] != ((long)prices["rate_card_version"] == 0 ? "packaged-default" : "rate-card") ||
+                  prices["revision"].Type != JTokenType.String || ((string)prices["revision"]).Length &lt; 1 || ((string)prices["revision"]).Length > 2048 ||
+                  prices["pool_version"].Type != JTokenType.String || (string)prices["pool_version"] != (string)snapshot["version"] ||
+                  candidates.Properties().Count() != 6 || projected == null || projected.Properties().Count() != 6 ||
+                  prices["sha256"].Type != JTokenType.String || !System.Text.RegularExpressions.Regex.IsMatch((string)prices["sha256"], "\\A[0-9a-f]{64}\\z")) { throw new Exception("Pricing binding"); }
+              var required = new [] { "input", "output", "status", "revision", "source_url", "source_model", "currency", "unit" };
+              var optional = new [] { "cached", "write" };
+              foreach (var candidate in candidates.Properties()) {
+                var price = projected[candidate.Name];
+                if (price == null) { throw new Exception("Missing price"); }
+                if (price.Type != JTokenType.Null) {
+                  var row = price as JObject;
+                  if (row == null || required.Any(f => row[f] == null) || row.Properties().Any(p => !required.Contains(p.Name) &amp;&amp; !optional.Contains(p.Name)) ||
+                      row["currency"].Type != JTokenType.String || (string)row["currency"] != "USD" ||
+                      row["unit"].Type != JTokenType.String || (string)row["unit"] != "per_million_tokens" ||
+                      row["status"].Type != JTokenType.String || !new [] { "configured", "public_list", "sourced_proxy", "tbc", "platform_default" }.Contains((string)row["status"])) { throw new Exception("Pricing units"); }
+                  foreach (var field in new [] { "revision", "source_url", "source_model" }) {
+                    if (row[field].Type != JTokenType.String || ((string)row[field]).Length > 2048) { throw new Exception("Pricing provenance"); }
+                  }
+                  foreach (var field in new [] { "input", "output", "cached", "write" }) {
+                    var rate = price[field];
+                    if (rate != null) {
+                      if (rate.Type != JTokenType.String || !System.Text.RegularExpressions.Regex.IsMatch((string)rate, "\\A[0-9]+(?:\\.[0-9]{1,8})?\\z")) { throw new Exception("Pricing rate"); }
+                      /* ASCII digits only, exact decimal arithmetic, no ambient
+                         culture. Bound before multiply to prevent overflow even
+                         for arbitrarily long whole-number strings. */
+                      decimal number = 0m;
+                      decimal fraction = 0m;
+                      decimal divisor = 1m;
+                      var fractional = false;
+                      foreach (var digit in (string)rate) {
+                        if (digit == (char)46) { fractional = true; }
+                        else if (fractional) {
+                          fraction = fraction * 10m + (digit - (char)48);
+                          divisor *= 10m;
+                        } else {
+                          if (number > 10000m) { throw new Exception("Pricing rate"); }
+                          number = number * 10m + (digit - (char)48);
+                          if (number > 100000m) { throw new Exception("Pricing rate"); }
+                        }
+                      }
+                      number += fraction / divisor;
+                      if (number > 100000m) { throw new Exception("Pricing rate"); }
+                    }
+                  }
+                }
+              }
+              /* Canonical sorted compact ASCII JSON, excluding sha256, exactly
+                 as backend compact(). Incoming property order is irrelevant. */
+              var canonicalPrices = new JObject();
+              foreach (var entry in projected.Properties().OrderBy(p => p.Name, StringComparer.Ordinal)) {
+                var row = entry.Value as JObject;
+                var ordered = new JObject();
+                if (row != null) { foreach (var field in row.Properties().OrderBy(p => p.Name, StringComparer.Ordinal)) { ordered[field.Name] = field.Value.DeepClone(); } }
+                canonicalPrices[entry.Name] = row == null ? JValue.CreateNull() : (JToken)ordered;
+              }
+              var canonical = new JObject();
+              foreach (var field in prices.Properties().Where(p => p.Name != "sha256").OrderBy(p => p.Name, StringComparer.Ordinal)) {
+                canonical[field.Name] = field.Name == "prices" ? canonicalPrices : field.Value.DeepClone();
+              }
+              var compactText = Newtonsoft.Json.JsonConvert.SerializeObject(canonical, Newtonsoft.Json.Formatting.None);
+              var asciiText = new System.Text.StringBuilder();
+              foreach (var character in compactText) {
+                if (character >= 127) { asciiText.Append("\\u").Append(((int)character).ToString("x4")); }
+                else { asciiText.Append(character); }
+              }
+              var canonicalText = asciiText.ToString();
+              var claimedHash = (string)prices["sha256"];
+              var actualHash = "";
+              using (var hasher = System.Security.Cryptography.SHA256.Create()) {
+                actualHash = BitConverter.ToString(hasher.ComputeHash(System.Text.Encoding.UTF8.GetBytes(canonicalText))).Replace("-", "").ToLowerInvariant();
+              }
+              if (claimedHash != actualHash) { throw new Exception("Pricing integrity"); }
+              /* Validation completes before mutation; malformed projection
+                 retains packaged fallback rather than half-applied rates. */
+              foreach (var candidate in candidates.Properties()) {
+                candidate.Value["price"] = projected[candidate.Name];
+                var status = projected[candidate.Name].Type == JTokenType.Null ? "unknown" : (string)projected[candidate.Name]["status"];
+                candidate.Value["price_status"] = status == "public_list" ? "published" :
+                  (status == "configured" || status == "unknown" ? status : "provisional");
+              }
+              snapshot["pricing_revision"] = prices["revision"];
+              snapshot["pricing_sha256"] = claimedHash;
+              snapshot["pricing_source"] = prices["source"];
+                /* APIM knows the applied revision, not the current DB desired
+                  revision. Do not claim freshness without that knowledge. */
+                snapshot["pricing_stale"] = JValue.CreateNull();
+            } catch { }
+            /* Entitlement intersection AFTER full six-price validation. The
+               universe is still the fixed six; no dynamic global pool. */
+            var accessRaw = context.Variables.GetValueOrDefault&lt;string&gt;("aiflux-model-access", "");
+            if (!string.IsNullOrEmpty(accessRaw)) {
+              var allowed = (JArray)JObject.Parse(accessRaw)["allowed"];
+              foreach (var candidate in candidates.Properties().ToArray()) {
+                if (!allowed.Any(a => (string)a == candidate.Name)) { candidate.Remove(); }
+              }
+              foreach (var profile in ((JObject)snapshot["profiles"]).Properties()) {
+                profile.Value["candidate_models"] = new JArray(((JArray)profile.Value["candidate_models"]).Where(a => candidates[(string)a] != null));
+              }
+            }
+            var known = new JArray();
+            var all = new JArray();
+            foreach (var candidate in ((JObject)snapshot["candidates"]).Properties()) {
+              all.Add(candidate.Name);
+              if (candidate.Value["price"].Type != JTokenType.Null) { known.Add(candidate.Name); }
+            }
+            /* Closed-choice needs at least two options. If comparable costs
+              cannot form a pool, use suitability, never fabricate free rates. */
+            snapshot["profiles"]["cost"]["candidate_models"] = known.Count >= 2 ? known : all;
+            snapshot["cost_suitability_fallback"] = known.Count &lt; 2;
+            if (known.Count &lt; 2) {
+              snapshot["profiles"]["cost"]["instructions"] = "Comparable pricing is unavailable. Select the option most suitable for this text task; do not invent prices or claim a cheapest option.";
+            }
+            return snapshot.ToString(Newtonsoft.Json.Formatting.None);
+          }' />
+          <choose><when condition='@(((JObject)JObject.Parse((string)context.Variables["aiflux-auto-snapshot"])["candidates"]).Count == 0)'>
+            <return-response><set-status code="403" reason="No allowed Auto candidates" />
+              <set-header name="Content-Type" exists-action="override"><value>application/json</value></set-header>
+              <set-body>{"error":{"code":"model_not_allowed","message":"No allowed Auto candidates; no scorer or provider was called."}}</set-body>
+            </return-response>
+          </when></choose>
+          <set-variable name="aiflux-auto-started" value='@(DateTime.UtcNow.Ticks)' />
+          <choose><when condition='@(((JObject)JObject.Parse((string)context.Variables["aiflux-auto-snapshot"])["candidates"]).Count > 1)'>
+          <authentication-managed-identity id="aiflux-auto-auth" resource="https://cognitiveservices.azure.com" client-id="${gateway_client}" output-token-variable-name="aiflux-auto-scoring-token" ignore-error="false" />
+          <send-request id="aiflux-auto-resolver" mode="new" response-variable-name="aiflux-auto-response" timeout="5" ignore-error="true">
+            <set-url>https://poc-ids-token-ex-foundry.services.ai.azure.com/providers/microsoft/v1/systemone</set-url>
+            <set-method>POST</set-method>
+            <set-header name="Content-Type" exists-action="override"><value>application/json</value></set-header>
+            <set-header name="Authorization" exists-action="override"><value>@("Bearer " + (string)context.Variables["aiflux-auto-scoring-token"])</value></set-header>
+            <set-body><![CDATA[@{
+              var redacted = JObject.Parse((string)context.Variables["aiflux-auto-redacted"]);
+              var messages = redacted["messages"] as JArray;
+              if (messages == null || messages.Count == 0 || messages.Count > 25) { throw new Exception("Auto redaction shape"); }
+              var characters = 0;
+              foreach (var item in messages) {
+                if (item["content"] == null || item["content"].Type != JTokenType.String || ((string)item["content"]).Length == 0 || ((string)item["content"]).Length > 4800) { throw new Exception("Auto redaction bound"); }
+                characters += ((string)item["content"]).Length;
+              }
+              if (characters > 8000 || System.Text.Encoding.UTF8.GetByteCount(messages.ToString()) > 32768) { throw new Exception("Auto redaction bound"); }
+              var snapshot = JObject.Parse((string)context.Variables["aiflux-auto-snapshot"]);
+              var profile = snapshot["profiles"][(string)context.Variables["aiflux-auto-profile"]];
+              var criteria = new JObject();
+              foreach (var alias in (JArray)profile["candidate_models"]) {
+                criteria[(string)alias] = snapshot["candidates"][(string)alias].ToString();
+              }
+              return new JObject {
+                ["model"] = "Decision-1",
+                ["state"] = new JObject { ["messages"] = redacted["messages"], ["max_completion_tokens"] = redacted["max_completion_tokens"] },
+                ["questions"] = new JObject { ["route"] = new JObject {
+                  ["type"] = "choice", ["instructions"] = profile["instructions"], ["criteria"] = criteria
+                } }
+              }.ToString();
+            }]]></set-body>
+          </send-request>
+          <set-variable name="aiflux-auto-result" value='@{
+            try {
+              var response = context.Variables.GetValueOrDefault&lt;IResponse&gt;("aiflux-auto-response", null);
+              if (response == null || response.StatusCode != 200) { return ""; }
+              var raw = response.Body.As&lt;string&gt;(preserveContent: true);
+              if (raw == null || System.Text.Encoding.UTF8.GetByteCount(raw) > 65536) { return ""; }
+              var result = JObject.Parse(raw);
+              var snapshot = JObject.Parse((string)context.Variables["aiflux-auto-snapshot"]);
+              var profileName = (string)context.Variables["aiflux-auto-profile"];
+              var profile = snapshot["profiles"][profileName];
+              var aliases = ((JArray)profile["candidate_models"]).Select(a => (string)a).ToArray();
+              if (aliases.Length &lt; 2 || aliases.Length > 10 || aliases.Distinct().Count() != aliases.Length) { return ""; }
+              var answer = result["answers"]["route"];
+              var probabilities = answer["probabilities"] as JObject;
+              if ((string)answer["type"] != "choice" || probabilities == null || probabilities.Properties().Count() != aliases.Length || !aliases.Contains((string)answer["choice"])) { return ""; }
+              var selected = "";
+              var best = -1.0;
+              var sum = 0.0;
+              foreach (var alias in aliases) {
+                var score = probabilities[alias];
+                if (score == null || (score.Type != JTokenType.Float &amp;&amp; score.Type != JTokenType.Integer) || !((double)score >= 0 &amp;&amp; (double)score &lt;= 1)) { return ""; }
+                sum += (double)score;
+                if ((double)score > best || ((double)score == best &amp;&amp; string.CompareOrdinal(alias, selected) &lt; 0)) { selected = alias; best = (double)score; }
+              }
+              if (Math.Abs(sum - 1.0) > 0.02 || (double)probabilities[(string)answer["choice"]] != best) { return ""; }
+              var model = JValue.CreateString(selected);
+              if (!(${candidate_conditions}) || !(${manifest_conditions})) { return ""; }
+              var modelMaximum = 0;
+              ${selected_limit_rules}
+              var maximum = (int)JObject.Parse((string)context.Variables["aiflux-request-json"])["max_completion_tokens"];
+              if (maximum &lt; 1 || maximum > ${completion_limit} || maximum > modelMaximum || maximum > (int)snapshot["candidates"][selected]["max_completion_tokens"]) { return ""; }
+              if (profileName == "cost" &amp;&amp; !(bool)snapshot["cost_suitability_fallback"] &amp;&amp; snapshot["candidates"][selected]["price"].Type == JTokenType.Null) { return ""; }
+              var usage = new JObject { ["input_tokens"] = JValue.CreateNull(), ["output_tokens"] = JValue.CreateNull() };
+              foreach (var name in new [] { "input_tokens", "output_tokens" }) {
+                var value = result["usage"] == null ? null : result["usage"][name];
+                if (value != null &amp;&amp; value.Type == JTokenType.Integer &amp;&amp; (long)value >= 0 &amp;&amp; (long)value &lt;= 2147483647) { usage[name] = value; }
+              }
+              var latency = (DateTime.UtcNow.Ticks - (long)context.Variables["aiflux-auto-started"]) / 10000.0;
+              if (!(latency >= 0 &amp;&amp; latency &lt;= 120000)) { return ""; }
+              return new JObject {
+                ["selected_model"] = (string)model,
+                ["routing_profile"] = profileName,
+                ["config_version"] = (string)snapshot["version"],
+                ["pricing_revision"] = snapshot["pricing_revision"],
+                ["pricing_sha256"] = snapshot["pricing_sha256"],
+                ["pricing_source"] = snapshot["pricing_source"],
+                ["pricing_stale"] = snapshot["pricing_stale"],
+                ["cost_suitability_fallback"] = snapshot["cost_suitability_fallback"],
+                ["fallback_used"] = false,
+                ["failure"] = JValue.CreateNull(),
+                ["decision_overhead"] = new JObject {
+                  ["latency_ms"] = latency,
+                  ["usage"] = new JObject { ["input_tokens"] = usage["input_tokens"], ["output_tokens"] = usage["output_tokens"] },
+                  ["cost_usd"] = JValue.CreateNull()
+                }
+              }.ToString();
+            } catch { return ""; }
+          }' />
+          </when><otherwise>
+            <set-variable name="aiflux-auto-result" value='@{
+              var snapshot = JObject.Parse((string)context.Variables["aiflux-auto-snapshot"]);
+              var selected = ((JObject)snapshot["candidates"]).Properties().Single().Name;
+              var model = JValue.CreateString(selected);
+              if (!(${candidate_conditions}) || !(${manifest_conditions})) { return ""; }
+              var modelMaximum = 0;
+              ${selected_limit_rules}
+              var maximum = (int)JObject.Parse((string)context.Variables["aiflux-request-json"])["max_completion_tokens"];
+              if (maximum &lt; 1 || maximum > ${completion_limit} || maximum > modelMaximum || maximum > (int)snapshot["candidates"][selected]["max_completion_tokens"]) { return ""; }
+              return new JObject {
+                ["selected_model"] = selected, ["routing_profile"] = (string)context.Variables["aiflux-auto-profile"],
+                ["config_version"] = snapshot["version"], ["pricing_revision"] = snapshot["pricing_revision"],
+                ["pricing_sha256"] = snapshot["pricing_sha256"], ["pricing_source"] = snapshot["pricing_source"],
+                ["pricing_stale"] = snapshot["pricing_stale"], ["cost_suitability_fallback"] = snapshot["cost_suitability_fallback"],
+                ["fallback_used"] = false, ["selection_mode"] = "single-allowed-candidate", ["failure"] = JValue.CreateNull(),
+                ["decision_overhead"] = new JObject { ["latency_ms"] = 0, ["cost_usd"] = JValue.CreateNull(),
+                  ["usage"] = new JObject { ["input_tokens"] = JValue.CreateNull(), ["output_tokens"] = JValue.CreateNull() } }
+              }.ToString(Newtonsoft.Json.Formatting.None);
+            }' />
+          </otherwise></choose>
+          <choose><when condition='@(string.IsNullOrEmpty((string)context.Variables["aiflux-auto-result"]))'>
+            <return-response>
+              <set-status code="503" reason="Auto routing unavailable" />
+              <set-header name="Content-Type" exists-action="override"><value>application/json</value></set-header>
+              <set-header name="Cache-Control" exists-action="override"><value>no-store</value></set-header>
+              <set-body>{"error":{"code":"auto_routing_unavailable","message":"Auto selection is unavailable; no inference was forwarded."}}</set-body>
+            </return-response>
+          </when></choose>
+          <!-- One bounded persistence event for a validated decision, before any
+               selected-provider work. Never a completion or provider usage row. -->
+          <choose><when condition='@(((JObject)JObject.Parse((string)context.Variables["aiflux-auto-snapshot"])["candidates"]).Count > 1)'>
+          <trace source="aiflux" severity="information">
+            <message>Validated Auto decision overhead; no request or response content.</message>
+            <metadata name="category" value="decision-overhead" />
+            <metadata name="payload" value='@{
+              var route = JObject.Parse((string)context.Variables["aiflux-auto-result"]);
+              var overhead = route["decision_overhead"];
+              return new JObject {
+                ["schema"] = "decision-overhead-v1",
+                ["request_id"] = context.RequestId.ToString(),
+                ["routing_profile"] = (string)route["routing_profile"],
+                ["selected_model"] = (string)route["selected_model"],
+                ["config_version"] = (string)route["config_version"],
+                ["pricing_revision"] = route["pricing_revision"],
+                ["pricing_sha256"] = route["pricing_sha256"],
+                ["pricing_source"] = route["pricing_source"],
+                ["pricing_stale"] = route["pricing_stale"],
+                ["cost_suitability_fallback"] = route["cost_suitability_fallback"],
+                ["latency_ms"] = overhead["latency_ms"],
+                ["usage"] = new JObject {
+                  ["input_tokens"] = overhead["usage"]["input_tokens"],
+                  ["output_tokens"] = overhead["usage"]["output_tokens"]
+                },
+                ["cost_usd"] = JValue.CreateNull()
+              }.ToString(Newtonsoft.Json.Formatting.None);
+            }' />
+          </trace>
+          </when></choose>
+          <set-variable name="aiflux-model" value='@((string)JObject.Parse((string)context.Variables["aiflux-auto-result"])["selected_model"])' />
+          <choose><when condition='@{
+            var raw = context.Variables.GetValueOrDefault&lt;string&gt;("aiflux-model-access", "");
+            return !string.IsNullOrEmpty(raw) &amp;&amp; !((JArray)JObject.Parse(raw)["allowed"]).Any(a => (string)a == (string)context.Variables["aiflux-model"]);
+          }'>
+            <return-response><set-status code="403" reason="Selected model not allowed" />
+              <set-body>{"error":{"code":"model_not_allowed"}}</set-body>
+            </return-response>
+          </when></choose>
+          <set-body><![CDATA[@{
+            var request = JObject.Parse((string)context.Variables["aiflux-auto-redacted"]);
+            request["model"] = (string)context.Variables["aiflux-model"];
+            request.Remove("routing_profile");
+            ${provider_rules}
+            return request.ToString();
+          }]]></set-body>
+          ${selected_limits}
+        </when></choose>

@@ -1,0 +1,51 @@
+{
+  "tables": [
+    {
+      "columns": [
+        {
+          "name": "category",
+          "type": "string"
+        },
+        {
+          "name": "schema",
+          "type": "string"
+        },
+        {
+          "name": "keys",
+          "type": "string"
+        },
+        {
+          "name": "traces",
+          "type": "long"
+        }
+      ],
+      "name": "PrimaryResult",
+      "rows": [
+        [
+          "decision-overhead",
+          "decision-overhead-v1",
+          "[\"schema\",\"request_id\",\"routing_profile\",\"selected_model\",\"config_version\",\"pricing_revision\",\"pricing_sha256\",\"pricing_source\",\"pricing_stale\",\"cost_suitability_fallback\",\"latency_ms\",\"usage\",\"cost_usd\"]",
+          8
+        ],
+        [
+          "usage",
+          "finops-v1",
+          "[\"input_tokens\",\"output_tokens\",\"cached_input_tokens\",\"cache_write_tokens\",\"schema\",\"model\",\"attempts\"]",
+          98
+        ],
+        [
+          "decision-overhead",
+          "decision-overhead-v1",
+          "[\"schema\",\"request_id\",\"routing_profile\",\"selected_model\",\"config_version\",\"latency_ms\",\"usage\",\"cost_usd\"]",
+          12
+        ],
+        [
+          "usage",
+          "finops-v1",
+          "[\"input_tokens\",\"output_tokens\",\"cached_input_tokens\",\"cache_write_tokens\",\"speed\",\"schema\",\"model\",\"attempts\"]",
+          5
+        ]
+      ]
+    }
+  ]
+}

@@ -201,12 +201,13 @@ def get_principal(
         except jwt.PyJWTError as exc:
             raise HTTPException(401, "Invalid access token") from exc
         local_user = db.get(LocalUser, str(claims.get("sub", "")))
-        if local_user is None or not local_user.enabled:
+        if local_user is None or not local_user.enabled or local_user.deleted_at is not None:
             raise HTTPException(403, "User is not approved")
         org = db.scalar(
             select(Organization).where(
                 Organization.id == local_user.organization_id,
                 Organization.enabled == true(),
+                Organization.deleted_at.is_(None),
             )
         )
         if org is None:
@@ -216,6 +217,7 @@ def get_principal(
                 Member.organization_id == org.id,
                 Member.object_id == local_user.object_id,
                 Member.enabled == true(),
+                Member.deleted_at.is_(None),
             )
         )
         if member is None:
@@ -228,6 +230,7 @@ def get_principal(
         select(Organization).where(
             Organization.tenant_id == tenant_id,
             Organization.enabled == true(),
+            Organization.deleted_at.is_(None),
         )
     )
     if org is None:
@@ -247,9 +250,15 @@ def get_principal(
             Member.organization_id == org.id,
             Member.object_id == object_id,
             Member.enabled == true(),
+            Member.deleted_at.is_(None),
         )
     )
     if member is None:
+        raise HTTPException(403, "User is not approved")
+    if db.scalar(select(LocalUser.id).where(
+        LocalUser.organization_id == org.id, LocalUser.object_id == object_id,
+        LocalUser.deleted_at.is_not(None),
+    )):
         raise HTTPException(403, "User is not approved")
     if member.role == "ids_admin" and tenant_id != settings.home_tenant_id:
         raise HTTPException(403, "IDS administrators must belong to the home tenant")

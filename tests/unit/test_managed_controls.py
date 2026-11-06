@@ -287,8 +287,8 @@ def test_migration_backfills_real_legacy_rows_without_case_or_tenant_merging(env
                         "(id,organization_id,name,team,state,desired_state,idempotency_key,created_at) "
                         "VALUES (:id,:org,'Test',:team,'active','active',:idem,CURRENT_TIMESTAMP)"
                     ), {"id": identity, "org": org, "team": label, "idem": str(uuid4())})
-    command.upgrade(config, "head")
-    command.upgrade(config, "head")
+    command.upgrade(config, "0003")
+    command.upgrade(config, "0003")
     with Session(env.db_engine) as db:
         assert len(list(db.scalars(select(Team)))) == 4
         for identity, org, label in identities:

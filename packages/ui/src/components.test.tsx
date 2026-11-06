@@ -1,4 +1,4 @@
-import { act, render, screen, waitFor } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
 import { describe, expect, it, vi } from "vitest";
@@ -12,13 +12,32 @@ import { ModelsPage } from "./pages/ModelsPage";
 import { UsageCharts } from "./components/UsageCharts";
 import * as ui from "./components/ui";
 import { validatePrice } from "./pages/admin";
-import type { UsagePage as UsageData } from "./types";
+import type { MonthlyBudgetSummary, UsagePage as UsageData } from "./types";
 
 const me = { organization_id: "o", organization_name: "Acme", tenant_id: "t", object_id: "u", role: "customer" as const };
 const config = { clientId: "c", authority: "a", apiScope: "s", controlApiUrl: "/api", gatewayUrl: "https://g/v1" };
 
 function withApi(handler: (url: string, init: RequestInit) => unknown) {
   const f = (async (url: string, init: RequestInit) => {
+    const pathname = new URL(url, "https://portal").pathname;
+    if (pathname === "/api/admin/usage/organization-costs") {
+      return new Response(JSON.stringify({ items: [], total: 0 }));
+    }
+    if (pathname === "/api/budget/monthly") {
+      const budget: MonthlyBudgetSummary = {
+        organization_id: "o", organization_name: "Acme", allocated_usd: null,
+        estimated_used_usd: "0", estimated_remaining_usd: "0", estimated_overrun_usd: "0",
+        estimated_utilization_pct: 0, advisory_threshold_pct: 80, status: "unconfigured",
+        period_start: "2026-11-01T00:00:00Z", period_end: "2026-12-01T00:00:00Z",
+        as_of: "2026-11-05T00:00:00Z", latest_usage_at: null,
+        estimated_requests: 0, unestimated_requests: 0, pricing_revision: "fixture", version: 0,
+        estimate_complete: true, basis: "external_customer_prices", hard_stop_enabled: false,
+      };
+      return new Response(JSON.stringify(budget));
+    }
+    if (new URL(url, "https://portal").pathname.endsWith("/decision-scoring")) {
+      return new Response(JSON.stringify({ status: "unavailable", notice: null, retention_notice: "Test fixture: scoring telemetry unavailable." }));
+    }
     if (url.includes("/usage/model-tokens")) {
       const params = new URL(url, "https://portal").searchParams;
       return new Response(JSON.stringify({ items: [], start: params.get("start"), end: params.get("end"), interval_seconds: 86400 }));
@@ -45,15 +64,41 @@ describe("UsagePage", () => {
     items: [{ id: "1", subscription_id: "s", model: "m", provider: "p", region: "r", occurred_at: "2025-01-01T00:00:00Z", input_tokens: null, output_tokens: 5, cached_input_tokens: null, cache_write_tokens: null, cost: null, currency: null, status_code: 200, e2e_ms: null, ttft_ms: null, completeness: "missing_usage" }],
     total: 1,
   });
-  it("shows unknown cost, incomplete warning and unavailable TTFT/cache rather than zeros", async () => {
-    const api = withApi((url) => url.includes("/usage/models") ? { items: ["m"], total: 1 } : url.includes("timeseries")
+  it("shows unknown cost and unavailable TTFT/cache without the customer incomplete warning", async () => {
+    const api = withApi((url) => url.includes("/model-tokens") ? { items: [], start: "2026-01-01T00:00:00Z", end: "2026-01-01T01:00:00Z", interval_seconds: 3600 }
+      : url.includes("/usage/models") ? { items: ["m"], total: 1 } : url.includes("timeseries")
       ? { items: [], start: "2026-01-01T00:00:00Z", end: "2026-01-01T01:00:00Z", interval_seconds: 60 }
       : url.includes("subscriptions") ? { items: [], total: 0 } : data());
     wrap(api, <UsagePage />);
     expect(await screen.findByText("Unknown", { selector: "dd" })).toBeInTheDocument();
+    expect(screen.getByText("External estimated cost", { selector: "dt" })).toBeInTheDocument();
+    expect(screen.queryByText("Known cost (estimated)")).not.toBeInTheDocument();
     expect(screen.getAllByText("Unavailable")).toHaveLength(2);
-    expect(screen.getByText(/missing usage, pricing or attribution/i)).toBeInTheDocument();
-    expect(screen.getByText(/Missing prices do not exclude measured tokens/)).toBeInTheDocument();
+    expect(screen.queryByText(/missing usage, pricing or attribution/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Missing prices do not exclude measured tokens/)).not.toBeInTheDocument();
+  });
+  it.each([false, true])("keeps the incomplete warning admin-only as the period changes (admin=%s)", async (admin) => {
+    const api = withApi((path) => {
+      const url = new URL(path, "https://portal");
+      if (url.pathname.endsWith("/model-tokens")) return { items: [], start: url.searchParams.get("start"), end: url.searchParams.get("end"), interval_seconds: 86400 };
+      if (url.pathname.endsWith("/usage/models")) return { items: ["m"], total: 1 };
+      if (url.pathname.endsWith("/subscriptions") || url.pathname.endsWith("/organizations")) return { items: [], total: 0 };
+      if (url.pathname.endsWith("/rankings")) return { items: [], total: 0, totals: { requests: 0, total_tokens: null, missing_token_requests: 0, incomplete_requests: 0 } };
+      if (url.pathname.endsWith("/timeseries")) return { items: [], start: url.searchParams.get("start"), end: url.searchParams.get("end"), interval_seconds: 60 };
+      const requests = url.searchParams.get("days") === "7" ? 9 : 35;
+      return data({ requests, incomplete_requests: requests, input_tokens: requests * 10, output_tokens: requests * 5,
+        measured_requests: requests, missing_token_requests: 0, total_tokens: requests * 15 });
+    });
+    wrap(api, <UsagePage admin={admin} />);
+    for (const requests of [35, 9]) {
+      await screen.findByText(`${requests} fully measured request(s); 0 missing token measurement(s)`);
+      if (admin) expect(screen.getByText(new RegExp(`${requests} request\\(s\\) have missing usage, pricing or attribution`))).toBeInTheDocument();
+      else expect(screen.queryByText(/request\(s\) have missing usage, pricing or attribution/)).not.toBeInTheDocument();
+      expect(screen.getByText("Unknown", { selector: "dd" })).toBeInTheDocument();
+      if (requests === 35) await userEvent.selectOptions(screen.getByLabelText("Period"), "7");
+    }
+    await userEvent.click(screen.getByText("Transaction details"));
+    expect(screen.getByText("missing_usage", { selector: ".badge" })).toBeInTheDocument();
   });
   it("renders second-based latency and a keyboard-accessible exact-minute chart", async () => {
     const api = withApi((url) => {
@@ -82,7 +127,7 @@ describe("UsagePage", () => {
     await userEvent.click(chart);
     await userEvent.keyboard("{ArrowRight}");
     expect(screen.getByText(/partial, 1 request\(s\) missing token usage/i)).toBeInTheDocument();
-    expect(screen.getByRole("slider", { name: /tokens per minute/i })).toHaveAttribute("aria-valuetext", expect.stringContaining("UTC"));
+    expect(screen.getByRole("slider", { name: /tokens per minute/i })).toHaveAttribute("aria-valuetext", expect.stringContaining("SGT"));
     await userEvent.click(screen.getAllByText("View exact minute data")[2]!);
     expect(screen.getByText("1.250 s", { selector: "td" })).toBeInTheDocument();
     await userEvent.click(screen.getByText("Transaction details"));
@@ -124,6 +169,7 @@ describe("UsagePage", () => {
       const url = new URL(path, "https://portal");
       urls.push(url);
       if (url.pathname.endsWith("/usage/models")) return { items: ["m", historical], total: 2 };
+      if (url.pathname.endsWith("/rankings")) return { items: [], total: 0, totals: { requests: 0, total_tokens: null, missing_token_requests: 0, incomplete_requests: 0 } };
       if (url.pathname.endsWith("/subscriptions") || url.pathname.endsWith("/organizations")) {
         return { items: [{ id: "scope-1", name: "Selected scope" }], total: 1 };
       }
@@ -137,7 +183,7 @@ describe("UsagePage", () => {
     try {
       wrap(api, <UsagePage admin={admin} />);
       await screen.findByText("Unknown", { selector: "dd" });
-      expect(screen.getByText(/sourced public list rates.*restated at current rates.*not an invoice/)).toBeInTheDocument();
+      expect(screen.getByText(/historical configured or default rates.*not restated at current rates.*not an invoice/)).toBeInTheDocument();
       const disclosure = screen.getByText("Transaction details").closest("details")!;
       expect(disclosure).not.toHaveAttribute("open");
       expect(screen.getByText("E2E (s)", { selector: "th" })).not.toBeVisible();
@@ -145,7 +191,7 @@ describe("UsagePage", () => {
       await waitFor(() => expect(screen.getByLabelText("Model")).toBeEnabled());
       await userEvent.selectOptions(screen.getByLabelText("Model"), historical);
       await screen.findByText("Unknown", { selector: "dd" });
-      await userEvent.click(screen.getByRole("button", { name: "Export CSV" }));
+      await userEvent.click(screen.getByRole("button", { name: "Export completion-only CSV" }));
       await waitFor(() => expect(download).toHaveBeenCalledOnce());
       expect(disclosure).not.toHaveAttribute("open");
       const exported = urls.filter((u) => u.pathname.endsWith("/export")).at(-1)!;
@@ -160,7 +206,8 @@ describe("UsagePage", () => {
       const discoveryCount = urls.filter((u) => u.pathname.endsWith("/usage/models")).length;
       await userEvent.click(screen.getByRole("button", { name: "Zoom in" }));
       await waitFor(() => expect(urls.filter((u) => u.pathname.endsWith("/timeseries")).at(-1)!.searchParams.get("model")).toBe(historical));
-      expect(urls.filter((u) => u.pathname.endsWith("/usage/models"))).toHaveLength(discoveryCount);
+      if (admin) await waitFor(() => expect(urls.filter((u) => u.pathname.endsWith("/usage/models"))).toHaveLength(discoveryCount + 1));
+      else expect(urls.filter((u) => u.pathname.endsWith("/usage/models"))).toHaveLength(discoveryCount);
       await userEvent.selectOptions(screen.getByLabelText("Period"), "7");
       await waitFor(() => expect(screen.getByLabelText("Model")).toBeEnabled());
       expect(screen.getByLabelText("Model")).toHaveValue(historical);
@@ -168,7 +215,7 @@ describe("UsagePage", () => {
       await screen.findByText("Transaction details");
       await userEvent.click(screen.getByText("Transaction details"));
       expect(screen.getByText("E2E (s)", { selector: "th" })).not.toBeVisible();
-      for (const url of urls.filter((u) => u.searchParams.get("model") === historical)) {
+      for (const url of urls.filter((u) => u.searchParams.get("model") === historical && !u.pathname.endsWith("/rankings"))) {
         expect(url.searchParams.get(admin ? "organization_id" : "subscription_id")).toBe("scope-1");
       }
     } finally {
@@ -197,8 +244,11 @@ describe("UsagePage", () => {
     await waitFor(() => expect(screen.getByLabelText("Model")).toBeEnabled());
     await userEvent.selectOptions(screen.getByLabelText("Model"), "historical");
     await userEvent.selectOptions(screen.getByLabelText("Period"), "7");
-    expect(screen.getByLabelText("Model")).toBeDisabled();
-    expect(screen.getByRole("button", { name: "Export CSV" })).toBeDisabled();
+    // Decision-1 stays selectable while completion-model discovery is pending.
+    expect(screen.getByLabelText("Model")).toBeEnabled();
+    expect(screen.getByLabelText("Model")).toHaveValue("historical");
+    expect(screen.getByRole("option", { name: "Decision-1" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Export completion-only CSV" })).toBeDisabled();
     expect(screen.queryByRole("option", { name: "m" })).not.toBeInTheDocument();
     await userEvent.selectOptions(screen.getByLabelText("Period"), "1");
     await screen.findByText(/Could not load usage models/);
@@ -207,7 +257,7 @@ describe("UsagePage", () => {
     await userEvent.click(screen.getByRole("button", { name: "Try again" }));
     await screen.findByText(/Model "historical".*Reset to All models/);
     expect(screen.getByLabelText("Model")).toHaveValue("");
-    expect(screen.getByRole("button", { name: "Export CSV" })).toBeEnabled();
+    expect(screen.getByRole("button", { name: "Export completion-only CSV" })).toBeEnabled();
     await act(async () => { finishOld({ items: ["stale-scope-only"], total: 1 }); });
     expect(screen.queryByRole("option", { name: "stale-scope-only" })).not.toBeInTheDocument();
     expect(models).toHaveBeenCalledTimes(4);
@@ -230,7 +280,7 @@ describe("UsageCharts", () => {
     }} />);
     expect(document.querySelectorAll(".chart-mark").length).toBeLessThanOrEqual(2700);
     expect(screen.getByRole("slider", { name: /tokens per minute/i })).toHaveAttribute(
-      "aria-valuetext", "2026-10-01 00:00 UTC: 5",
+      "aria-valuetext", "2026-10-01 08:00 SGT: 5",
     );
   }, 20_000);
 
@@ -243,15 +293,20 @@ describe("UsageCharts", () => {
     }} />);
     const marks = document.querySelectorAll(".chart-mark");
     expect(marks).toHaveLength(3);
-    for (const mark of marks) expect(mark.getAttribute("y1")).not.toBe(mark.getAttribute("y2"));
+    for (const mark of marks) {
+      expect(mark.tagName.toLowerCase()).toBe("rect");
+      expect(Number(mark.getAttribute("height"))).toBe(144);
+      expect(Number(mark.getAttribute("width"))).toBeGreaterThan(0);
+      expect(Number(mark.getAttribute("y")) + Number(mark.getAttribute("height"))).toBe(160);
+    }
     const chart = screen.getByRole("slider", { name: /requests per minute/i });
     await userEvent.click(chart);
     await userEvent.keyboard("{End}{ArrowRight}");
     expect(chart).toHaveAttribute("aria-valuenow", String(start));
     await userEvent.click(screen.getAllByText("View exact minute data")[0]!);
     expect(screen.getAllByText("1 of 1")).toHaveLength(3);
-    expect(screen.getAllByText("2026-10-14 00:00 UTC", { selector: "td" })).toHaveLength(3);
-    expect(screen.queryByText("2026-10-14 00:01 UTC", { selector: "td" })).not.toBeInTheDocument();
+    expect(screen.getAllByText("2026-10-14 08:00 SGT", { selector: "td" })).toHaveLength(3);
+    expect(screen.queryByText("2026-10-14 08:01 SGT", { selector: "td" })).not.toBeInTheDocument();
   });
 });
 
@@ -405,6 +460,159 @@ describe("outcomeView", () => {
       await userEvent.keyboard("{Escape}");
       expect(screen.getByRole("button", { name: "Code" })).toHaveFocus();
     });
+  });
+});
+
+describe("Playground credential lifecycle", () => {
+  function deferred<T>() {
+    let resolve!: (value: T) => void;
+    let reject!: (reason: unknown) => void;
+    const promise = new Promise<T>((yes, no) => { resolve = yes; reject = no; });
+    return { promise, resolve, reject };
+  }
+
+  async function setup() {
+    const api = withApi(url => url.endsWith("/models") ? {
+      items: [{ id: "approved", enabled: true, capabilities: ["chat"], max_completion_tokens: 64 }], total: 1,
+    } : url.endsWith("/availability") ? { ready: false, profiles: [] } : {
+      items: [{ id: "s1", name: "Team", state: "active" }, { id: "s2", name: "Other team", state: "active" }], total: 2,
+    });
+    const pending = deferred<string>();
+    const reveal = vi.spyOn(api, "revealKey").mockImplementation(() => pending.promise);
+    const gateway = vi.spyOn(globalThis, "fetch").mockResolvedValue(new Response(JSON.stringify({
+      choices: [{ message: { role: "assistant", content: "OK" }, finish_reason: "stop" }],
+    })));
+    const view = wrap(api, <PlaygroundPage />);
+    await screen.findByLabelText("Message");
+    const message = screen.getByLabelText("Message");
+    fireEvent.change(message, { target: { value: "Reply OK." } });
+    return { ...view, pending, reveal, gateway, message };
+  }
+
+  function sendTwice(message: HTMLElement) {
+    act(() => {
+      fireEvent.keyDown(message, { key: "Enter", ctrlKey: true });
+      fireEvent.keyDown(message, { key: "Enter", ctrlKey: true });
+      fireEvent.submit(message.closest("form")!);
+    });
+  }
+
+  it("gates double Ctrl+Enter and submit before a deferred reveal, then sends exactly once", async () => {
+    const { pending, reveal, gateway, message } = await setup();
+    try {
+      sendTwice(message);
+      expect(reveal).toHaveBeenCalledTimes(1);
+      expect(reveal.mock.calls[0]![2]).toBeInstanceOf(AbortSignal);
+      expect(screen.getByRole("button", { name: "Cancel" })).toBeEnabled();
+      expect(screen.getByRole("button", { name: "Reveal primary key" })).toBeDisabled();
+      expect(screen.getByLabelText("Subscription")).toBeDisabled();
+      expect(gateway).not.toHaveBeenCalled();
+      await act(async () => pending.resolve("SECRET-LATE-KEY"));
+      await screen.findByText("Completed");
+      expect(gateway).toHaveBeenCalledTimes(1);
+      expect(screen.getByRole("button", { name: "Send" })).toBeEnabled();
+      expect(document.body.textContent).not.toContain("SECRET-LATE-KEY");
+      expect(screen.queryByText(/Usage reported by server/)).not.toBeInTheDocument();
+    } finally { vi.restoreAllMocks(); }
+  });
+
+  it.each(["cancel", "reset", "unmount"])("ignores late reveal after %s without caching or gateway send", async action => {
+    const { pending, reveal, gateway, message, unmount } = await setup();
+    try {
+      sendTwice(message);
+      const signal = reveal.mock.calls[0]![2]!;
+      if (action === "unmount") unmount();
+      else fireEvent.click(screen.getByRole("button", { name: action === "cancel" ? "Cancel" : "Clear conversation" }));
+      expect(signal.aborted).toBe(true);
+      if (action !== "unmount") {
+        // A new subscription must never inherit the old operation's key.
+        fireEvent.change(screen.getByLabelText("Subscription"), { target: { value: "s2" } });
+      }
+      await act(async () => pending.resolve("SECRET-STALE-KEY"));
+      expect(gateway).not.toHaveBeenCalled();
+      expect(document.body.textContent).not.toContain("SECRET-STALE-KEY");
+      expect(screen.queryByText(/Using the revealed key/)).not.toBeInTheDocument();
+      expect(screen.queryByText(/Usage reported by server/)).not.toBeInTheDocument();
+      if (action !== "unmount") expect(screen.getByRole("button", { name: "Send" })).toBeEnabled();
+    } finally { vi.restoreAllMocks(); }
+  });
+
+  it.each(["send", "manual"])("bounds %s reveal at 15 seconds and ignores eventual failure without retry or usage", async mode => {
+    const { pending, reveal, gateway, message } = await setup();
+    vi.useFakeTimers();
+    try {
+      if (mode === "send") sendTwice(message);
+      else {
+        act(() => {
+          fireEvent.click(screen.getByRole("button", { name: "Reveal primary key" }));
+          fireEvent.keyDown(message, { key: "Enter", ctrlKey: true });
+        });
+      }
+      expect(reveal).toHaveBeenCalledTimes(1);
+      await act(async () => { await vi.advanceTimersByTimeAsync(15_000); });
+      expect(reveal.mock.calls[0]![2]!.aborted).toBe(true);
+      expect(screen.getByText(/Key retrieval timed out/)).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "Send" })).toBeEnabled();
+      expect(vi.getTimerCount()).toBe(0);
+      await act(async () => pending.reject(new Error("SECRET-ERROR-DETAIL")));
+      expect(gateway).not.toHaveBeenCalled();
+      expect(reveal).toHaveBeenCalledTimes(1);
+      expect(document.body.textContent).not.toContain("SECRET-ERROR-DETAIL");
+      expect(screen.queryByText(/Usage reported by server/)).not.toBeInTheDocument();
+    } finally { vi.useRealTimers(); vi.restoreAllMocks(); }
+  });
+
+  it("does not let cancelled reveal completion unlock a newer operation", async () => {
+    const { pending, reveal, gateway, message } = await setup();
+    const next = deferred<string>();
+    try {
+      sendTwice(message);
+      fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
+      reveal.mockImplementation(() => next.promise);
+      fireEvent.click(screen.getByRole("button", { name: "Reveal primary key" }));
+      await act(async () => pending.resolve("SECRET-OLD-KEY"));
+      expect(screen.getByRole("button", { name: "Cancel" })).toBeEnabled();
+      expect(screen.getByRole("button", { name: "Reveal primary key" })).toBeDisabled();
+      fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
+      await act(async () => next.resolve("SECRET-NEW-KEY"));
+      expect(gateway).not.toHaveBeenCalled();
+      expect(screen.queryByText(/Using the revealed key/)).not.toBeInTheDocument();
+    } finally { vi.restoreAllMocks(); }
+  });
+
+  it("holds the gate through completion and shows an eventual HTTP error without retry or fake usage", async () => {
+    const { pending, reveal, gateway, message } = await setup();
+    const response = deferred<Response>();
+    gateway.mockImplementation(() => response.promise);
+    try {
+      sendTwice(message);
+      await act(async () => pending.resolve("SECRET-KEY"));
+      expect(gateway).toHaveBeenCalledTimes(1);
+      expect(screen.getByRole("button", { name: "Cancel" })).toBeEnabled();
+      sendTwice(message);
+      expect(reveal).toHaveBeenCalledTimes(1);
+      expect(gateway).toHaveBeenCalledTimes(1);
+      await act(async () => response.resolve(new Response(JSON.stringify({ error: { message: "Unavailable" } }), { status: 503 })));
+      expect(screen.getByText("HTTP 503")).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "Send" })).toBeEnabled();
+      expect(gateway).toHaveBeenCalledTimes(1);
+      expect(screen.queryByText(/Usage reported by server/)).not.toBeInTheDocument();
+      expect(screen.queryByText("Completed")).not.toBeInTheDocument();
+    } finally { vi.restoreAllMocks(); }
+  });
+
+  it("sanitizes reveal rejection and releases the gate without a fabricated result", async () => {
+    const { pending, gateway, message } = await setup();
+    try {
+      sendTwice(message);
+      await act(async () => pending.reject(new Error("SECRET-FAILURE")));
+      expect(screen.getByRole("alert")).toHaveTextContent("Could not reveal the key");
+      expect(screen.getByRole("button", { name: "Send" })).toBeEnabled();
+      expect(gateway).not.toHaveBeenCalled();
+      expect(screen.queryByText("Completed")).not.toBeInTheDocument();
+      expect(screen.queryByText(/Usage reported by server/)).not.toBeInTheDocument();
+      expect(document.body.textContent).not.toContain("SECRET-FAILURE");
+    } finally { vi.restoreAllMocks(); }
   });
 });
 

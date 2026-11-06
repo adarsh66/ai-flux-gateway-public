@@ -93,4 +93,5 @@ def get_db(request: Request) -> Iterator[Session]:
     if settings.identity_errors():
         raise HTTPException(503, "Identity/database configuration is incomplete")
     with Session(engine_for(settings.database_url), expire_on_commit=False) as session:
+        session.info["settings"] = settings  # Request-local provenance; no database read/write.
         yield session

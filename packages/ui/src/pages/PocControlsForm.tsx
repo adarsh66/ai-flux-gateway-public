@@ -7,7 +7,7 @@ import type { GatewayConfigurationUnion, GatewaySettings, PocGatewayConfiguratio
 import { RevisionHistory } from "./RevisionHistory";
 
 export const POC_DEFAULTS: PocGatewayConfiguration = { schema_version: 3,
-  defaults: { rpm: 60, tpm: 2048, token_quota: 10000, request_quota: 1000 },
+  defaults: { rpm: 60, tpm: 300000, token_quota: 20000000, request_quota: 50000 },
   safety: migrateLegacySafety(1), overrides: [] };
 export const isPoc = (c: GatewayConfigurationUnion | null | undefined): c is PocGatewayConfiguration => !!c && "schema_version" in c && c.schema_version === 3;
 export function pocEffective(c: PocGatewayConfiguration, org: string, sub: string) {
@@ -101,7 +101,7 @@ export function PocControlsForm({ row, refresh, safetyPage = false }: { row: Gat
           <label><input type="checkbox" checked={false} disabled />Protected material detection (unavailable)</label>
         </> : (Object.keys(labels) as (keyof PocLimits)[]).map((k) => <Field key={k} label={labels[k]} hint={`Operator ceiling ${POC_DEFAULTS.defaults[k]}`}>{(id, d) => <input id={id} aria-describedby={d} type="number" min={1} max={POC_DEFAULTS.defaults[k]} step={1} value={Number.isNaN(current.limits[k]) ? "" : current.limits[k]} onChange={(e) => edit({ ...current.limits, [k]: e.target.value === "" ? NaN : Number(e.target.value) })} />}</Field>)}
       </fieldset>
-      {!safetyPage && <p>Read-only: 60-second RPM window, daily token period, existing 86400-second call counter, output1024, retries0. Concurrency and monthly quotas unavailable. Counter keys and reset semantics are unchanged.</p>}
+      {!safetyPage && <p>Read-only: 60-second RPM window, daily UTC token period, existing 86400-second call counter, retries0. Response output allowance is advertised by the model catalog, up to 4096 after provider and safety verification; a length stop can still occur. Concurrency and monthly quotas unavailable. Counter keys and reset semantics are unchanged.</p>}
       {safetyPage && <p>Foundry shared baseline is independent of APIM overrides; it is never relaxed by this form. Deployment bindings require operator metadata verification. GLM ModelArts: Foundry RAI not applicable; APIM safety applies.</p>}
       {safetyPage && relaxing && <label><input type="checkbox" checked={ack} onChange={(e) => setAck(e.target.checked)} />I acknowledge this relaxes APIM safety, not the shared Foundry baseline.</label>}
       <Field label="Reason for this revision">{(id) => <input id={id} required maxLength={500} value={reason} onChange={(e) => setReason(e.target.value)} />}</Field>

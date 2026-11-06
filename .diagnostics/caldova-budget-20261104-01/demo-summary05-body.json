@@ -1,0 +1,3 @@
+{
+  "query": "ApiManagementGatewayLogs | where TimeGenerated >= datetime(2026-11-01) and TimeGenerated <= datetime(2026-11-04T08:15:01.032739+00:00) | where _ResourceId =~ \"/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.ApiManagement/service/poc-ids-token-ex-apim\" | where ApimSubscriptionId == \"e9f2abb0-930b-598a-b210-0ab0b279127f\" | where OperationId in (\"chat\", \"chat-completions\") | extend resource_id=tolower(_ResourceId), correlation_id=tolower(tostring(CorrelationId)) | summarize arg_max(TimeGenerated, *) by resource_id, correlation_id | summarize requests=count(), first_seen=min(TimeGenerated), last_seen=max(TimeGenerated) by ProductId, ResponseCode"
+}

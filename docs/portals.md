@@ -1,5 +1,35 @@
 # AIFLUX portals (customer + IDS admin)
 
+## Gateway-direct Auto (source implemented, default off, not deployed)
+
+The source implementation provides shared Balanced/Cost/Quality release defaults
+without mandatory customer approval, tenant seed rows or initialization POSTs.
+Normally provisioned active product subscriptions use the published snapshot;
+portal readiness remains false until the platform enables the feature with a
+trusted exact-policy release receipt. APIM scores directly with the existing
+gateway MI, not the API identity. Admin saves are audited desired overrides and
+do not publish policies or disable the shared defaults. Explicit models remain
+unchanged. All scoring failures fail closed without inference or fallback.
+
+The retained no-push Linux run `cm36` passed 149 UI tests, all three TypeScript
+checks and both portal builds; its 77 source/context inputs still match. No new
+cloud build or deployment was needed during reconciliation. See the
+[complete implementation, fixes and remaining regression defects](auto-gateway-source-only-20261029.md).
+
+## Admin showback subscription filters and rankings (source implemented, not deployed)
+
+The 2026-10-28 source update adds searchable, fully paginated safe subscription
+metadata to admin Usage, plus global organization and within-organization
+subscription token rankings. Organization changes clear the detail subscription
+and request pagination immediately. All admin detail surfaces and model options
+use the same selected UTC viewport. Rankings intentionally compare broader scopes
+than the detail filter and label those scopes explicitly.
+
+See [the implementation, token semantics and verification record](admin-showback-20261028.md).
+Customer personal-usage attribution is not included. No gateway-control activation
+or deployment is included; historical behavior and release records below are not
+fresh verification of this feature.
+
 ## Subscription administration
 
 IDS admins manage subscriptions at `/admin/subscriptions` across organizations.

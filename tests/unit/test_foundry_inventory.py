@@ -103,7 +103,7 @@ def test_explicit_inventory_sync_is_idempotent_and_preserves_operator_overrides(
 
 
 @pytest.mark.parametrize("change", [
-    lambda d: d.update(verified_at=(datetime.now(UTC) - timedelta(days=2)).isoformat()),
+    lambda d: d.update(verified_at="not-a-timestamp"),
     lambda d: d.update(verified_at=(datetime.now(UTC) + timedelta(minutes=2)).isoformat()),
     lambda d: d.update(verified_at="2026-10-26T00:00:00"),
     lambda d: d.update(project_endpoint="https://other.services.ai.azure.com/api/projects/other"),
@@ -179,9 +179,15 @@ def test_all_endpoint_pool_members_must_match_verified_route(env):
 def test_postgres_seed_flags_are_not_active_inventory(env):
     env.settings.local_auth_enabled = True
     env.settings.catalog_configured = False
-    assert env.client.get("/api/models", headers=env.customer).json() == {"items": [], "total": 0}
+    models = env.client.get("/api/models", headers=env.customer).json()
+    assert models["total"] == 1
+    assert [m["id"] for m in models["items"]] == ["Decision-1"]
+    assert not models["items"][0]["enabled"]
+    assert models["items"][0]["capabilities"] == ["scoring"]
     garden = env.client.get("/api/model-garden", headers=env.customer)
-    assert garden.json()["items"] == []
+    assert [m["id"] for m in garden.json()["items"]] == ["Decision-1"]
+    assert not garden.json()["items"][0]["enabled"]
+    assert garden.json()["items"][0]["scoring_available"] is None
     admin = env.client.get("/api/admin/model-garden", headers=env.admin)
     assert admin.json()["items"]
     assert all(not item["enabled"] for item in admin.json()["items"])
@@ -210,7 +216,11 @@ def test_local_models_and_garden_share_validated_availability(env, tmp_path, mon
     ])
     models = env.client.get("/api/models", headers=env.customer).json()["items"]
     garden = env.client.get("/api/model-garden", headers=env.customer).json()["items"]
-    assert [m["id"] for m in models] == [m["id"] for m in garden] == ["gpt-5.4-mini"]
+    assert [m["id"] for m in models] == [m["id"] for m in garden] == ["gpt-5.4-mini", "Decision-1"]
+    assert [m["id"] for m in models if m["enabled"] and "chat" in m["capabilities"]] == ["gpt-5.4-mini"]
+    assert [m["id"] for m in garden if m["enabled"] and "chat" in m["capabilities"]] == ["gpt-5.4-mini"]
+    assert not models[1]["enabled"] and models[1]["capabilities"] == ["scoring"]
+    assert not garden[1]["enabled"] and garden[1]["scoring_available"] is None
     assert models[0]["max_completion_tokens"] == 64
     assert "auto" not in [m["id"] for m in models]
 
@@ -226,6 +236,10 @@ def test_local_models_and_garden_share_validated_availability(env, tmp_path, mon
     env.settings.environment = "development"
     env.settings.upstream_apim_url = "https://unused-wrong-gateway.test"
     env.settings.upstream_apim_key = "synthetic-test-only-key"
+    scorer_chat = env.client.post("/api/playground/chat", headers=env.customer, json={
+        "model": "Decision-1", "messages": [{"role": "user", "content": "Hello"}],
+    })
+    assert scorer_chat.status_code == 422 and calls == []
     body = {"model": "gpt-5.4-mini", "max_completion_tokens": 512,
             "messages": [{"role": "user", "content": "Hello"}]}
     chat = env.client.post("/api/playground/chat", headers=env.customer, json=body)
@@ -254,7 +268,10 @@ def test_catalog_flags_cannot_enable_models_not_accepted_by_catalog_source(env, 
     ])
     assert env.settings.catalog_configured  # Its accepted source contains only test-alias.
     assert env.client.get("/api/models", headers=env.customer).json()["items"] == []
-    assert env.client.get("/api/model-garden", headers=env.customer).json()["items"] == []
+    garden = env.client.get("/api/model-garden", headers=env.customer).json()["items"]
+    assert [m["id"] for m in garden] == ["Decision-1"]
+    assert not garden[0]["enabled"] and garden[0]["capabilities"] == ["scoring"]
+    assert garden[0]["scoring_available"] is None
     chat = env.client.post("/api/playground/chat", headers=env.customer, json={
         "model": "gpt-5.4-mini", "messages": [{"role": "user", "content": "Hello"}],
     })

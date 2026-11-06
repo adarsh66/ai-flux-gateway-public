@@ -1,0 +1,7 @@
+{
+  "customerId": "28909aaa-45f4-4077-9381-1de5223b0ff7",
+  "id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.OperationalInsights/workspaces/ids-token-image-resource-logs",
+  "name": "ids-token-image-resource-logs",
+  "publicNetworkAccessForQuery": "Enabled",
+  "retentionInDays": 30
+}

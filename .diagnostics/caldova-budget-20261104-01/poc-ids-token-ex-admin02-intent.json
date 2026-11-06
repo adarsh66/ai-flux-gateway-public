@@ -1,0 +1,13 @@
+{
+  "at": "2026-11-04T08:11:25.305587+00:00",
+  "args": [
+    "rest",
+    "--method",
+    "get",
+    "--url",
+    "https://management.azure.com/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Web/sites/poc-ids-token-ex-admin?api-version=2023-12-01",
+    "--query",
+    "{id:id,name:name,state:properties.state,host:properties.defaultHostName,lastModifiedTimeUtc:properties.lastModifiedTimeUtc}"
+  ],
+  "operation": "read-only management GET; projected metadata"
+}

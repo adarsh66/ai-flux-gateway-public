@@ -1,7 +1,8 @@
 """Credential-free external evidence. Never relax Foundry parent verification.
 
 This is an operator release artifact, not runtime discovery or an admin URL input.
-Absent, stale or invalid external evidence disables only external routes.
+Absent or invalid external evidence disables only external routes. Historical
+operator acceptance does not expire merely because its provenance ages.
 """
 from datetime import UTC, datetime
 import hashlib
@@ -22,7 +23,7 @@ class ExternalMetadataRenewal(EvidenceModel):
     """Operator metadata attestation, never a new smoke or credential-health test.
 
     Like Foundry deployment-read renewal, this preserves historical functional
-    acceptance and separately bounds the age of a real control-plane read.
+    acceptance and separately records a real control-plane read.
     The release collector checks the complete policy/backend predecessor and the
     fixed internal secret reference without listValue, keys or provider traffic.
     """
@@ -91,11 +92,13 @@ class ExternalRoute(EvidenceModel):
         if not self.gateway_validated or self.verified_at is None:
             return False
         now = datetime.now(UTC)
-        if self.verified_at > now:
+        if self.verified_at.tzinfo is None or self.verified_at > now:
             return False
-        freshness_at = self.metadata_renewal.observed_at if self.metadata_renewal else self.verified_at
-        age = (now - freshness_at).total_seconds()
-        return 0 <= age <= settings.foundry_inventory_max_age_seconds
+        if self.metadata_renewal is not None:
+            observed = self.metadata_renewal.observed_at
+            if observed.tzinfo is None or observed > now:
+                return False
+        return True
 
 
 class ExternalInventory(EvidenceModel):
@@ -176,7 +179,7 @@ class AcceptedInventory:
             "credential_healthy": r.credential_healthy if r.accepted(self.settings) else False,
             "credential_health_verified_at": r.verified_at,
             "metadata_verified_at": r.metadata_renewal.observed_at if r.metadata_renewal else None,
-            "fresh_credential_health_verified": False if r.metadata_renewal else r.accepted(self.settings),
+            "fresh_credential_health_verified": False,
             "limitation": (
                 "Historical metered credential health at " + r.verified_at.isoformat()
                 + "; unchanged binding metadata verified at " + r.metadata_renewal.observed_at.isoformat()

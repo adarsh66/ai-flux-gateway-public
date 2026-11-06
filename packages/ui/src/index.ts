@@ -9,6 +9,7 @@ export { AuthGate } from "./auth";
 export { Shell, type NavItem } from "./components/Shell";
 export * from "./components/ui";
 export { ModelsPage } from "./pages/ModelsPage";
+export { OrganizationModelAccessPage } from "./pages/OrganizationModelAccessPage";
 export { SubscriptionsPage } from "./pages/SubscriptionsPage";
 export { PlaygroundPage } from "./pages/PlaygroundPage";
 export { UsagePage } from "./pages/UsagePage";

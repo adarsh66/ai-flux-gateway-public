@@ -187,7 +187,9 @@ def test_customer_usage_and_exports_are_organization_scoped(env):
     export = env.client.get("/api/usage/export", headers=env.customer)
     assert export.status_code == 200 and "subscription_id" in export.text
     summary = env.client.get("/api/usage", headers=env.customer).json()["summary"]
-    assert summary["known_cost"] is None and summary["ttft_supported"] is False
+    # Customer responses omit internal economics; null is not the privacy contract.
+    assert "known_cost" not in summary and "cost" not in summary
+    assert summary["ttft_supported"] is False
 
 
 def test_price_input_boundaries_and_overlaps(env):

@@ -17,12 +17,22 @@ export const customerModelDescriptions: Readonly<Record<string, string>> = {
   "glm-5.3": "A GLM 5.3 chat model available through ModelArts for text-based questions and content drafting.",
 };
 
-type PresentationModel = Pick<ModelGardenItem, "id" | "display_name" | "capabilities" | "enabled" | "coming_soon">;
+type PresentationModel = Pick<ModelGardenItem, "id" | "display_name" | "capabilities" | "enabled" | "coming_soon" | "model_kind">;
+
+export function isCatalogDeployed(model: Pick<ModelGardenItem, "model_kind" | "scoring_available" | "enabled" | "coming_soon">): boolean {
+  return model.model_kind === "scoring"
+    ? model.scoring_available === true
+    : model.enabled && !model.coming_soon;
+}
 
 export function customerModelPresentation(model: PresentationModel) {
-  const displayName = model.id === "gpt-5.6-luna" ? "gpt-5.6-luna" : model.display_name;
+  const displayName = model.model_kind === "scoring" && /^(microsoft-)?decision-1$/i.test(model.id)
+    ? "Microsoft Decision-1"
+    : model.id === "gpt-5.6-luna" ? "gpt-5.6-luna" : model.display_name;
   let description: string;
-  if (model.id === "auto" || model.capabilities.includes("routing-only")) {
+  if (model.model_kind === "scoring") {
+    description = "Scoring-only model used by Auto to select chat models. Not a standalone chat model or an Auto completion candidate.";
+  } else if (model.id === "auto" || model.capabilities.includes("routing-only")) {
     description = "A model-routing option, rather than a standalone chat model. Availability is shown on this card.";
   } else if (model.coming_soon || !model.enabled) {
     description = "A model listed for future availability. Check back when it is ready to use.";

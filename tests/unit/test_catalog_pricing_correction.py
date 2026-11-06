@@ -22,7 +22,8 @@ def accepted(env, tmp_path):
     foundry["verified_at"] = datetime.now(UTC).isoformat()
     external = json.loads((root / "external-inventory.json").read_text())
     for route in external["routes"]:
-        route["verified_at"] = datetime.now(UTC).isoformat()
+        if not route.get("metadata_renewal"):  # renewed evidence must keep verified_at <= renewal.observed_at
+            route["verified_at"] = datetime.now(UTC).isoformat()
     settings = env.settings
     settings.foundry_project_endpoint = foundry["project_endpoint"]
     settings.foundry_project_resource_id = foundry["project_resource_id"]
@@ -52,7 +53,7 @@ def accepted(env, tmp_path):
     return env, inventory
 
 
-def test_all_eleven_catalog_prices_with_legacy_provider_region_and_no_writes(accepted):
+def test_accepted_catalog_prices_with_legacy_metadata_and_unaccepted_additions_no_writes(accepted):
     env, inventory = accepted
     statements = []
     def capture(conn, cursor, statement, parameters, context, executemany):
@@ -63,11 +64,25 @@ def test_all_eleven_catalog_prices_with_legacy_provider_region_and_no_writes(acc
             before = {r.id: (r.provider, r.vendor, r.region, r.input_per_million)
                       for r in db.scalars(select(ManagedModelEndpoint))}
             items = {i.id: i for i in list_model_garden(db, env.settings)}
+            accepted_aliases = inventory.accepted_aliases(env.settings)
+            historical_aliases = {r["model"] for r in manifest(False)["rates"]}
+            assert accepted_aliases == historical_aliases and len(accepted_aliases) == 13
+            unaccepted = {r["model"] for r in manifest()["rates"]} - accepted_aliases
+            assert unaccepted == {
+                "claude-sonnet-5-5", "claude-opus-5-5", "claude-opus-5-5-fast",
+                "claude-haiku-5-5", "claude-opus-4-8", "gpt-6.1-terra", "gpt-6-luna", "Mistral-Large-3",
+            }
             for rate in manifest()["rates"]:
                 item = items[rate["model"]]
                 price = item.display_price
+                if rate["model"] in unaccepted:
+                    assert price is None and not item.enabled
+                    continue  # Additive pricing alone never promotes gateway acceptance.
                 assert price is not None
                 assert (price["provider"], price["region"]) == (rate["provider"], rate["region"])
+                if rate["status"] == "unknown":  # labelled platform estimate, never a public list rate
+                    assert price["status"] == "platform_default" and price["assumption"]
+                    continue
                 assert price["input"] == rate["input"] and price["output"] == rate["output"]
                 assert price["source_url"].startswith("https://")
                 assert ModelGardenItemOutput.model_validate(item.model_dump()).display_price == price
@@ -95,7 +110,7 @@ def test_wrong_or_unaccepted_binding_never_alias_falls_back(accepted, monkeypatc
     elif bad == "unaccepted":
         route.gateway_validated = False
     elif bad == "external_expired":
-        route.verified_at = datetime.now(UTC) - timedelta(days=365)
+        route.verified_at = datetime.now(UTC) + timedelta(days=365)  # future-dated evidence is never accepted
     elif bad == "ambiguous":
         data = deepcopy(manifest())
         data["rates"].append(dict(next(r for r in data["rates"] if r["model"] == alias), region="wrong"))

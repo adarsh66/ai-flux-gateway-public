@@ -1,0 +1,7 @@
+{
+  "customerId": "004a359b-dde6-40fb-843c-4d5651785e17",
+  "id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.OperationalInsights/workspaces/poc-ids-token-ex-logs",
+  "name": "poc-ids-token-ex-logs",
+  "publicNetworkAccessForQuery": "Enabled",
+  "retentionInDays": 30
+}

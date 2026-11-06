@@ -9,7 +9,7 @@ from uuid import NAMESPACE_URL, uuid5
 import sqlalchemy as sa
 from alembic import op
 
-revision = "0003"
+revision = "0003_portal_users"
 down_revision = "0002"
 branch_labels = None
 depends_on = None

@@ -1,0 +1,16 @@
+{
+  "authorization": "Read-only real production diagnosis and offline proposal only",
+  "organization_id": "00b30bd3-bf91-470d-b336-a192be32996e",
+  "subscription_id": "aa28274d-fea0-46d4-b9c8-30f3ef0a0e52",
+  "resource_group": "IDS-TOKEN-EXCHANGE-POC",
+  "period_start_utc": "2026-11-01T00:00:00Z",
+  "period_end_exclusive_utc": "2026-12-01T00:00:00Z",
+  "reported_prior_counts_not_current_proof": {"estimated": 89, "unestimated": 23},
+  "reported_policy_not_current_proof": {"allocated_usd": "7000", "threshold_pct": 90},
+  "prohibited": ["production writes", "inference", "secret export", "credential extraction", "runner creation", "deployment", "network changes", "RBAC changes", "account changes", "consumed task replay"],
+  "allowed": ["Azure GET metadata", "Log Analytics read queries", "normal signed-in browser API GET", "existing approved read-only database access", "local diagnostic artifacts and tests"],
+  "export": "Allowlisted metadata only; no prompts, completions, auth tokens, keys, connection strings or secrets",
+  "budget_safety": "Data-only correction of non-scoring usage cannot remove deployed completion_count == 0 guard; estimate_complete remains false and remaining null",
+  "postgres_profile_discovery": "Attempt failed: local MCP endpoint ECONNREFUSED; no connection or database query performed",
+  "prior_fixture": "6c5afd4a-61ab-4417-a145-6719be21590d is synthetic and excluded from production evidence"
+}

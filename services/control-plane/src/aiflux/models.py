@@ -14,6 +14,8 @@ from sqlalchemy import (
     String,
     Text,
     UniqueConstraint,
+    column,
+    literal,
 )
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
@@ -37,7 +39,13 @@ class Team(Base):
     name: Mapped[str] = mapped_column(String(100))
 
 
-class Organization(Base):
+class ArchiveMetadata:
+    deleted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    deleted_by: Mapped[str | None] = mapped_column(String(36), nullable=True)
+    deletion_reason: Mapped[str | None] = mapped_column(String(500), nullable=True)
+
+
+class Organization(ArchiveMetadata, Base):
     __tablename__ = "organizations"
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=new_id)
     name: Mapped[str] = mapped_column(String(100))
@@ -45,7 +53,7 @@ class Organization(Base):
     enabled: Mapped[bool] = mapped_column(Boolean, default=True)
 
 
-class Member(Base):
+class Member(ArchiveMetadata, Base):
     __tablename__ = "members"
     __table_args__ = (
         UniqueConstraint("organization_id", "object_id"),
@@ -58,7 +66,7 @@ class Member(Base):
     enabled: Mapped[bool] = mapped_column(Boolean, default=True)
 
 
-class TeamSubscription(Base):
+class TeamSubscription(ArchiveMetadata, Base):
     __tablename__ = "team_subscriptions"
     __table_args__ = (
         UniqueConstraint("organization_id", "idempotency_key"),
@@ -75,6 +83,11 @@ class TeamSubscription(Base):
     idempotency_key: Mapped[str] = mapped_column(String(36))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
 
+    deletion_requested_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    deletion_status: Mapped[str | None] = mapped_column(String(16), nullable=True)
+    # Durable barrier for asynchronous/uncertain APIM writes. Not a worker.
+    apim_pending_operation: Mapped[str | None] = mapped_column(String(2048), nullable=True)
+
 
 class AuditEvent(Base):
     __tablename__ = "audit_events"
@@ -84,6 +97,7 @@ class AuditEvent(Base):
     action: Mapped[str] = mapped_column(String(60))
     target_id: Mapped[str] = mapped_column(String(64))
     occurred_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    reason: Mapped[str | None] = mapped_column(String(500), nullable=True)
 
 
 class ModelPrice(Base):
@@ -173,6 +187,43 @@ class GatewaySettingsRevision(Base):
     error: Mapped[str | None] = mapped_column(String(200), nullable=True)
 
 
+class OrganizationModelAccess(Base):
+    __tablename__ = "organization_model_access"
+    organization_id: Mapped[str] = mapped_column(ForeignKey("organizations.id"), primary_key=True)
+    version: Mapped[int] = mapped_column(Integer)
+    __table_args__ = (CheckConstraint("version >= 1"),)
+
+
+class OrganizationModelAccessRevision(Base):
+    __tablename__ = "organization_model_access_revisions"
+    __table_args__ = (UniqueConstraint("organization_id", "version"), CheckConstraint("version >= 1"))
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=new_id)
+    organization_id: Mapped[str] = mapped_column(ForeignKey("organization_model_access.organization_id"))
+    version: Mapped[int] = mapped_column(Integer)
+    denied_models_json: Mapped[str] = mapped_column(Text)
+    auto_enabled: Mapped[bool] = mapped_column(Boolean)
+    object_id: Mapped[str] = mapped_column(String(36))
+    reason: Mapped[str] = mapped_column(String(500))
+    occurred_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+
+
+class ModelAccessPublication(Base):
+    """Durable coalescing outbox. Singleton serializes entitlement/lifecycle work."""
+    __tablename__ = "model_access_publication"
+    id: Mapped[str] = mapped_column(String(16), primary_key=True, default="default")
+    generation: Mapped[int] = mapped_column(Integer, default=1)
+    applied_generation: Mapped[int] = mapped_column(Integer, default=0)
+    state: Mapped[str] = mapped_column(String(16), default="pending")
+    attempts: Mapped[int] = mapped_column(Integer, default=0)
+    next_attempt_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    error: Mapped[str | None] = mapped_column(String(200), nullable=True)
+    applied_json: Mapped[str | None] = mapped_column(Text, nullable=True)
+    attempted_hash: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    predecessor_hash: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    applied_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    __table_args__ = (CheckConstraint("state IN ('pending', 'applied', 'error')"),)
+
+
 class CreditBudget(Base):
     __tablename__ = "credit_budgets"
     __table_args__ = (UniqueConstraint("organization_id", "subscription_id"),)
@@ -187,8 +238,44 @@ class CreditBudget(Base):
     allowed_models_json: Mapped[str] = mapped_column(Text, default='["*"]')
     product_name: Mapped[str] = mapped_column(String(100), default="Enterprise AI Gateway")
     channel: Mapped[str] = mapped_column(String(60), default="api-gateway")
-    hard_stop_enabled: Mapped[bool] = mapped_column(Boolean, default=True)
+    hard_stop_enabled: Mapped[bool] = mapped_column(Boolean, default=False, server_default=literal(False))
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+
+
+class OrganizationMonthlyBudgetPolicy(Base):
+    __tablename__ = "organization_monthly_budget_policies"
+    __table_args__ = (CheckConstraint("version >= 1"),)
+    organization_id: Mapped[str] = mapped_column(ForeignKey("organizations.id"), primary_key=True)
+    version: Mapped[int] = mapped_column(Integer)
+
+
+class OrganizationMonthlyBudgetRevision(Base):
+    __tablename__ = "organization_monthly_budget_revisions"
+    __table_args__ = (
+        UniqueConstraint("organization_id", "version"),
+        CheckConstraint("version >= 1"),
+        CheckConstraint("allocated_usd > 0 AND allocated_usd <= 1000000000"),
+        CheckConstraint("advisory_threshold_pct >= 1 AND advisory_threshold_pct <= 100"),
+        Index("ix_monthly_budget_revision_org_time", "organization_id", "changed_at"),
+    )
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=new_id)
+    organization_id: Mapped[str] = mapped_column(ForeignKey("organization_monthly_budget_policies.organization_id"))
+    version: Mapped[int] = mapped_column(Integer)
+    allocated_usd: Mapped[Decimal] = mapped_column(Numeric(20, 4))
+    advisory_threshold_pct: Mapped[int] = mapped_column(Integer, default=80)
+    reason: Mapped[str] = mapped_column(String(500))
+    changed_by: Mapped[str] = mapped_column(String(36))
+    changed_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+
+
+class BudgetHardStopRemediation(Base):
+    """Retained migration audit; downgrade must never reactivate a budget stop."""
+    __tablename__ = "budget_hard_stop_remediations"
+    budget_id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    organization_id: Mapped[str] = mapped_column(String(36))
+    previous_hard_stop_enabled: Mapped[bool] = mapped_column(Boolean)
+    remediated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    reason: Mapped[str] = mapped_column(String(500))
 
 
 class ManagedModelEndpoint(Base):
@@ -231,7 +318,7 @@ class ModelRouterConfig(Base):
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
 
 
-class LocalUser(Base):
+class LocalUser(ArchiveMetadata, Base):
     __tablename__ = "local_users"
     __table_args__ = (CheckConstraint("role IN ('customer', 'ids_admin')"),)
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=new_id)
@@ -243,5 +330,32 @@ class LocalUser(Base):
     role: Mapped[str] = mapped_column(String(20), default="customer")
     enabled: Mapped[bool] = mapped_column(Boolean, default=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+
+
+class ExternalPriceCard(Base):
+    __tablename__ = "external_price_cards"
+    __table_args__ = (
+        UniqueConstraint("organization_id"),
+        CheckConstraint("version >= 1"),
+        CheckConstraint(((column("owner") == "default") & column("organization_id").is_(None)) |
+                (column("organization_id").is_not(None) &
+                 (column("owner") == literal("org:") + column("organization_id", String(36)))),
+                        name="ck_external_price_owner"),
+    )
+    owner: Mapped[str] = mapped_column(String(40), primary_key=True)
+    organization_id: Mapped[str | None] = mapped_column(ForeignKey("organizations.id"), nullable=True)
+    version: Mapped[int] = mapped_column(Integer)
+
+
+class ExternalPriceCardRevision(Base):
+    __tablename__ = "external_price_card_revisions"
+    __table_args__ = (UniqueConstraint("owner", "version"), CheckConstraint("version >= 1"))
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=new_id)
+    owner: Mapped[str] = mapped_column(ForeignKey("external_price_cards.owner"), index=True)
+    version: Mapped[int] = mapped_column(Integer)
+    effective_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    delta: Mapped[str] = mapped_column(Text)
+    reason: Mapped[str] = mapped_column(String(500))
+    object_id: Mapped[str] = mapped_column(String(36))
 
 

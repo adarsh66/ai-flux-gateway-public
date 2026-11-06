@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { chatCompletion } from "./chat";
+import { buildChatCompletionBody, chatCompletion, type ChatRequest } from "./chat";
+import { routingProfiles } from "./autoRouting";
 
 const enc = new TextEncoder();
 const frame = (o: unknown) => `data: ${typeof o === "string" ? o : JSON.stringify(o)}\n\n`;
@@ -18,6 +19,46 @@ function streamResponse(parts: string[], opts: { error?: boolean } = {}): Respon
 }
 
 const base = { gatewayUrl: "https://gw.test/v1", key: "sk-test", stream: true, request: { model: "m", messages: [{ role: "user" as const, content: "hi" }] } };
+
+describe("Auto chat contract", () => {
+  it.each(routingProfiles)("preserves the %s Auto profile in the REST body", (routing_profile) => {
+    expect(buildChatCompletionBody({ ...base.request, model: "auto", routing_profile }, false)).toEqual({
+      ...base.request, model: "auto", routing_profile, stream: false,
+    });
+  });
+
+  it("allows the default Auto profile to be omitted and leaves explicit requests unchanged", () => {
+    expect(buildChatCompletionBody({ ...base.request, model: "auto" }, false)).not.toHaveProperty("routing_profile");
+    expect(buildChatCompletionBody(base.request, false)).toEqual({ ...base.request, stream: false });
+    expect(() => buildChatCompletionBody({ ...base.request, routing_profile: "cost" }, false))
+      .toThrow("routing_profile is valid only for Auto");
+  });
+
+  it.each<{ stream: boolean; extra: Partial<ChatRequest> }>([
+    { stream: true, extra: {} }, { stream: false, extra: { tools: [] } },
+    { stream: false, extra: { tool_choice: "auto" } }, { stream: false, extra: { response_format: { type: "json_object" } } },
+  ])("rejects unsupported Auto request settings before fetching (%j)", async ({ stream, extra }) => {
+    let calls = 0;
+    await expect(chatCompletion({ ...base, stream, request: { ...base.request, model: "auto", ...extra },
+      fetchImpl: async () => { calls++; return new Response("{}"); },
+    })).rejects.toThrow("Auto supports non-streaming text only");
+    expect(calls).toBe(0);
+  });
+
+  it("retains actual model and routing metadata only for Auto without inventing unknown Decision usage/cost", async () => {
+    const routing = { selected_model: "alpha", routing_profile: "balanced", config_version: "v1", fallback_used: true };
+    const fetchImpl = async () => new Response(JSON.stringify({ model: "actual-provider-model", routing,
+      choices: [{ message: { content: "Hello" }, finish_reason: "stop" }], usage: { total_tokens: 3 },
+    }));
+    const auto = await chatCompletion({ ...base, stream: false, request: { ...base.request, model: "auto" }, fetchImpl });
+    expect(auto).toMatchObject({ outcome: "completed", actualModel: "actual-provider-model", routing, usage: { total_tokens: 3 } });
+    expect(auto.routing?.decision_usage).toBeUndefined();
+    expect(auto.routing?.decision_cost_usd).toBeUndefined();
+    const explicit = await chatCompletion({ ...base, stream: false, fetchImpl });
+    expect(explicit.actualModel).toBeUndefined();
+    expect(explicit.routing).toBeUndefined();
+  });
+});
 
 describe("chatCompletion streaming", () => {
   it("sends the documented request and completes normally with usage-only frame", async () => {

@@ -1,0 +1,97 @@
+{
+  "at_utc": "2026-10-28T07:49:03.630695+00:00",
+  "selected_principal": "4e7b70ed-9868-47ba-9b61-304f1e1fdd89",
+  "selected_client": "f0b3046c-dbf8-4d37-a4cf-65f2c7e6b4c1",
+  "scope": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.ApiManagement/service/poc-ids-token-ex-apim/policyFragments/aiflux-dev-unified-poc-settings",
+  "required_actions": [
+    "Microsoft.ApiManagement/service/policyFragments/read",
+    "Microsoft.ApiManagement/service/policyFragments/write"
+  ],
+  "grants": [
+    {
+      "assignment_id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.ApiManagement/service/poc-ids-token-ex-apim/providers/Microsoft.Authorization/roleAssignments/796ed394-f2c5-4344-a578-faf4e50cfdcf",
+      "principal_id": "4e7b70ed-9868-47ba-9b61-304f1e1fdd89",
+      "scope": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.ApiManagement/service/poc-ids-token-ex-apim",
+      "condition": null,
+      "condition_version": null,
+      "role_definition_id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/providers/Microsoft.Authorization/roleDefinitions/fa10dd61-c879-43e6-b259-384d4d29d452",
+      "role_name": "poc-ids-token-ex-subscription-manager",
+      "permissions": [
+        {
+          "actions": [
+            "Microsoft.ApiManagement/service/products/read",
+            "Microsoft.ApiManagement/service/read",
+            "Microsoft.ApiManagement/service/subscriptions/read",
+            "Microsoft.ApiManagement/service/subscriptions/write",
+            "Microsoft.ApiManagement/service/subscriptions/listSecrets/action",
+            "Microsoft.ApiManagement/service/subscriptions/regeneratePrimaryKey/action",
+            "Microsoft.ApiManagement/service/subscriptions/regenerateSecondaryKey/action"
+          ],
+          "dataActions": [],
+          "notActions": [],
+          "notDataActions": []
+        }
+      ]
+    },
+    {
+      "assignment_id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.ApiManagement/service/poc-ids-token-ex-apim/policyFragments/aiflux-dev-unified-poc-settings/providers/Microsoft.Authorization/roleAssignments/748cbb9e-482e-4af0-97ef-ad7ada10f836",
+      "principal_id": "4e7b70ed-9868-47ba-9b61-304f1e1fdd89",
+      "scope": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.ApiManagement/service/poc-ids-token-ex-apim/policyFragments/aiflux-dev-unified-poc-settings",
+      "condition": null,
+      "condition_version": null,
+      "role_definition_id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/providers/Microsoft.Authorization/roleDefinitions/16ca19f5-170e-4549-a223-d6f3381a6ccf",
+      "role_name": "poc-ids-scoped-APIM-read-write-role",
+      "permissions": [
+        {
+          "actions": [
+            "Microsoft.ApiManagement/service/policyFragments/read",
+            "Microsoft.ApiManagement/service/policyFragments/write"
+          ],
+          "dataActions": [],
+          "notActions": [],
+          "notDataActions": []
+        }
+      ]
+    }
+  ],
+  "unconditional_action_coverage": {
+    "Microsoft.ApiManagement/service/policyFragments/read": true,
+    "Microsoft.ApiManagement/service/policyFragments/write": true
+  },
+  "publisher_permission_metadata_verified": true,
+  "deny_assignment_observation": {
+    "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52": {
+      "observable": true,
+      "count": 0,
+      "next_link": false
+    },
+    "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC": {
+      "observable": true,
+      "count": 0,
+      "next_link": false
+    },
+    "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.ApiManagement/service/poc-ids-token-ex-apim": {
+      "observable": true,
+      "count": 0,
+      "next_link": false
+    },
+    "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.ApiManagement/service/poc-ids-token-ex-apim/policyFragments/aiflux-dev-unified-poc-settings": {
+      "observable": true,
+      "count": 0,
+      "next_link": false
+    }
+  },
+  "fragment": {
+    "id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.ApiManagement/service/poc-ids-token-ex-apim/policyfragments/aiflux-dev-unified-poc-settings",
+    "provisioning_state": "Succeeded",
+    "value_sha256": "ea2ac35ad56897b8655df630613fecf504f7b2cc74606fa079ad52269007f10c"
+  },
+  "api_control_flags": {
+    "AIFLUX_GATEWAY_CONTROLS_POC_ENABLED": null,
+    "AIFLUX_GATEWAY_CONTROLS_V2_ENABLED": null,
+    "AIFLUX_GATEWAY_SETTINGS_SCOPES": "[]"
+  },
+  "cloud_configuration_writes": 0,
+  "inference_requests": 0,
+  "runtime_mi_write_proven": false
+}

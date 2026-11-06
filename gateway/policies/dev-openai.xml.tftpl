@@ -252,6 +252,10 @@
                 ["max_tokens"] = (int)request["max_completion_tokens"],
                 ["stream"] = false
               };
+%{ if alias == "claude-opus-5-5-fast" ~}
+              // Exact retained deployment/model identity, never suffix matching.
+              converted["speed"] = "fast";
+%{ endif ~}
               if (system.Count > 0) { converted["system"] = string.Join("\n\n", system); }
               return converted.ToString();
             }]]></set-body>
@@ -330,6 +334,29 @@
               field.Value = JValue.CreateNull();
             }
           }
+%{ if length(anthropic_aliases) > 0 ~}
+          if (anthropic) {
+            // finops-v1 input is the inclusive prompt total, just like OpenAI.
+            // Ingestion stores this value verbatim; cache details are subsets.
+            // Missing/invalid cache measurements MUST NOT become measured zero.
+            var input = counters["input_tokens"];
+            var read = counters["cached_input_tokens"];
+            var write = counters["cache_write_tokens"];
+            if (input.Type == JTokenType.Integer &amp;&amp; read.Type == JTokenType.Integer &amp;&amp; write.Type == JTokenType.Integer) {
+              var inclusive = (long)input + (long)read + (long)write;
+              counters["input_tokens"] = inclusive &lt;= int.MaxValue ? new JValue(inclusive) : JValue.CreateNull();
+            } else {
+              counters["input_tokens"] = JValue.CreateNull();
+            }
+          }
+%{ if contains(anthropic_aliases, "claude-opus-5-5-fast") ~}
+          if ((string)context.Variables["aiflux-model"] == "claude-opus-5-5-fast") {
+            counters["speed"] = usage != null &amp;&amp; usage["speed"] != null &amp;&amp;
+              usage["speed"].Type == JTokenType.String &amp;&amp; (string)usage["speed"] == "fast"
+              ? new JValue("fast") : JValue.CreateNull();
+          }
+%{ endif ~}
+%{ endif ~}
           counters["schema"] = "finops-v1";
           counters["model"] = (string)context.Variables["aiflux-model"];
           counters["attempts"] = (int)context.Variables["aiflux-backend-attempt"];
@@ -359,6 +386,36 @@
               (int)usage["input_tokens"] > int.MaxValue - (int)usage["output_tokens"]) {
             throw new Exception("Invalid provider response");
           }
+%{ if length(anthropic_aliases) > 0 ~}
+          // Native input excludes cache buckets. Optional omitted/null cache
+          // counters are UNKNOWN, not zero and not a malformed text answer.
+          // A complete inclusive prompt/total is available only with both.
+          int? cacheRead = null;
+          int? cacheWrite = null;
+          foreach (var name in new [] { "cache_read_input_tokens", "cache_creation_input_tokens" }) {
+            var value = usage[name];
+            if (value == null || value.Type == JTokenType.Null) { continue; }
+            int measured;
+            if (value.Type != JTokenType.Integer || !int.TryParse(value.ToString(), out measured) || measured < 0) {
+              throw new Exception("Invalid provider cache usage");
+            }
+            if (name == "cache_read_input_tokens") { cacheRead = measured; }
+            else { cacheWrite = measured; }
+          }
+          // Bound even the known partial sum; missing data cannot hide overflow.
+          var knownPrompt = (long)(int)usage["input_tokens"] + cacheRead.GetValueOrDefault() + cacheWrite.GetValueOrDefault();
+          if (knownPrompt > int.MaxValue - (int)usage["output_tokens"]) {
+            throw new Exception("Invalid provider usage total");
+          }
+          long? promptTokens = cacheRead.HasValue && cacheWrite.HasValue ? knownPrompt : (long?)null;
+%{ if contains(anthropic_aliases, "claude-opus-5-5-fast") ~}
+          var fast = (string)context.Variables["aiflux-model"] == "claude-opus-5-5-fast";
+          if (fast ? (usage["speed"] == null || usage["speed"].Type != JTokenType.String || (string)usage["speed"] != "fast")
+              : (usage["speed"] != null && (usage["speed"].Type != JTokenType.String || (string)usage["speed"] != "standard"))) {
+            throw new Exception("Invalid provider speed");
+          }
+%{ endif ~}
+%{ endif ~}
           var text = new List<string>();
           foreach (var item in content) {
             var block = item as JObject;
@@ -397,9 +454,19 @@
               ["finish_reason"] = reason == "max_tokens" ? "length" : "stop"
             }),
             ["usage"] = new JObject {
+%{ if length(anthropic_aliases) > 0 ~}
+              ["prompt_tokens"] = promptTokens,
+              ["completion_tokens"] = (int)usage["output_tokens"],
+              ["total_tokens"] = promptTokens + (int)usage["output_tokens"],
+              ["prompt_tokens_details"] = new JObject {
+                ["cached_tokens"] = cacheRead,
+                ["cache_write_tokens"] = cacheWrite
+              }
+%{ else ~}
               ["prompt_tokens"] = (int)usage["input_tokens"],
               ["completion_tokens"] = (int)usage["output_tokens"],
               ["total_tokens"] = (int)usage["input_tokens"] + (int)usage["output_tokens"]
+%{ endif ~}
             }
           }.ToString();
         }]]></set-body>

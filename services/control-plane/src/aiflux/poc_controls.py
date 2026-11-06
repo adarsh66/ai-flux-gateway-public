@@ -30,7 +30,9 @@ def effective(config: PocGatewayConfiguration, organization: str | None, subscri
 def validate(db: Session, config: PocGatewayConfiguration) -> list[dict[str, str]]:
     rows = db.scalars(select(TeamSubscription).join(
         Organization, TeamSubscription.organization_id == Organization.id,
-    ).where(Organization.enabled.is_(True)).order_by(TeamSubscription.id).limit(201)).all()
+    ).where(Organization.enabled.is_(True), Organization.deleted_at.is_(None),
+            TeamSubscription.deleted_at.is_(None), TeamSubscription.deletion_requested_at.is_(None))
+        .order_by(TeamSubscription.id).limit(201)).all()
     if len(rows) > 200:
         raise HTTPException(422, "POC override ownership capacity is 200 subscriptions")
     bindings = [{"subscription_id": s.id, "organization_id": s.organization_id} for s in rows]
@@ -94,16 +96,17 @@ def render(config: PocGatewayConfiguration, bindings: Sequence[dict[str, str]]) 
             "counter-key": '@("project-demo:" + context.Subscription.Id)',
         })
 
-    caps = sorted({config.defaults.request_quota, *(o.limits.request_quota for o in config.overrides if o.limits)} - {1000})
+    caps = sorted({o.limits.request_quota for o in config.overrides if o.limits}
+                  - {config.defaults.request_quota})
     if caps:
         choose = ET.SubElement(root, "choose")
         for cap in caps:
             branch = ET.SubElement(choose, "when", condition=(
                 f'@((int)context.Variables["aiflux-poc-request-quota"] == {cap})'))
             quota(branch, cap)
-        quota(ET.SubElement(choose, "otherwise"), 1000)
+        quota(ET.SubElement(choose, "otherwise"), config.defaults.request_quota)
     else:
-        quota(root, 1000)
+        quota(root, config.defaults.request_quota)
     value = ET.tostring(root, encoding="unicode")
     if len(value.encode("utf-8")) > 65536:
         raise HTTPException(422, "POC settings exceed the supported 64KiB policy capacity")

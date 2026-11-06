@@ -33,6 +33,10 @@ interface Props {
 }
 
 export function SessionProvider({ me, api, config, onSignOut, children }: Props) {
+  return <ScopedSession key={`${me.organization_id}:${me.object_id}`} me={me} api={api} config={config} onSignOut={onSignOut}>{children}</ScopedSession>;
+}
+
+function ScopedSession({ me, api, config, onSignOut, children }: Props) {
   const [keys, setKeys] = useState<RevealedKeys>({});
   const setKey = useCallback((id: string, name: KeyName, value: string) => setKeys((k) => ({ ...k, [id]: { ...k[id], [name]: value } })), []);
   const clearKeys = useCallback((id?: string) => {

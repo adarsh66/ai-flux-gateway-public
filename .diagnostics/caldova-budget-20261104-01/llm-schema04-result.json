@@ -1,0 +1,95 @@
+{
+  "tables": [
+    {
+      "columns": [
+        {
+          "name": "ColumnName",
+          "type": "string"
+        },
+        {
+          "name": "DataType",
+          "type": "string"
+        }
+      ],
+      "name": "PrimaryResult",
+      "rows": [
+        [
+          "TenantId",
+          "System.String"
+        ],
+        [
+          "TimeGenerated",
+          "System.DateTime"
+        ],
+        [
+          "OperationName",
+          "System.String"
+        ],
+        [
+          "CorrelationId",
+          "System.String"
+        ],
+        [
+          "Region",
+          "System.String"
+        ],
+        [
+          "SequenceNumber",
+          "System.Int32"
+        ],
+        [
+          "PromptTokens",
+          "System.Int32"
+        ],
+        [
+          "CompletionTokens",
+          "System.Int32"
+        ],
+        [
+          "TotalTokens",
+          "System.Int32"
+        ],
+        [
+          "ModelName",
+          "System.String"
+        ],
+        [
+          "IsStreamCompletion",
+          "System.SByte"
+        ],
+        [
+          "RequestId",
+          "System.String"
+        ],
+        [
+          "DeploymentName",
+          "System.String"
+        ],
+        [
+          "ApiVersion",
+          "System.String"
+        ],
+        [
+          "RequestMessages",
+          "System.Object"
+        ],
+        [
+          "ResponseMessages",
+          "System.Object"
+        ],
+        [
+          "SourceSystem",
+          "System.String"
+        ],
+        [
+          "Type",
+          "System.String"
+        ],
+        [
+          "_ResourceId",
+          "System.String"
+        ]
+      ]
+    }
+  ]
+}

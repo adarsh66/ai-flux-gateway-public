@@ -16,7 +16,10 @@ from sqlalchemy.orm import Session
 from aiflux.auth import Principal, hash_password, issue_local_jwt, verify_password
 from aiflux.config import Settings
 from aiflux.finops import aware
-from aiflux.display_pricing import accepted_catalog_price, estimate_summary
+from aiflux.display_pricing import accepted_scope
+from aiflux.rate_card import display_price, load_state
+from aiflux.external_pricing import PricingContext
+from aiflux.customer_pricing import estimate_summary as presentation_estimates
 from aiflux.external_inventory import AcceptedInventory, ExternalRoute, GATEWAY
 from aiflux.models import (
     Base,
@@ -58,7 +61,8 @@ from aiflux.schemas import (
     RouterRuleItem,
     TurnstilePolicyPreviewOutput,
 )
-from aiflux.subscriptions import audit
+from aiflux.subscriptions import audit, lock_organization, require_live_subscription
+from aiflux.scoring_catalog import is_scoring_model, scoring_item, scoring_scope
 
 DEFAULT_MODELS: list[dict[str, Any]] = [
     {
@@ -392,11 +396,18 @@ def model_garden_item_dict(row: ManagedModelEndpoint) -> ModelGardenItemOutput:
 
 
 def list_model_garden(
-    db: Session, settings: Settings, *, include_disabled: bool = True
+    db: Session, settings: Settings, *, include_disabled: bool = True,
+    pricing_context: PricingContext | None = None,
 ) -> list[ModelGardenItemOutput]:
     inventory = AcceptedInventory.load(settings)
     accepted_aliases = inventory.accepted_aliases(settings)
-    ensure_model_garden_seeded(db)
+    from aiflux import completion_limits
+    try:
+        limits = completion_limits.load(settings, accepted_aliases)
+    except (OSError, ValueError, TypeError) as exc:
+        raise HTTPException(503, "Completion limit configuration is unavailable") from exc
+    # Catalog presentation must not create tables, seed prices, or repair SQL
+    # metadata. Existing explicit initialization/authentication workflows may seed.
     query = select(ManagedModelEndpoint).order_by(
         ManagedModelEndpoint.priority.asc(), ManagedModelEndpoint.id.asc()
     )
@@ -405,11 +416,26 @@ def list_model_garden(
             (ManagedModelEndpoint.enabled.is_(True)) | (ManagedModelEndpoint.coming_soon.is_(True))
         )
     rows = db.scalars(query).all()
+    rate_version, rate_entries = load_state(db) if pricing_context is None else (0, [])
+    def price(scope):
+        return (pricing_context.display_price(scope) if pricing_context is not None
+                else display_price(rate_version, rate_entries, scope))
     items = []
     for row in rows:
         item = model_garden_item_dict(row)
+        if row.id == "Decision-1":
+            item = scoring_item(settings, inventory, item)
+            item.display_price = price(scoring_scope(settings, inventory))
+            # enabled remains chat-only. An available scorer is visible in the
+            # scoring catalog even when disabled chat rows are filtered out.
+            items.append(item)
+            continue
         # Display-only provenance; never update ManagedModelEndpoint economics.
-        item.display_price = accepted_catalog_price(inventory, row.id, row.backend_model, row.endpoint_url)
+        item.display_price = price(accepted_scope(inventory, row.id, row.backend_model, row.endpoint_url))
+        if pricing_context is not None:
+            item.input_per_million = item.display_price.get("input") if item.display_price else None
+            item.output_per_million = item.display_price.get("output") if item.display_price else None
+            item.cached_input_per_million = item.display_price.get("cached") if item.display_price else None
         route = inventory.route(row.id)
         if isinstance(route, ExternalRoute):
             item.context_window = None
@@ -418,22 +444,34 @@ def list_model_garden(
             item.cached_input_per_million = None
         if route is not None:
             item.capabilities = [cap for cap in item.capabilities if cap in route.capabilities]
-            item.max_completion_tokens = min(item.max_completion_tokens, route.max_completion_tokens)
+            item.max_completion_tokens = completion_limits.effective(
+                settings, row.id, min(item.max_completion_tokens, route.max_completion_tokens),
+                limits if row.id in accepted_aliases else None)
+        router = db.get(ModelRouterConfig, "default") if row.id == "auto" else None
         item.enabled = (
             row.id in accepted_aliases and row.enabled and not row.coming_soon and "chat" in item.capabilities
             and inventory.matches(row.id, row.backend_model, [row.endpoint_url])
-            and (row.id != "auto" or get_router_config_output(db, settings).enabled)
+            and (row.id != "auto" or (
+                router is not None and _router_config_output(db, settings, router).enabled))
         )
         if settings.gateway_max_completion_tokens is not None:
             item.max_completion_tokens = min(item.max_completion_tokens, settings.gateway_max_completion_tokens)
         if include_disabled or item.enabled:
             items.append(item)
+    if not any(row.id == "Decision-1" for row in rows):
+        item = scoring_item(settings, inventory)
+        item.display_price = price(scoring_scope(settings, inventory))
+        items.append(item)
     return items
 
 
 def upsert_model_garden_item(
     db: Session, principal: Principal, payload: ModelGardenUpsert
 ) -> ModelGardenItemOutput:
+    # Reserved scoring identities are presentation-only. In particular this
+    # chat/economics DTO must never promote a scorer or seed invented rates.
+    if is_scoring_model(payload.id) or is_scoring_model(payload.backend_model):
+        raise HTTPException(422, "Decision-1 is scoring-only; its catalog presentation is read-only")
     if payload.id == "glm-5.3" and (
         payload.endpoint_url != GATEWAY or payload.backend_model != "glm-5.3"
         or payload.provider != "ModelArts" or payload.vendor != "ModelArts"
@@ -487,7 +525,7 @@ def ensure_organization_budget(db: Session, organization_id: str) -> CreditBudge
             allowed_models_json=json.dumps(["*"]),
             product_name="Enterprise AI Token Exchange",
             channel="api-gateway",
-            hard_stop_enabled=True,
+            hard_stop_enabled=False,
             updated_at=datetime.now(UTC),
         )
         db.add(row)
@@ -496,41 +534,25 @@ def ensure_organization_budget(db: Session, organization_id: str) -> CreditBudge
 
 
 def _used_credits_for(db: Session, organization_id: str, subscription_id: str | None = None) -> Decimal:
-    """Recorded priced usage for display only. Never synthesize prices."""
-    conditions = [UsageRecord.organization_id == organization_id, UsageRecord.currency == "USD"]
-    if subscription_id is not None:
-        conditions.append(UsageRecord.subscription_id == subscription_id)
-    total = db.scalar(select(func.sum(UsageRecord.cost)).where(*conditions))
-    return Decimal(total or 0).quantize(Decimal("0.0001"))
+    """Known external calendar-month estimate; zero is only a legacy lower bound."""
+    from aiflux.monthly_budgets import monthly_estimate
+    estimate = monthly_estimate(db, organization_id, subscription_id=subscription_id)
+    return Decimal(estimate["used"] or 0).quantize(Decimal("0.0001"))
 
 
 def _enforcement_used_credits_for(db: Session, organization_id: str, subscription_id: str | None = None) -> Decimal:
-    """Legacy hard-stop economics retained pending separate business approval."""
-    conditions = [UsageRecord.organization_id == organization_id]
-    if subscription_id is not None:
-        conditions.append(UsageRecord.subscription_id == subscription_id)
-    total_cost = db.scalar(select(func.sum(UsageRecord.cost)).where(*conditions))
-    if total_cost is not None and Decimal(total_cost) > 0:
-        return Decimal(total_cost).quantize(Decimal("0.0001"))
-    total_tokens = db.scalar(
-        select(
-            func.coalesce(func.sum(UsageRecord.input_tokens), 0)
-            + func.coalesce(func.sum(UsageRecord.output_tokens), 0)
-        ).where(*conditions)
-    ) or 0
-    return (Decimal(total_tokens) * Decimal("0.0000015")).quantize(Decimal("0.0001"))
+    """Deprecated compatibility alias. No budget admission caller remains."""
+    return _used_credits_for(db, organization_id, subscription_id)
 
 
 def _budget_output(db: Session, row: CreditBudget) -> CreditBudgetOutput:
+    from aiflux.monthly_budgets import monthly_estimate
     org = db.get(Organization, row.organization_id)
     sub = db.get(TeamSubscription, row.subscription_id) if row.subscription_id else None
-    used = _used_credits_for(db, row.organization_id, row.subscription_id)
-    conditions = [UsageRecord.organization_id == row.organization_id]
-    if row.subscription_id is not None:
-        conditions.append(UsageRecord.subscription_id == row.subscription_id)
-    unpriced = db.scalar(select(func.count()).select_from(UsageRecord).where(
-        *conditions, UsageRecord.cost.is_(None) | UsageRecord.currency.is_(None)
-        | (UsageRecord.currency != "USD"))) or 0
+    estimate = monthly_estimate(db, row.organization_id, subscription_id=row.subscription_id)
+    used = Decimal(estimate["used"] or 0)
+    unpriced = estimate["unestimated_requests"]
+    complete = estimate["estimate_complete"]
     allocated = Decimal(row.credit_allocation)
     remaining = max(Decimal("0.0000"), allocated - used)
     utilization = float((used / allocated * Decimal(100)) if allocated > 0 else Decimal(0))
@@ -544,15 +566,15 @@ def _budget_output(db: Session, row: CreditBudget) -> CreditBudgetOutput:
         credit_allocation=f"{allocated:.2f}",
         used_credits=f"{used:.4f}",
         unpriced_requests=unpriced,
-        cost_complete=unpriced == 0,
-        remaining_credits=f"{remaining:.4f}" if not unpriced else None,
-        utilization_pct=round(utilization, 2) if not unpriced else None,
+        cost_complete=complete,
+        remaining_credits=f"{remaining:.4f}" if complete else None,
+        utilization_pct=round(utilization, 2) if complete else None,
         low_credit_alert=utilization >= row.alert_threshold_pct,
         alert_threshold_pct=row.alert_threshold_pct,
         allowed_models=json.loads(row.allowed_models_json or '["*"]'),
         product_name=row.product_name,
         channel=row.channel,
-        hard_stop_enabled=row.hard_stop_enabled,
+        hard_stop_enabled=False,
         ledger_row_key=row.subscription_id or f"org:{row.organization_id}",
         updated_at=aware(row.updated_at),
     )
@@ -593,16 +615,20 @@ def upsert_budget(
             else CreditBudget.subscription_id.is_(None),
         )
     )
+    # Older financial forms may round-trip, not edit, legacy restrictions.
+    old_allowed = json.loads(row.allowed_models_json) if row else ["*"]
+    if payload.allowed_models != old_allowed:
+        raise HTTPException(422, "Use organization model access to change model permissions")
     if row is None:
         row = CreditBudget(organization_id=organization_id, subscription_id=sub_id)
         db.add(row)
     row.monthly_budget_usd = payload.monthly_budget_usd
     row.credit_allocation = payload.credit_allocation
     row.alert_threshold_pct = payload.alert_threshold_pct
-    row.allowed_models_json = json.dumps(payload.allowed_models or ["*"])
+    # Preserve the exact legacy restriction, including explicit empty arrays.
     row.product_name = payload.product_name
     row.channel = payload.channel
-    row.hard_stop_enabled = payload.hard_stop_enabled
+    row.hard_stop_enabled = False
     row.updated_at = datetime.now(UTC)
     audit(db, principal, "budget.updated", row.id, organization_id)
     db.commit()
@@ -610,10 +636,19 @@ def upsert_budget(
 
 
 def credit_summary_response(
-    db: Session, organization_id: str, days: int = 30, subscription_id: str | None = None
+    db: Session, organization_id: str, days: int = 30, subscription_id: str | None = None,
+    *, pricing_context: PricingContext | None = None,
 ) -> CreditSummaryOutput:
-    ensure_model_garden_seeded(db)
-    budget = ensure_organization_budget(db, organization_id)
+    if pricing_context is None:
+        ensure_model_garden_seeded(db)
+        budget = ensure_organization_budget(db, organization_id)
+    else:
+        # Customer reads never create financial records, even for a new org.
+        budget = db.scalar(select(CreditBudget).where(
+            CreditBudget.organization_id == organization_id, CreditBudget.subscription_id.is_(None)))
+        if budget is None:
+            budget = CreditBudget(credit_allocation=Decimal(0), alert_threshold_pct=80,
+                                  hard_stop_enabled=False, product_name="Enterprise AI Token Exchange")
     org = db.get(Organization, organization_id)
     cutoff = datetime.now(UTC) - timedelta(days=days)
     conditions = [UsageRecord.organization_id == organization_id, UsageRecord.occurred_at >= cutoff,
@@ -749,10 +784,11 @@ def credit_summary_response(
         for item in sorted(channel_buckets.values(), key=lambda x: x["total_tokens"], reverse=True)
     ]
 
-    estimates = estimate_summary(db, conditions)[0]
+    estimates = presentation_estimates(db, conditions, pricing_context=pricing_context)[0]
     estimates.pop("group")
     for items, group in ((by_model, UsageRecord.model), (by_product, UsageRecord.subscription_id)):
-        grouped = {e["group"][0]: e for e in estimate_summary(db, conditions, group)}
+        grouped = {e["group"][0]: e for e in presentation_estimates(
+            db, conditions, group, pricing_context=pricing_context)}
         for item in items:
             key = item.model if isinstance(item, ModelUsageBreakdownItem) else item.subscription_id
             e = grouped[key]
@@ -761,7 +797,8 @@ def credit_summary_response(
             item.approximate_requests = e["approximate_requests"]
     # Channel classification matches the existing grouping, without materializing
     # all usage records or using client-side row pricing.
-    channel_estimates = estimate_summary(db, conditions, UsageRecord.completeness)
+    channel_estimates = presentation_estimates(db, conditions, UsageRecord.completeness,
+                                               pricing_context=pricing_context)
     for item in by_channel:
         relevant = [e for e in channel_estimates if (
             "playground" if e["group"][0] == "playground" else (
@@ -772,20 +809,27 @@ def credit_summary_response(
         item.unestimated_requests = sum(e["unestimated_requests"] for e in relevant)
         item.approximate_requests = sum(e["approximate_requests"] for e in relevant)
 
+    # Retained credit indicators use this calendar month and external tariffs,
+    # independent of the report's rolling `days` viewport and recorded ledger.
+    from aiflux.monthly_budgets import monthly_estimate
+    monthly = monthly_estimate(db, organization_id, subscription_id=subscription_id)
+    monthly_used = Decimal(monthly["used"] or 0)
+    monthly_remaining = max(Decimal(0), allocated - monthly_used)
+    monthly_utilization = monthly_used / allocated * 100 if allocated > 0 else Decimal(0)
     return CreditSummaryOutput(
         **estimates,
         organization_id=organization_id,
         organization_name=org.name if org else organization_id,
         currency="USD",
         total_credits=f"{allocated:.2f}",
-        used_credits=f"{total_cost_all:.4f}",
-        unpriced_requests=unpriced,
-        cost_complete=unpriced == 0,
-        remaining_credits=f"{remaining:.4f}" if not unpriced else None,
-        utilization_pct=round(utilization, 2) if not unpriced else None,
+        used_credits=f"{monthly_used:.4f}",
+        unpriced_requests=monthly["unestimated_requests"],
+        cost_complete=monthly["estimate_complete"],
+        remaining_credits=f"{monthly_remaining:.4f}" if monthly["estimate_complete"] else None,
+        utilization_pct=round(float(monthly_utilization), 2) if monthly["estimate_complete"] else None,
         alert_threshold_pct=budget.alert_threshold_pct,
-        low_credit_alert=utilization >= budget.alert_threshold_pct,
-        hard_stop_enabled=budget.hard_stop_enabled,
+        low_credit_alert=monthly_utilization >= budget.alert_threshold_pct,
+        hard_stop_enabled=False,
         total_requests=request_count,
         total_tokens=total_tokens_all,
         by_model=by_model,
@@ -796,6 +840,13 @@ def credit_summary_response(
 
 def get_router_config_output(db: Session, settings: Settings) -> ModelRouterConfigOutput:
     row = ensure_router_config(db, settings)
+    return _router_config_output(db, settings, row)
+
+
+def _router_config_output(
+    db: Session, settings: Settings, row: ModelRouterConfig,
+) -> ModelRouterConfigOutput:
+    """Project existing router state without initializing models, prices or config."""
     inventory = AcceptedInventory.load(settings)
     accepted_aliases = inventory.accepted_aliases(settings)
     active = {
@@ -1035,10 +1086,10 @@ def run_playground_chat(
         raise HTTPException(422, "Model has no accepted verified deployment route")
     ensure_model_garden_seeded(db)
     budget = ensure_organization_budget(db, principal.organization_id)
-    used = _enforcement_used_credits_for(db, principal.organization_id)
-    if budget.hard_stop_enabled and used >= Decimal(budget.credit_allocation):
-        raise HTTPException(402, "Organization credit allocation exhausted; contact administrator")
+    # Advisory budgets never reject traffic, including persisted legacy true.
+    # Independent subscription/auth/model/safety checks below remain intact.
 
+    lock_organization(db, principal.organization_id)
     sub_row: TeamSubscription | None = None
     if payload.subscription_id is not None:
         sub_row = db.scalar(
@@ -1052,7 +1103,8 @@ def run_playground_chat(
     else:
         sub_row = db.scalar(
             select(TeamSubscription)
-            .where(TeamSubscription.organization_id == principal.organization_id)
+                 .where(TeamSubscription.organization_id == principal.organization_id,
+                     TeamSubscription.deleted_at.is_(None), TeamSubscription.deletion_requested_at.is_(None))
             .order_by(TeamSubscription.created_at.desc())
         )
         if sub_row is None:
@@ -1068,10 +1120,15 @@ def run_playground_chat(
             db.add(sub_row)
             db.flush()
 
+    require_live_subscription(sub_row)
+
     combined_prompt = "\n".join(msg.content for msg in payload.messages if msg.role == "user")
     routing_decision: RouterDecisionOutput | None = None
     requested_model = payload.model
     if requested_model == "auto":
+        if settings.model_access_enabled:
+            # The legacy demonstration selector is not the fixed-six APIM scorer.
+            raise HTTPException(409, "Organization-aware Auto must use the direct APIM route")
         routing_decision = decide_model_route(
             db, settings, RouterDecisionRequest(prompt=combined_prompt or "Hello")
         )
@@ -1088,8 +1145,12 @@ def run_playground_chat(
     ):
         raise HTTPException(422, f"Model '{selected_model_id}' is not currently enabled in the Model Garden")
 
+    if settings.model_access_enabled:
+        from aiflux.model_access import require_model
+        require_model(db, principal.organization_id, selected_model_id, requested=requested_model)
     allowed = json.loads(budget.allowed_models_json or '["*"]')
-    if "*" not in allowed and selected_model_id not in allowed and requested_model not in allowed:
+    if not settings.model_access_enabled and "*" not in allowed and (
+            selected_model_id not in allowed or (requested_model == "auto" and "auto" not in allowed)):
         raise HTTPException(403, f"Model '{selected_model_id}' is not in this organization's allowlist")
 
     safety_status, safety_scores, triggered_cat = _evaluate_content_safety(combined_prompt)
@@ -1199,7 +1260,7 @@ def run_playground_chat(
             reply_text = (
                 f"[{endpoint.display_name} · routed via Microsoft Decision-1 ({routing_decision.category})] "
                 f"Processed your request ({input_tokens} prompt tokens) with Azure AI Content Safety "
-                f"verified. Routing reason: {routing_decision.reason}"
+                "verified. Selected an available model under the configured routing policy."
             )
         else:
             reply_text = (
@@ -1272,16 +1333,8 @@ def render_turnstile_exchange_policy(db: Session, settings: Settings) -> Turnsti
         f"@(\"https://{storage_account}.table.core.windows.net/{routes_table}()"
         "?$format=application/json;odata=nometadata\")"
     )
-    budget_cond = (
-        "@((bool)((JObject)context.Variables[&quot;turnstile-budget&quot;])"
-        "[&quot;HardStopEnabled&quot;] &amp;&amp; "
-        "(double)((JObject)context.Variables[&quot;turnstile-budget&quot;])[&quot;SpentUsd&quot;] &gt;= "
-        "(double)((JObject)context.Variables[&quot;turnstile-budget&quot;])[&quot;MonthlyBudgetUsd&quot;])"
-    )
-    budget_err = (
-        '{"error":{"code":"credit_budget_exhausted",'
-        '"message":"Monthly OpCo token credit allocation has been reached."}}'
-    )
+    # Legacy preview only, not a statement about the active APIM policy.
+    # Persisted Table flags must never revive financial admission enforcement.
     lines = [
         "<policies>",
         "  <inbound>",
@@ -1301,16 +1354,6 @@ def render_turnstile_exchange_policy(db: Session, settings: Settings) -> Turnsti
         '        <set-variable name="turnstile-budget" '
         'value="@(((IResponse)context.Variables[&quot;turnstile-ledger-resp&quot;])'
         '.Body.As&lt;JObject&gt;())" />',
-        "        <choose>",
-        f'          <when condition="{budget_cond}">',
-        "            <return-response>",
-        '              <set-status code="402" reason="Credit Allocation Exhausted" />',
-        '              <set-header name="Content-Type" exists-action="override">'
-        "<value>application/json</value></set-header>",
-        f"              <set-body>{budget_err}</set-body>",
-        "            </return-response>",
-        "          </when>",
-        "        </choose>",
         "      </when>",
         "    </choose>",
         "    <!-- 2. Azure AI Content Safety Guardrail (Foundry Content Safety + Prompt Shields) -->",
@@ -1382,7 +1425,8 @@ def ensure_local_users_seeded(db: Session, settings: Settings) -> None:
         return
     Base.metadata.create_all(db.get_bind(), checkfirst=True)
     home_tid = settings.home_tenant_id or "00000000-0000-0000-0000-000000000001"
-    home_org = db.scalar(select(Organization).where(Organization.tenant_id == home_tid))
+    home_org = db.scalar(select(Organization).where(Organization.tenant_id == home_tid)
+                         .with_for_update().execution_options(populate_existing=True))
     if home_org is None:
         home_org = Organization(
             name=settings.home_organization_name or "Singtel IDS",
@@ -1393,7 +1437,8 @@ def ensure_local_users_seeded(db: Session, settings: Settings) -> None:
         db.flush()
 
     cust_tid = "00000000-0000-0000-0000-000000000002"
-    cust_org = db.scalar(select(Organization).where(Organization.tenant_id == cust_tid))
+    cust_org = db.scalar(select(Organization).where(Organization.tenant_id == cust_tid)
+                         .with_for_update().execution_options(populate_existing=True))
     if cust_org is None:
         cust_org = Organization(
             name=settings.bootstrap_customer_org or "Caldova",
@@ -1404,6 +1449,10 @@ def ensure_local_users_seeded(db: Session, settings: Settings) -> None:
         db.flush()
     elif cust_org.name == "Enterprise OpCo Alpha":
         cust_org.name = settings.bootstrap_customer_org or "Caldova"
+
+    if home_org.deleted_at or cust_org.deleted_at:
+        # Development seeding must not create access children under tombstones.
+        return
 
     admin_oid = "00000000-0000-0000-0000-000000000101"
     if db.scalar(
@@ -1465,6 +1514,9 @@ def ensure_local_users_seeded(db: Session, settings: Settings) -> None:
     ensure_model_garden_seeded(db)
     ensure_organization_budget(db, cust_org.id)
     ensure_organization_budget(db, home_org.id)
+    # The explicit development seed helpers above commit; reacquire the common
+    # lifecycle lock before creating subscriptions/teams, just like API writers.
+    lock_organization(db, cust_org.id, allow_disabled=True)
     sub_id = "00000000-0000-0000-0000-000000000301"
     team_id = "00000000-0000-0000-0000-000000000401"
     team_row = db.get(Team, team_id)
@@ -1566,11 +1618,15 @@ def authenticate_local_user(
     ensure_local_users_seeded(db, settings)
     email = payload.email.strip().lower()
     user = db.scalar(select(LocalUser).where(func.lower(LocalUser.email) == email))
-    if user is None or not user.enabled or not verify_password(payload.password, user.password_hash):
+    if user is None or user.deleted_at or not user.enabled or not verify_password(payload.password, user.password_hash):
         raise HTTPException(401, "Invalid email or password")
     org = db.get(Organization, user.organization_id)
-    if org is None or not org.enabled:
+    if org is None or org.deleted_at or not org.enabled:
         raise HTTPException(403, "Organization is disabled")
+    member = db.scalar(select(Member).where(Member.organization_id == org.id,
+                                           Member.object_id == user.object_id))
+    if member is None or member.deleted_at or not member.enabled:
+        raise HTTPException(403, "User is not approved")
     token = issue_local_jwt(settings, user, org)
     return LocalLoginResponse(
         access_token=token,
@@ -1609,6 +1665,7 @@ def register_local_user(
         db.add(org)
         db.flush()
         ensure_organization_budget(db, org.id)
+    lock_organization(db, org.id)
     oid = str(uuid4())
     db.add(Member(organization_id=org.id, object_id=oid, role="customer", enabled=True))
     user = LocalUser(
@@ -1650,6 +1707,7 @@ def _local_user_output(db: Session, user: LocalUser) -> LocalUserOutput:
         role=user.role,  # type: ignore[arg-type]
         enabled=user.enabled,
         created_at=aware(user.created_at),
+        deleted_at=aware(user.deleted_at) if user.deleted_at else None,
     )
 
 
@@ -1658,7 +1716,7 @@ def list_local_users(
 ) -> list[LocalUserOutput]:
     if settings.local_auth_enabled:
         ensure_local_users_seeded(db, settings)
-    query = select(LocalUser).order_by(LocalUser.email.asc())
+    query = select(LocalUser).where(LocalUser.deleted_at.is_(None)).order_by(LocalUser.email.asc())
     if organization_id is not None:
         query = query.where(LocalUser.organization_id == organization_id)
     return [_local_user_output(db, row) for row in db.scalars(query).all()]
@@ -1667,9 +1725,9 @@ def list_local_users(
 def create_local_user(
     db: Session, settings: Settings, principal: Principal, payload: LocalUserCreate
 ) -> LocalUserOutput:
-    org = db.get(Organization, str(payload.organization_id))
-    if org is None:
-        raise HTTPException(404, "Organization not found")
+    from aiflux.archival import lock_identity
+    lock_identity(db, principal)
+    org = lock_organization(db, str(payload.organization_id))
     if payload.role == "ids_admin" and org.tenant_id != settings.home_tenant_id:
         raise HTTPException(422, "IDS admin role can only be granted in the home organization")
     email = payload.email.strip().lower()
@@ -1697,9 +1755,16 @@ def create_local_user(
 def update_local_user(
     db: Session, principal: Principal, user_id: str, payload: LocalUserUpdate
 ) -> LocalUserOutput:
-    user = db.get(LocalUser, user_id)
+    from aiflux.archival import lock_identity, member_blockers, require_unarchived
+    lock_identity(db, principal)
+    user = db.get(LocalUser, user_id, populate_existing=True)
     if user is None:
         raise HTTPException(404, "User not found")
+    lock_organization(db, user.organization_id, allow_disabled=True)
+    require_unarchived(user)
+    if (not payload.enabled and user.organization_id == principal.organization_id
+            and user.object_id == principal.object_id):
+        raise HTTPException(409, "Cannot revoke your own account or administrator membership")
     user.enabled = payload.enabled
     if payload.password:
         user.password_hash = hash_password(payload.password)
@@ -1710,6 +1775,11 @@ def update_local_user(
         )
     )
     if member is not None:
+        require_unarchived(member)
+        if not payload.enabled:
+            blockers = member_blockers(db, principal, member)
+            if blockers:
+                raise HTTPException(409, blockers)
         member.enabled = payload.enabled
     audit(db, principal, "local_user.updated", user.id, user.organization_id)
     db.commit()

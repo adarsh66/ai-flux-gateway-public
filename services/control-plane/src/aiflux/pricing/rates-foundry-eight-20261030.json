@@ -1,0 +1,90 @@
+{
+  "revision": "foundry-eight-20261030-v1",
+  "checked_at": "2026-10-30",
+  "currency": "USD",
+  "unit": "per_million_tokens",
+  "applicable_from": "2026-10-27T06:06:02.045288Z",
+  "basis": "Frozen onboarding showback estimates, available at the existing POC cutoff to include retained acceptance probes. Never ledger, access or enforcement rates; not invoices.",
+  "sources": {
+    "foundry-eight-openai": "https://azure.microsoft.com/en-us/pricing/details/cognitive-services/openai-service/",
+    "foundry-eight-anthropic": "https://platform.claude.com/docs/en/about-claude/pricing",
+    "foundry-eight-anthropic-fast": "https://platform.claude.com/docs/en/build-with-claude/fast-mode",
+    "foundry-eight-mistral": "https://mistral.ai/pricing"
+  },
+  "assumptions": "Rates approved from planning research; not freshly fetched during source implementation. GlobalStandard text-chat estimates only. Context limits below are conservative estimation applicability, not advertised model capabilities. Native Anthropic input excludes cache reads and writes, but APIM finops-v1 normalizes persisted input to inclusive prompt totals for every provider. Usage estimates subtract cache subsets from that inclusive total; native accounting metadata is provenance only. Missing native cache counts and positive native cache writes with unverified TTL remain unestimated. The quoted write rate is the five-minute tier, not evidence that a request used that TTL. Fast alias requires independently accepted usage.speed=fast, not a latency or name inference. No invoice, discount, tax, tools, images or hosting guarantees.",
+  "rates": [
+    {
+      "model": "claude-sonnet-5-5", "deployment_model": "claude-sonnet-5-5",
+      "provider": "Anthropic", "region": "eastus", "model_version": "2", "sku": "GlobalStandard",
+      "source": "foundry-eight-anthropic", "source_model": "Claude Sonnet 5.5; Anthropic Foundry standard model/feature rates via CCU",
+      "status": "public_list", "input": "2", "output": "10", "cached": "0.10", "write": "2.50",
+      "input_includes_cached": false, "usage_input_includes_cached": true, "cache_write_ttl_seconds": 300, "cache_write_ttl_verified": false,
+      "max_input_tokens": 128000, "context_applicability": "Conservative standard-text estimate for total native prompt tokens <=128000, including cache reads and writes; not a model context capability claim.",
+      "checked_at": "2026-10-30", "assumption": "Foundry billed at Anthropic standard model/feature rates via CCU; five-minute write tier quoted, actual TTL unverified. Not an invoice."
+    },
+    {
+      "model": "claude-opus-5-5", "deployment_model": "claude-opus-5-5",
+      "provider": "Anthropic", "region": "eastus", "model_version": "2", "sku": "GlobalStandard",
+      "source": "foundry-eight-anthropic", "source_model": "Claude Opus 5.5; Anthropic Foundry standard model/feature rates via CCU",
+      "status": "public_list", "input": "4", "output": "20", "cached": "0.20", "write": "5",
+      "input_includes_cached": false, "usage_input_includes_cached": true, "cache_write_ttl_seconds": 300, "cache_write_ttl_verified": false,
+      "max_input_tokens": 128000, "context_applicability": "Conservative standard-text estimate for total native prompt tokens <=128000, including cache reads and writes; not a model context capability claim.",
+      "checked_at": "2026-10-30", "assumption": "Foundry billed at Anthropic standard model/feature rates via CCU; five-minute write tier quoted, actual TTL unverified. Not an invoice."
+    },
+    {
+      "model": "claude-opus-5-5-fast", "deployment_model": "claude-opus-5-5-fast",
+      "provider": "Anthropic", "region": "eastus", "model_version": "2", "sku": "GlobalStandard",
+      "source": "foundry-eight-anthropic", "source_model": "Claude Opus 5.5 fast mode; Anthropic Foundry standard fast-feature rates via CCU",
+      "status": "public_list", "input": "8", "output": "40", "cached": "0.40", "write": "10",
+      "input_includes_cached": false, "usage_input_includes_cached": true, "cache_write_ttl_seconds": 300, "cache_write_ttl_verified": false,
+      "required_usage_speed": "fast", "fast_mode_source": "foundry-eight-anthropic-fast",
+      "max_input_tokens": 128000, "context_applicability": "Conservative standard-text fast-mode estimate for total native prompt tokens <=128000, including cache reads and writes; not a model context capability claim.",
+      "checked_at": "2026-10-30", "assumption": "Foundry standard fast-feature rates via CCU. Retained requested.json ARM model.name is claude-opus-5-5-fast. Hosting/fast feature must be accepted independently with usage.speed=fast; suffix alone is not proof. Five-minute write tier quoted, actual TTL unverified. Not an invoice."
+    },
+    {
+      "model": "claude-haiku-5-5", "deployment_model": "claude-haiku-5-5",
+      "provider": "Anthropic", "region": "eastus", "model_version": "2", "sku": "GlobalStandard",
+      "source": "foundry-eight-anthropic", "source_model": "Claude Haiku 5.5 short context <=100k; Anthropic Foundry standard model/feature rates via CCU",
+      "status": "public_list", "input": "0.10", "output": "0.50", "cached": "0.01", "write": "0.125",
+      "input_includes_cached": false, "usage_input_includes_cached": true, "cache_write_ttl_seconds": 300, "cache_write_ttl_verified": false,
+      "max_input_tokens": 100000, "context_applicability": "Short-context tier only: total native prompt tokens <=100000, including cache reads and writes. Above this tier input/output rates differ and remain unestimated.",
+      "checked_at": "2026-10-30", "assumption": "Do not apply the cheap tier above 100k prompt tokens. Foundry standard rates via CCU; five-minute write tier quoted, actual TTL unverified. Not an invoice."
+    },
+    {
+      "model": "gpt-6.1-terra", "deployment_model": "gpt-6.1-terra",
+      "provider": "OpenAI", "region": "eastus", "model_version": "2026-10-26", "sku": "GlobalStandard",
+      "source": "foundry-eight-openai", "source_model": "GPT-6.1 Terra short-context Global Standard",
+      "status": "public_list", "input": "1", "output": "5", "cached": "0.05", "write": "1.25",
+      "input_includes_cached": true, "usage_input_includes_cached": true, "max_input_tokens": 128000,
+      "context_applicability": "Short-context estimate only: inclusive prompt input <=128000. Long-context prices differ and remain unestimated.",
+      "checked_at": "2026-10-30", "assumption": "Global short-context public list estimate, not Batch/Priority/PTU or an invoice. Missing cache counts retain the disclosed standard-input approximation."
+    },
+    {
+      "model": "gpt-6-luna", "deployment_model": "gpt-6-luna",
+      "provider": "OpenAI", "region": "eastus", "model_version": "2026-09-22", "sku": "GlobalStandard",
+      "source": "foundry-eight-openai", "source_model": "GPT-6 Luna short-context Global Standard",
+      "status": "public_list", "input": "0.10", "output": "0.50", "cached": "0.01", "write": "0.125",
+      "input_includes_cached": true, "usage_input_includes_cached": true, "max_input_tokens": 128000,
+      "context_applicability": "Short-context estimate only: inclusive prompt input <=128000. Long-context prices differ and remain unestimated.",
+      "checked_at": "2026-10-30", "assumption": "Global short-context public list estimate, not Batch/Priority/PTU or an invoice. Missing cache counts retain the disclosed standard-input approximation."
+    },
+    {
+      "model": "claude-opus-4-8", "deployment_model": "claude-opus-4-8",
+      "provider": "Anthropic", "region": "eastus", "model_version": "2", "sku": "GlobalStandard",
+      "source": "foundry-eight-anthropic", "source_model": "Claude Opus 4.8; Anthropic Foundry standard model/feature rates via CCU",
+      "status": "public_list", "input": "5", "output": "25", "cached": "0.50", "write": "6.25",
+      "input_includes_cached": false, "usage_input_includes_cached": true, "cache_write_ttl_seconds": 300, "cache_write_ttl_verified": false,
+      "max_input_tokens": 128000, "context_applicability": "Conservative standard-text estimate for total native prompt tokens <=128000, including cache reads and writes; not a model context capability claim.",
+      "checked_at": "2026-10-30", "assumption": "Foundry billed at Anthropic standard model/feature rates via CCU; five-minute write tier quoted, actual TTL unverified. Not an invoice."
+    },
+    {
+      "model": "Mistral-Large-3", "deployment_model": "Mistral-Large-3",
+      "provider": "Mistral AI", "region": "eastus", "model_version": "1", "sku": "GlobalStandard",
+      "source": "foundry-eight-mistral", "source_model": "Mistral Large public family pricing; proxy for Azure Mistral-Large-3 v1",
+      "status": "sourced_proxy", "input": "0.50", "output": "1.50",
+      "input_includes_cached": true, "usage_input_includes_cached": true, "max_input_tokens": 128000,
+      "context_applicability": "Conservative text-only estimate for inclusive prompt input <=128000; family proxy, not a verified deployed-version context tariff.",
+      "checked_at": "2026-10-30", "assumption": "Publisher family-level planning estimate, NOT a verified Azure Large3 tariff or invoice. Cache rates unavailable; nonzero or missing cache details use the disclosed standard-input approximation, not invented cache prices."
+    }
+  ]
+}

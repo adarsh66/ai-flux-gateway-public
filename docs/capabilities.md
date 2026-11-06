@@ -84,7 +84,11 @@ revalidate when relevant behavior changes.
 #10 / [PR #14](https://github.com/ajanakiraman_microsoft/ai-flux-gateway/pull/14)
 adds model filtering/discovery, collapsed transactions and pricing disclosure;
 it is not merged baseline behavior here. #9 admin safety/limit editing, #11
-customer one-click deployment and #8 stateless Auto classification are proposed.
+customer one-click deployment are proposed. #8 gateway-direct Auto classification
+is now implemented in source, default-off and not deployed: shared release
+defaults need no customer approval/seed; actual APIM-native MI/response validation
+and release acceptance remain outstanding. See the
+[2026-10-29 reconciliation and exact test results](auto-gateway-source-only-20261029.md).
 No Responses/Assistants/audio/images/agent endpoints, tool executor, semantic
 cache or subscription conversation memory is provided by the guarded release.
 

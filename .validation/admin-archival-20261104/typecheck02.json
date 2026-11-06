@@ -1,0 +1,23 @@
+{
+  "at": "2026-11-04T01:01:31.199Z",
+  "results": [
+    {
+      "project": "packages/ui",
+      "exit": 0,
+      "error": null,
+      "output": ""
+    },
+    {
+      "project": "apps/admin-portal",
+      "exit": 0,
+      "error": null,
+      "output": ""
+    },
+    {
+      "project": "apps/customer-portal",
+      "exit": 0,
+      "error": null,
+      "output": ""
+    }
+  ]
+}

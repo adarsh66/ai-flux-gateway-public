@@ -69,7 +69,7 @@ function LocalPostgresGate({ config, portalName, allowedRoles, children }: { con
   const [phase, setPhase] = useState<Phase>(() =>
     initialSession ? { kind: "ready", me: initialSession.user } : { kind: "signed-out" },
   );
-  const [mode, setMode] = useState<"login" | "register">("login");
+  const [mode] = useState<"login" | "register">("login");
   const isAdminOnly = allowedRoles.includes("ids_admin") && !allowedRoles.includes("customer");
   const [email, setEmail] = useState(isAdminOnly ? "admin@tokenx-ids.com" : "developer@caldova.com");
   const [password, setPassword] = useState("");
@@ -161,15 +161,6 @@ function LocalPostgresGate({ config, portalName, allowedRoles, children }: { con
             <Field label="Password">{(id) => <input id={id} type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />}</Field>
             <button className="btn primary" type="submit">{mode === "register" ? "Create account" : "Sign in"}</button>
           </form>
-          {!isAdminOnly && (
-            <p className="muted">
-              {mode === "register" ? (
-                <button className="btn" type="button" onClick={() => setMode("login")}>Already have an account? Sign in</button>
-              ) : (
-                <button className="btn" type="button" onClick={() => setMode("register")}>Create a new OpCo account</button>
-              )}
-            </p>
-          )}
         </>
       )}
       {phase.kind === "denied" && (

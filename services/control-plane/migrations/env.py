@@ -4,13 +4,15 @@ from aiflux.models import Base
 from alembic import context
 from sqlalchemy import Connection
 
-settings = get_settings()
-if not settings.database_url:
+supplied_connection = context.config.attributes.get("connection")
+settings = get_settings() if supplied_connection is None else None
+url = context.config.get_main_option("sqlalchemy.url") or (settings.database_url if settings else None)
+if supplied_connection is None and not url:
     raise RuntimeError("AIFLUX_DATABASE_URL is required for migrations")
 
 if context.is_offline_mode():
     context.configure(
-        url=settings.database_url, target_metadata=Base.metadata, literal_binds=True,
+        url=url, target_metadata=Base.metadata, literal_binds=True,
         dialect_opts={"paramstyle": "named"},
     )
     with context.begin_transaction():
@@ -21,9 +23,8 @@ else:
         with context.begin_transaction():
             context.run_migrations()
 
-    supplied_connection = context.config.attributes.get("connection")
     if supplied_connection is not None:
         migrate(supplied_connection)
     else:
-        with engine_for(settings.database_url).connect() as connection:
+        with engine_for(url).connect() as connection:
             migrate(connection)

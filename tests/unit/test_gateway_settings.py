@@ -212,10 +212,10 @@ def test_fragment_management_is_allowlisted_and_conditional(env, monkeypatch):
     value, etag = client.get_settings_fragment("dev-openai")
     client.put_settings_fragment("dev-openai", value, etag)
     assert "/policyFragments/aiflux-dev-openai-settings?" in requests[0][1]
-    assert requests[0][1].endswith("&format=rawxml")
+    assert requests[0][1].endswith("&format=xml")
     assert "If-Match" not in requests[0][2]["headers"]
     assert requests[1][2]["headers"]["If-Match"] == '"etag"'
-    assert requests[1][2]["json"]["properties"]["format"] == "rawxml"
+    assert requests[1][2]["json"]["properties"]["format"] == "xml"
     for scope in ("dev-unified", "../policies"):
         with pytest.raises(ApimError):
             client.get_settings_fragment(scope)
@@ -305,9 +305,9 @@ def test_settings_migration_supports_existing_databases_and_repeated_upgrade(env
     config = Config("services/control-plane/alembic.ini")
     monkeypatch.setattr("aiflux.config.get_settings", lambda: env.settings)
     command.stamp(config, "0001")
-    command.upgrade(config, "head")
+    command.upgrade(config, "0002")
     assert "gateway_settings_revisions" in inspect(env.db_engine).get_table_names()
     command.downgrade(config, "0001")
     assert "gateway_settings_revisions" not in inspect(env.db_engine).get_table_names()
-    command.upgrade(config, "head")
+    command.upgrade(config, "0002")
     assert "gateway_settings" in inspect(env.db_engine).get_table_names()

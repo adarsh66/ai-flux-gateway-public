@@ -90,10 +90,10 @@ def test_accepted_sync_idempotent_gateway_only_unknown_prices_and_no_fake_deploy
         assert not row.enabled and row.priority == 9 and row.display_name == "Operator GLM"
 
 
-@pytest.mark.parametrize("delta", [timedelta(days=-2), timedelta(minutes=5)])
-def test_stale_or_future_external_evidence_does_not_hide_foundry(env, tmp_path, delta):
+@pytest.mark.parametrize("stamp", ["not-a-timestamp", "2026-01-01T00:00:00", (datetime.now(UTC) + timedelta(minutes=5)).isoformat()])
+def test_invalid_or_future_external_evidence_does_not_hide_foundry(env, tmp_path, stamp):
     data = external(env, tmp_path, True)
-    data["routes"][0]["verified_at"] = (datetime.now(UTC) + delta).isoformat()
+    data["routes"][0]["verified_at"] = stamp
     env.settings.external_inventory_path.write_text(json.dumps(data))
     inventory = AcceptedInventory.load(env.settings)
     assert inventory.route("glm-5.3") is None and inventory.route("test-alias") is not None

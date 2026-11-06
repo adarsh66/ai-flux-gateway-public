@@ -1,3 +1,122 @@
+/* Admin dashboard opt-in only: no customer pages or global panel overrides. */
+.admin-budget-page, .admin-budget-page .panel { min-width: 0; }
+.admin-budget-page .overview-budget-heading { display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap; }
+.admin-budget-page .overview-budget-heading h2 { margin: 0; }
+.admin-budget-page .overview-budget-heading p { margin: .4rem 0; }
+.admin-budget-page .overview-budget-refresh { display: flex; align-items: center; flex-wrap: wrap; gap: .75rem; font-size: .8rem; }
+.admin-budget-page .overview-budget-body { display: grid; grid-template-columns: minmax(220px, 1fr) minmax(0, 2fr); gap: 1.5rem; align-items: center; margin: 1.5rem 0; }
+.admin-budget-page .overview-budget-gauge .monthly-gauge-layout { display: grid; grid-template-columns: 52px minmax(0, 1fr); gap: 1rem; padding: 1.5rem 0 0; align-items: end; }
+.admin-budget-page .overview-budget-gauge .monthly-gauge-track { width: 52px; height: 190px; margin: 0 0 1rem; }
+.admin-budget-page .overview-budget-gauge .monthly-gauge-threshold > span { width: 95px; }
+.admin-budget-page .overview-budget-gauge .monthly-gauge-copy { padding-top: 2rem; }
+.admin-budget-page .overview-budget-gauge .monthly-gauge-copy .bento-value { font-size: clamp(1.5rem, 3vw, 2.4rem); }
+.admin-budget-page .overview-budget-metrics { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .75rem; margin: 0; }
+.admin-budget-page .overview-budget-metrics > div { background: var(--navy-800); border: 1px solid var(--line); border-radius: var(--radius); padding: 1rem; min-width: 0; }
+.admin-budget-page .overview-budget-metrics dt { color: var(--ink-dim); font-size: .8rem; }
+.admin-budget-page .overview-budget-metrics dd { margin: .5rem 0 0; font-family: var(--font-mono); font-size: clamp(1rem, 1.5vw, 1.35rem); font-weight: 700; overflow-wrap: anywhere; }
+.admin-budget-page .overview-budget-metrics .admin-internal-metric { grid-column: 1 / -1; border-color: var(--teal-500); }
+.admin-budget-page .admin-internal-metric p, .admin-budget-page .admin-internal-metric small { color: var(--ink-dim); font-size: .8rem; }
+.admin-budget-page .overview-budget-notice { font-size: .85rem; }
+.admin-budget-page .overview-disclosure { border-top: 1px solid var(--line); padding-top: .9rem; overflow-wrap: anywhere; }
+.admin-budget-page .overview-disclosure summary { cursor: pointer; color: var(--teal-400); font-size: .85rem; font-weight: 600; }
+.admin-budget-page .overview-disclosure summary:focus-visible { outline: 2px solid var(--teal-500); outline-offset: 4px; }
+.admin-budget-page .overview-budget-metadata { display: grid; gap: .75rem; font-size: .85rem; }
+.admin-budget-page .overview-budget-metadata dt { color: var(--ink-dim); }
+.admin-budget-page .overview-budget-metadata dd { margin: .25rem 0 0; }
+.admin-budget-page .table-wrap { max-width: 100%; overflow-x: auto; }
+@media (max-width: 900px) {
+  .admin-budget-page .overview-budget-body { grid-template-columns: minmax(0, 1fr); }
+  .admin-budget-page .overview-budget-gauge .monthly-gauge-layout { max-width: 340px; margin: auto; }
+}
+@media (max-width: 540px) {
+  .admin-budget-page .overview-budget-metrics { grid-template-columns: minmax(0, 1fr); }
+  .admin-budget-page .overview-budget-metrics > div { padding: .75rem; }
+}
+/* Cosmetic Overview/Credits only; no shared admin, Usage, or theme overrides. */
+.customer-overview-page { min-width: 0; }
+.customer-overview-page > *, .customer-overview-page .panel, .customer-overview-page .chart-card { min-width: 0; }
+.customer-overview-page .overview-budget-heading, .customer-overview-page .overview-usage-toolbar { display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap; }
+.customer-overview-page .overview-budget-heading h2, .customer-overview-page .overview-usage-toolbar h2 { margin: 0; }
+.customer-overview-page .overview-budget-heading p, .customer-overview-page .overview-usage-toolbar p { margin: .4rem 0; }
+.customer-overview-page .overview-budget-refresh { display: flex; align-items: center; flex-wrap: wrap; gap: .75rem; font-size: .8rem; }
+.customer-overview-page .overview-budget-body { display: grid; grid-template-columns: minmax(220px, 1fr) minmax(0, 2fr); gap: 1.5rem; align-items: center; margin: 1.5rem 0; }
+.customer-overview-page .overview-budget-gauge .monthly-gauge-layout { display: grid; grid-template-columns: 52px minmax(0, 1fr); gap: 1rem; padding: 1.5rem 0 0; align-items: end; }
+.customer-overview-page .overview-budget-gauge .monthly-gauge-track { width: 52px; height: 190px; margin: 0 0 1rem; }
+.customer-overview-page .overview-budget-gauge .monthly-gauge-threshold > span { width: 95px; }
+.customer-overview-page .overview-budget-gauge .monthly-gauge-copy { padding-top: 2rem; }
+.customer-overview-page .overview-budget-gauge .monthly-gauge-copy .bento-value { font-size: clamp(1.5rem, 3vw, 2.4rem); }
+.customer-overview-page .overview-budget-metrics { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .75rem; margin: 0; }
+.customer-overview-page .overview-budget-metrics > div { background: var(--navy-800); border: 1px solid var(--line); border-radius: var(--radius); padding: 1rem; min-width: 0; }
+.customer-overview-page .overview-budget-metrics dt { color: var(--ink-dim); font-size: .8rem; }
+.customer-overview-page .overview-budget-metrics dd { margin: .5rem 0 0; font-family: var(--font-mono); font-size: clamp(1rem, 1.5vw, 1.35rem); font-weight: 700; overflow-wrap: anywhere; }
+.customer-overview-page .overview-budget-notice { font-size: .85rem; }
+.customer-overview-page .overview-disclosure { border-top: 1px solid var(--line); padding-top: .9rem; overflow-wrap: anywhere; }
+.customer-overview-page .overview-disclosure summary { cursor: pointer; color: var(--teal-400); font-size: .85rem; font-weight: 600; }
+.customer-overview-page .overview-disclosure summary:focus-visible { outline: 2px solid var(--teal-500); outline-offset: 4px; border-radius: 2px; }
+.customer-overview-page .overview-budget-metadata { display: grid; gap: .75rem; font-size: .85rem; }
+.customer-overview-page .overview-budget-metadata dt { color: var(--ink-dim); }
+.customer-overview-page .overview-budget-metadata dd { margin: .25rem 0 0; }
+.customer-overview-page .overview-usage-toolbar { margin: 1.75rem 0 1rem; }
+.customer-overview-page .overview-usage-kpis { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; margin: 1rem 0; }
+.customer-overview-page .overview-usage-kpis .bento-card { min-width: 0; padding: 1.1rem; }
+.customer-overview-page .overview-usage-kpis .bento-value { margin: .6rem 0 .4rem; font-size: clamp(1.25rem, 2vw, 1.8rem); overflow-wrap: anywhere; }
+.customer-overview-page .overview-usage-kpis .bento-sub { margin: 0; }
+.customer-overview-page .overview-usage-coverage { margin-bottom: 1.5rem; }
+.customer-overview-page .visual-analytics-grid { grid-template-columns: minmax(0, 1fr); }
+.customer-overview-page .donut-layout { grid-template-columns: 180px minmax(0, 1fr); gap: 1.5rem; }
+.customer-overview-page .donut-layout > svg { width: 180px; height: 180px; max-width: 100%; justify-self: center; }
+.customer-overview-page .donut-legend { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr)); gap: .5rem 1.5rem; min-width: 0; }
+.customer-overview-page .donut-legend li { min-width: 0; gap: .75rem; }
+.customer-overview-page .donut-legend-label { min-width: 0; white-space: normal; overflow: visible; }
+.customer-overview-page .donut-legend-label strong { overflow-wrap: anywhere; }
+.customer-overview-page .theme-swatch { flex-shrink: 0; }
+.customer-overview-page .overview-model-share { flex-shrink: 0; text-align: right; font-family: var(--font-mono); font-weight: 700; }
+.customer-overview-page .overview-model-share small { display: block; font-size: .7rem; font-weight: 400; color: var(--ink-dim); }
+.customer-overview-page .table-wrap { max-width: 100%; overflow-x: auto; }
+@media (max-width: 900px) {
+  .customer-overview-page .overview-budget-body { grid-template-columns: minmax(0, 1fr); }
+  .customer-overview-page .overview-budget-gauge .monthly-gauge-layout { max-width: 340px; margin: auto; }
+  .customer-overview-page .overview-usage-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 540px) {
+  .customer-overview-page .overview-usage-kpis { grid-template-columns: minmax(0, 1fr); }
+  .customer-overview-page .overview-budget-metrics { gap: .5rem; }
+  .customer-overview-page .overview-budget-metrics > div { padding: .75rem; }
+  .customer-overview-page .donut-layout { grid-template-columns: minmax(0, 1fr); }
+  .customer-overview-page .overview-budget-refresh { align-items: flex-start; }
+}
+.monthly-overview-grid { display: grid; grid-template-columns: minmax(210px, .7fr) minmax(0, 1.6fr); gap: 1.25rem; margin: 1rem 0; }
+.monthly-overview-grid > * { min-width: 0; }
+.monthly-overview-grid dd { margin: .75rem 0 0; }
+.monthly-gauge-layout { display: flex; align-items: center; gap: 2rem; padding: 1.5rem .5rem .5rem; }
+.monthly-gauge-track { position: relative; flex: 0 0 64px; height: 224px; border: 1px solid var(--line); border-radius: 12px; background: var(--navy-800); margin: 1rem 7rem 1rem 0; }
+.monthly-gauge-fill { position: absolute; bottom: 0; width: 100%; background: var(--teal-500); border-radius: 10px; }
+.monthly-gauge-track.is-unknown { background: repeating-linear-gradient(135deg, transparent, transparent 7px, var(--line) 7px, var(--line) 9px); }
+.monthly-gauge-limit { position: absolute; left: 0; top: -1.6rem; width: 170px; font-size: .75rem; }
+.monthly-gauge-threshold { position: absolute; left: -4px; right: -4px; border-top: 2px dashed var(--ink); }
+.monthly-gauge-threshold > span { position: absolute; left: calc(100% + .5rem); width: 100px; transform: translateY(-50%); font-size: .75rem; }
+.monthly-gauge-copy { min-width: 0; overflow-wrap: anywhere; }
+.monthly-gauge-copy .bento-value { margin: 0; }
+@media (max-width: 760px) {
+  .monthly-overview-grid { grid-template-columns: minmax(0, 1fr); }
+  .monthly-gauge-layout { gap: .75rem; flex-wrap: wrap; }
+  .monthly-gauge-track { height: 180px; }
+  .monthly-gauge-copy { flex: 1 1 180px; }
+}
+/* Paired admin-only cost charts share one numerical page scale. */
+.deletion-backdrop { position: fixed; inset: 0; z-index: 1000; display: grid; place-items: center; padding: 1rem; background: rgba(2, 6, 23, .65); }
+.deletion-dialog { width: min(100%, 38rem); max-height: calc(100dvh - 2rem); overflow-y: auto; background: var(--navy-900); color: var(--ink); box-shadow: 0 24px 80px rgba(0, 0, 0, .3); }
+.deletion-dialog h2 { margin-top: 0; }
+.deletion-dialog form { display: grid; gap: 1rem; margin-top: 1.25rem; }
+.deletion-dialog textarea { min-height: 5rem; resize: vertical; }
+.organization-cost-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.5rem; }
+.organization-cost-grid section { min-width: 0; }
+.organization-cost-bars { list-style: none; padding: 0; margin: 0; }
+.organization-cost-bars li { padding: .8rem 0; border-bottom: 1px solid var(--border, #dce3ed); }
+.organization-cost-track { display: block; height: 12px; margin: .5rem 0; background: #e7edf5; border-radius: 6px; }
+.organization-cost-fill { display: block; height: 100%; max-width: 100%; background: #2563eb; border-radius: inherit; }
+.organization-cost-bars.internal .organization-cost-fill { background: #0d9488; }
+@media (max-width: 800px) { .organization-cost-grid { grid-template-columns: minmax(0, 1fr); } }
 @font-face {
   font-family: "Inter";
   font-style: normal;
@@ -485,6 +604,16 @@ a { color: var(--teal-300); text-decoration: none; }
   border-top: 1px solid var(--line);
 }
 
+/* Opt-in admin catalog layout; existing customer cards/badges stay unchanged. */
+.admin-model-catalog .model-catalog-card { min-width: 0; overflow-wrap: anywhere; }
+.admin-model-catalog .card-head { flex-wrap: wrap; }
+.admin-model-catalog .vendor-header > div:last-child { min-width: 0; }
+.admin-model-catalog .pricing-strip { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.admin-model-catalog .card-meta-row { flex-wrap: wrap; gap: 0.4rem; }
+@media (max-width: 380px) {
+  .admin-model-catalog .pricing-strip { grid-template-columns: minmax(0, 1fr); }
+}
+
 .bento-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -918,15 +1047,47 @@ legend { padding: 0 .4rem; color: var(--teal-500); font-weight: 650; font-size: 
 .usage-chart { display: block; width: 100%; height: auto; max-height: 230px; touch-action: pan-y; cursor: crosshair; }
 .chart-grid { stroke: var(--line); stroke-width: 1; }
 .chart-axis-label { fill: var(--ink-dim); font-size: 11px; }
-.chart-mark { stroke-width: 1.5; }
-.chart-mark.requests { stroke: var(--teal-500); }
-.chart-mark.tokens { stroke: #8b5cf6; }
-.chart-mark.latency { stroke: #f59e0b; }
+.chart-mark { stroke: none; }
+.chart-mark.requests { fill: var(--teal-500); }
+.chart-mark.tokens { fill: var(--info); }
+.chart-mark.latency { fill: var(--warn); }
 .chart-cursor { stroke: var(--ink); stroke-width: 1; stroke-dasharray: 3 3; opacity: .8; }
 .chart-tooltip { margin: .35rem 0; padding: .45rem .6rem; border-radius: 6px; background: var(--navy-800); font-variant-numeric: tabular-nums; font-family: var(--font-mono); }
 .chart-data { margin-top: .6rem; color: var(--ink-dim); }
 .chart-data summary { cursor: pointer; width: fit-content; }
 .chart-table-pager { display: flex; align-items: center; justify-content: center; gap: 1rem; padding: .5rem; }
+
+/* Customer Usage only: reuse the portal's panels, typography and theme tokens. */
+.customer-usage-page { display: flex; flex-direction: column; gap: 1rem; min-width: 0; }
+.customer-usage-page > .filters { padding: 1rem; border: 1px solid var(--line); border-radius: var(--radius); background: var(--navy-900); box-shadow: var(--card-shadow); margin: 0; gap: 1rem; align-items: end; }
+.customer-usage-page .filters .field { flex: 1 1 12rem; min-width: 0; }
+.customer-usage-page .usage-chart-section { margin: 0; }
+.customer-usage-page .usage-chart-head { margin-top: .75rem; }
+.customer-usage-page .stats { gap: 1rem; margin: 0; }
+.customer-usage-page .stat { border-radius: var(--radius); box-shadow: var(--card-shadow); }
+.customer-usage-page .stat dd { font-variant-numeric: tabular-nums; }
+.customer-usage-page .model-token-share { margin-top: 1rem; padding: 1.15rem; }
+.customer-usage-page .token-share-layout { display: grid; grid-template-columns: minmax(180px, 260px) minmax(0, 1fr); align-items: center; gap: 1.25rem; }
+.customer-usage-page .token-share-figure { position: relative; text-align: center; min-width: 0; }
+.customer-usage-page .token-share-figure > svg { display: block; width: 100%; height: auto; }
+.customer-usage-page .token-share-center { position: absolute; inset: 30%; display: flex; flex-direction: column; justify-content: center; pointer-events: none; }
+.customer-usage-page .token-share-center strong, .customer-usage-page .token-share-total strong { font-size: 1.1rem; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; color: var(--ink); }
+.customer-usage-page .token-share-center span, .customer-usage-page .token-share-total span { display: block; font-size: .75rem; color: var(--ink-dim); }
+.customer-usage-page .token-share-pattern { stroke: var(--navy-900); fill: var(--navy-900); stroke-width: 1; }
+.customer-usage-page .token-share-legend { width: 100%; }
+.customer-usage-page .token-share-legend caption { text-align: left; color: var(--ink-dim); padding-bottom: .6rem; }
+.customer-usage-page .token-share-legend th[scope="row"] { overflow-wrap: anywhere; white-space: normal; }
+.customer-usage-page .token-share-legend tr:focus-visible { outline: 2px solid var(--teal-500); outline-offset: -2px; background: var(--brand-soft); }
+.customer-usage-page .token-share-swatch { display: inline-block; vertical-align: middle; width: .85rem; height: .85rem; margin-right: .5rem; background: var(--share-color); border: 1px solid var(--ink-dim); }
+.customer-usage-page .token-share-swatch.pattern-1 { background-image: repeating-linear-gradient(135deg, transparent 0 3px, var(--navy-900) 3px 4px); }
+.customer-usage-page .token-share-swatch.pattern-2 { background-image: radial-gradient(var(--navy-900) 1px, transparent 1px); background-size: 4px 4px; }
+.customer-usage-page .token-share-swatch.pattern-3 { background-image: repeating-linear-gradient(0deg, transparent 0 3px, var(--navy-900) 3px 4px); }
+@media (max-width: 720px) {
+  .customer-usage-page .token-share-layout { grid-template-columns: minmax(0, 1fr); }
+  .customer-usage-page .token-share-figure { width: min(100%, 240px); justify-self: center; }
+  .customer-usage-page .usage-chart-section, .customer-usage-page .model-token-share { padding: .75rem; }
+  .customer-usage-page .filters { flex-wrap: wrap; }
+}
 
 .gate {
   min-height: 100vh;

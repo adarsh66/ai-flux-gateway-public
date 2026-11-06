@@ -1,0 +1,428 @@
+[
+  {
+    "id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.CognitiveServices/accounts/IDS-AI-Token",
+    "location": "southeastasia",
+    "name": "IDS-AI-Token",
+    "type": "Microsoft.CognitiveServices/accounts"
+  },
+  {
+    "id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.CognitiveServices/accounts/IDS-AI-Token/projects/proj-poc-token-exchange",
+    "location": "southeastasia",
+    "name": "IDS-AI-Token/proj-poc-token-exchange",
+    "type": "Microsoft.CognitiveServices/accounts/projects"
+  },
+  {
+    "id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.CognitiveServices/accounts/IDS-AI-Token-Backup",
+    "location": "australiaeast",
+    "name": "IDS-AI-Token-Backup",
+    "type": "Microsoft.CognitiveServices/accounts"
+  },
+  {
+    "id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.CognitiveServices/accounts/IDS-AI-Token-Backup/projects/proj-poc-ids-tocken-exchange-backup",
+    "location": "australiaeast",
+    "name": "IDS-AI-Token-Backup/proj-poc-ids-tocken-exchange-backup",
+    "type": "Microsoft.CognitiveServices/accounts/projects"
+  },
+  {
+    "id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Storage/storageAccounts/projpoctokenex",
+    "location": "southeastasia",
+    "name": "projpoctokenex",
+    "type": "Microsoft.Storage/storageAccounts"
+  },
+  {
+    "id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.OperationalInsights/workspaces/ids-token-image-resource-logs",
+    "location": "eastus2",
+    "name": "ids-token-image-resource-logs",
+    "type": "Microsoft.OperationalInsights/workspaces"
+  },
+  {
+    "id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.CognitiveServices/accounts/ids-token-image-resource",
+    "location": "eastus2",
+    "name": "ids-token-image-resource",
+    "type": "Microsoft.CognitiveServices/accounts"
+  },
+  {
+    "id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Insights/components/ids-token-image-resource-appinsights",
+    "location": "eastus2",
+    "name": "ids-token-image-resource-appinsights",
+    "type": "Microsoft.Insights/components"
+  },
+  {
+    "id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.CognitiveServices/accounts/ids-token-image-resource/projects/ids-token-image",
+    "location": "eastus2",
+    "name": "ids-token-image-resource/ids-token-image",
+    "type": "Microsoft.CognitiveServices/accounts/projects"
+  },
+  {
+    "id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/microsoft.insights/actiongroups/Application Insights Smart Detection",
+    "location": "global",
+    "name": "Application Insights Smart Detection",
+    "type": "microsoft.insights/actiongroups"
+  },
+  {
+    "id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.ManagedIdentity/userAssignedIdentities/poc-ids-token-ex-customer-identity",
+    "location": "southeastasia",
+    "name": "poc-ids-token-ex-customer-identity",
+    "type": "Microsoft.ManagedIdentity/userAssignedIdentities"
+  },
+  {
+    "id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Storage/storageAccounts/pocidstokenexfunc",
+    "location": "southeastasia",
+    "name": "pocidstokenexfunc",
+    "type": "Microsoft.Storage/storageAccounts"
+  },
+  {
+    "id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.CognitiveServices/accounts/poc-ids-token-ex-safety",
+    "location": "southeastasia",
+    "name": "poc-ids-token-ex-safety",
+    "type": "Microsoft.CognitiveServices/accounts"
+  },
+  {
+    "id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.KeyVault/vaults/pocidstokenexkv",
+    "location": "southeastasia",
+    "name": "pocidstokenexkv",
+    "type": "Microsoft.KeyVault/vaults"
+  },
+  {
+    "id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Network/networkSecurityGroups/poc-ids-token-ex-app-service-integration-nsg",
+    "location": "southeastasia",
+    "name": "poc-ids-token-ex-app-service-integration-nsg",
+    "type": "Microsoft.Network/networkSecurityGroups"
+  },
+  {
+    "id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.ContainerRegistry/registries/pocidstokenexacr",
+    "location": "southeastasia",
+    "name": "pocidstokenexacr",
+    "type": "Microsoft.ContainerRegistry/registries"
+  },
+  {
+    "id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Web/serverFarms/poc-ids-token-ex-apps-plan",
+    "location": "southeastasia",
+    "name": "poc-ids-token-ex-apps-plan",
+    "type": "Microsoft.Web/serverFarms"
+  },
+  {
+    "id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Network/virtualNetworks/poc-ids-token-ex-vnet",
+    "location": "southeastasia",
+    "name": "poc-ids-token-ex-vnet",
+    "type": "Microsoft.Network/virtualNetworks"
+  },
+  {
+    "id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Sql/servers/poc-ids-token-ex-sql",
+    "location": "southeastasia",
+    "name": "poc-ids-token-ex-sql",
+    "type": "Microsoft.Sql/servers"
+  },
+  {
+    "id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.ManagedIdentity/userAssignedIdentities/poc-ids-token-ex-gateway-identity",
+    "location": "southeastasia",
+    "name": "poc-ids-token-ex-gateway-identity",
+    "type": "Microsoft.ManagedIdentity/userAssignedIdentities"
+  },
+  {
+    "id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.OperationalInsights/workspaces/poc-ids-token-ex-logs",
+    "location": "southeastasia",
+    "name": "poc-ids-token-ex-logs",
+    "type": "Microsoft.OperationalInsights/workspaces"
+  },
+  {
+    "id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.ManagedIdentity/userAssignedIdentities/poc-ids-token-ex-api-identity",
+    "location": "southeastasia",
+    "name": "poc-ids-token-ex-api-identity",
+    "type": "Microsoft.ManagedIdentity/userAssignedIdentities"
+  },
+  {
+    "id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.ManagedIdentity/userAssignedIdentities/poc-ids-token-ex-admin-identity",
+    "location": "southeastasia",
+    "name": "poc-ids-token-ex-admin-identity",
+    "type": "Microsoft.ManagedIdentity/userAssignedIdentities"
+  },
+  {
+    "id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.ManagedIdentity/userAssignedIdentities/poc-ids-token-ex-ingestion-identity",
+    "location": "southeastasia",
+    "name": "poc-ids-token-ex-ingestion-identity",
+    "type": "Microsoft.ManagedIdentity/userAssignedIdentities"
+  },
+  {
+    "id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.CognitiveServices/accounts/poc-ids-token-ex-foundry",
+    "location": "eastus",
+    "name": "poc-ids-token-ex-foundry",
+    "type": "Microsoft.CognitiveServices/accounts"
+  },
+  {
+    "id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.ApiManagement/service/poc-ids-token-ex-apim",
+    "location": "southeastasia",
+    "name": "poc-ids-token-ex-apim",
+    "type": "Microsoft.ApiManagement/service"
+  },
+  {
+    "id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Insights/components/poc-ids-token-ex-insights",
+    "location": "southeastasia",
+    "name": "poc-ids-token-ex-insights",
+    "type": "Microsoft.Insights/components"
+  },
+  {
+    "id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Sql/servers/poc-ids-token-ex-sql/databases/master",
+    "location": "southeastasia",
+    "name": "poc-ids-token-ex-sql/master",
+    "type": "Microsoft.Sql/servers/databases"
+  },
+  {
+    "id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Network/privateDnsZones/privatelink.blob.core.windows.net",
+    "location": "global",
+    "name": "privatelink.blob.core.windows.net",
+    "type": "Microsoft.Network/privateDnsZones"
+  },
+  {
+    "id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Network/privateDnsZones/privatelink.queue.core.windows.net",
+    "location": "global",
+    "name": "privatelink.queue.core.windows.net",
+    "type": "Microsoft.Network/privateDnsZones"
+  },
+  {
+    "id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Network/privateDnsZones/privatelink.database.windows.net",
+    "location": "global",
+    "name": "privatelink.database.windows.net",
+    "type": "Microsoft.Network/privateDnsZones"
+  },
+  {
+    "id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Network/privateDnsZones/privatelink.vaultcore.azure.net",
+    "location": "global",
+    "name": "privatelink.vaultcore.azure.net",
+    "type": "Microsoft.Network/privateDnsZones"
+  },
+  {
+    "id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Sql/servers/poc-ids-token-ex-sql/databases/aiflux",
+    "location": "southeastasia",
+    "name": "poc-ids-token-ex-sql/aiflux",
+    "type": "Microsoft.Sql/servers/databases"
+  },
+  {
+    "id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Network/privateDnsZones/privatelink.table.core.windows.net",
+    "location": "global",
+    "name": "privatelink.table.core.windows.net",
+    "type": "Microsoft.Network/privateDnsZones"
+  },
+  {
+    "id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Network/privateDnsZones/privatelink.database.windows.net/virtualNetworkLinks/poc-ids-token-ex-sql",
+    "location": "global",
+    "name": "privatelink.database.windows.net/poc-ids-token-ex-sql",
+    "type": "Microsoft.Network/privateDnsZones/virtualNetworkLinks"
+  },
+  {
+    "id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Network/privateDnsZones/privatelink.queue.core.windows.net/virtualNetworkLinks/poc-ids-token-ex-queue",
+    "location": "global",
+    "name": "privatelink.queue.core.windows.net/poc-ids-token-ex-queue",
+    "type": "Microsoft.Network/privateDnsZones/virtualNetworkLinks"
+  },
+  {
+    "id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Network/privateDnsZones/privatelink.blob.core.windows.net/virtualNetworkLinks/poc-ids-token-ex-blob",
+    "location": "global",
+    "name": "privatelink.blob.core.windows.net/poc-ids-token-ex-blob",
+    "type": "Microsoft.Network/privateDnsZones/virtualNetworkLinks"
+  },
+  {
+    "id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Network/privateDnsZones/privatelink.table.core.windows.net/virtualNetworkLinks/poc-ids-token-ex-table",
+    "location": "global",
+    "name": "privatelink.table.core.windows.net/poc-ids-token-ex-table",
+    "type": "Microsoft.Network/privateDnsZones/virtualNetworkLinks"
+  },
+  {
+    "id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Network/privateDnsZones/privatelink.vaultcore.azure.net/virtualNetworkLinks/poc-ids-token-ex-vault",
+    "location": "global",
+    "name": "privatelink.vaultcore.azure.net/poc-ids-token-ex-vault",
+    "type": "Microsoft.Network/privateDnsZones/virtualNetworkLinks"
+  },
+  {
+    "id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Network/privateEndpoints/poc-ids-token-ex-blob-pe",
+    "location": "southeastasia",
+    "name": "poc-ids-token-ex-blob-pe",
+    "type": "Microsoft.Network/privateEndpoints"
+  },
+  {
+    "id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Network/privateEndpoints/poc-ids-token-ex-vault-pe",
+    "location": "southeastasia",
+    "name": "poc-ids-token-ex-vault-pe",
+    "type": "Microsoft.Network/privateEndpoints"
+  },
+  {
+    "id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Network/privateEndpoints/poc-ids-token-ex-sql-pe",
+    "location": "southeastasia",
+    "name": "poc-ids-token-ex-sql-pe",
+    "type": "Microsoft.Network/privateEndpoints"
+  },
+  {
+    "id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Network/networkInterfaces/poc-ids-token-ex-sql-pe.nic.32bf27c0-c794-42cf-8b24-867a9cdd3974",
+    "location": "southeastasia",
+    "name": "poc-ids-token-ex-sql-pe.nic.32bf27c0-c794-42cf-8b24-867a9cdd3974",
+    "type": "Microsoft.Network/networkInterfaces"
+  },
+  {
+    "id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Network/networkInterfaces/poc-ids-token-ex-vault-pe.nic.69bc5c09-cf2a-4b0d-802c-cf128350e29c",
+    "location": "southeastasia",
+    "name": "poc-ids-token-ex-vault-pe.nic.69bc5c09-cf2a-4b0d-802c-cf128350e29c",
+    "type": "Microsoft.Network/networkInterfaces"
+  },
+  {
+    "id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Network/networkInterfaces/poc-ids-token-ex-blob-pe.nic.932821d9-615f-46c0-9a88-1c268d1a961a",
+    "location": "southeastasia",
+    "name": "poc-ids-token-ex-blob-pe.nic.932821d9-615f-46c0-9a88-1c268d1a961a",
+    "type": "Microsoft.Network/networkInterfaces"
+  },
+  {
+    "id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Network/privateEndpoints/poc-ids-token-ex-queue-pe",
+    "location": "southeastasia",
+    "name": "poc-ids-token-ex-queue-pe",
+    "type": "Microsoft.Network/privateEndpoints"
+  },
+  {
+    "id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Network/networkInterfaces/poc-ids-token-ex-queue-pe.nic.cb5a1b80-5c05-4da2-b8d5-e8d3509135b3",
+    "location": "southeastasia",
+    "name": "poc-ids-token-ex-queue-pe.nic.cb5a1b80-5c05-4da2-b8d5-e8d3509135b3",
+    "type": "Microsoft.Network/networkInterfaces"
+  },
+  {
+    "id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Network/privateEndpoints/poc-ids-token-ex-table-pe",
+    "location": "southeastasia",
+    "name": "poc-ids-token-ex-table-pe",
+    "type": "Microsoft.Network/privateEndpoints"
+  },
+  {
+    "id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Network/networkInterfaces/poc-ids-token-ex-table-pe.nic.2074c6b8-be79-42c4-85bf-7c5a5e8ce0a8",
+    "location": "southeastasia",
+    "name": "poc-ids-token-ex-table-pe.nic.2074c6b8-be79-42c4-85bf-7c5a5e8ce0a8",
+    "type": "Microsoft.Network/networkInterfaces"
+  },
+  {
+    "id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Web/sites/poc-ids-token-ex-customer",
+    "location": "southeastasia",
+    "name": "poc-ids-token-ex-customer",
+    "type": "Microsoft.Web/sites"
+  },
+  {
+    "id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Web/sites/poc-ids-token-ex-admin",
+    "location": "southeastasia",
+    "name": "poc-ids-token-ex-admin",
+    "type": "Microsoft.Web/sites"
+  },
+  {
+    "id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Web/sites/poc-ids-token-ex-ingestion",
+    "location": "southeastasia",
+    "name": "poc-ids-token-ex-ingestion",
+    "type": "Microsoft.Web/sites"
+  },
+  {
+    "id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Web/sites/poc-ids-token-ex-api",
+    "location": "southeastasia",
+    "name": "poc-ids-token-ex-api",
+    "type": "Microsoft.Web/sites"
+  },
+  {
+    "id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Network/privateEndpoints/poc-ids-token-ex-api-pe",
+    "location": "southeastasia",
+    "name": "poc-ids-token-ex-api-pe",
+    "type": "Microsoft.Network/privateEndpoints"
+  },
+  {
+    "id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Network/networkInterfaces/poc-ids-token-ex-api-pe.nic.bb2e06fc-52dd-409e-91e5-003976e85fc4",
+    "location": "southeastasia",
+    "name": "poc-ids-token-ex-api-pe.nic.bb2e06fc-52dd-409e-91e5-003976e85fc4",
+    "type": "Microsoft.Network/networkInterfaces"
+  },
+  {
+    "id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Network/privateDnsZones/privatelink.azurewebsites.net",
+    "location": "global",
+    "name": "privatelink.azurewebsites.net",
+    "type": "Microsoft.Network/privateDnsZones"
+  },
+  {
+    "id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Network/privateDnsZones/privatelink.azurewebsites.net/virtualNetworkLinks/poc-ids-token-ex-apps-dns-link",
+    "location": "global",
+    "name": "privatelink.azurewebsites.net/poc-ids-token-ex-apps-dns-link",
+    "type": "Microsoft.Network/privateDnsZones/virtualNetworkLinks"
+  },
+  {
+    "id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Network/privateEndpoints/poc-ids-token-ex-admin-pe",
+    "location": "southeastasia",
+    "name": "poc-ids-token-ex-admin-pe",
+    "type": "Microsoft.Network/privateEndpoints"
+  },
+  {
+    "id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Network/networkInterfaces/poc-ids-token-ex-admin-pe.nic.8cfee3db-e6d0-4fc0-a328-5ae4307aca55",
+    "location": "southeastasia",
+    "name": "poc-ids-token-ex-admin-pe.nic.8cfee3db-e6d0-4fc0-a328-5ae4307aca55",
+    "type": "Microsoft.Network/networkInterfaces"
+  },
+  {
+    "id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.EventHub/namespaces/poc-ids-token-ex-eh",
+    "location": "southeastasia",
+    "name": "poc-ids-token-ex-eh",
+    "type": "Microsoft.EventHub/namespaces"
+  },
+  {
+    "id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Network/privateDnsZones/privatelink.servicebus.windows.net",
+    "location": "global",
+    "name": "privatelink.servicebus.windows.net",
+    "type": "Microsoft.Network/privateDnsZones"
+  },
+  {
+    "id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.ManagedIdentity/userAssignedIdentities/poc-ids-token-ex-control-plane-identity",
+    "location": "southeastasia",
+    "name": "poc-ids-token-ex-control-plane-identity",
+    "type": "Microsoft.ManagedIdentity/userAssignedIdentities"
+  },
+  {
+    "id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.DBforPostgreSQL/flexibleServers/poc-ids-token-ex-pg",
+    "location": "southeastasia",
+    "name": "poc-ids-token-ex-pg",
+    "type": "Microsoft.DBforPostgreSQL/flexibleServers"
+  },
+  {
+    "id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Network/privateDnsZones/privatelink.servicebus.windows.net/virtualNetworkLinks/poc-ids-token-ex-eventhub",
+    "location": "global",
+    "name": "privatelink.servicebus.windows.net/poc-ids-token-ex-eventhub",
+    "type": "Microsoft.Network/privateDnsZones/virtualNetworkLinks"
+  },
+  {
+    "id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Network/privateEndpoints/poc-ids-token-ex-eventhub-pe",
+    "location": "southeastasia",
+    "name": "poc-ids-token-ex-eventhub-pe",
+    "type": "Microsoft.Network/privateEndpoints"
+  },
+  {
+    "id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Network/networkInterfaces/poc-ids-token-ex-eventhub-pe.nic.8ba6c2a6-d304-4e48-83cd-e0d2f26073f5",
+    "location": "southeastasia",
+    "name": "poc-ids-token-ex-eventhub-pe.nic.8ba6c2a6-d304-4e48-83cd-e0d2f26073f5",
+    "type": "Microsoft.Network/networkInterfaces"
+  },
+  {
+    "id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Network/privateDnsZones/privatelink.postgres.database.azure.com",
+    "location": "global",
+    "name": "privatelink.postgres.database.azure.com",
+    "type": "Microsoft.Network/privateDnsZones"
+  },
+  {
+    "id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Network/privateDnsZones/privatelink.postgres.database.azure.com/virtualNetworkLinks/poc-ids-token-ex-postgres",
+    "location": "global",
+    "name": "privatelink.postgres.database.azure.com/poc-ids-token-ex-postgres",
+    "type": "Microsoft.Network/privateDnsZones/virtualNetworkLinks"
+  },
+  {
+    "id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Network/privateEndpoints/poc-ids-token-ex-postgres-pe",
+    "location": "southeastasia",
+    "name": "poc-ids-token-ex-postgres-pe",
+    "type": "Microsoft.Network/privateEndpoints"
+  },
+  {
+    "id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Network/networkInterfaces/poc-ids-token-ex-postgres-pe.nic.de83da29-df43-43bb-84f1-5e337fb25a57",
+    "location": "southeastasia",
+    "name": "poc-ids-token-ex-postgres-pe.nic.de83da29-df43-43bb-84f1-5e337fb25a57",
+    "type": "Microsoft.Network/networkInterfaces"
+  },
+  {
+    "id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.CognitiveServices/accounts/poc-ids-token-ex-foundry/projects/poc-ids-token-ex-foundry-project",
+    "location": "eastus",
+    "name": "poc-ids-token-ex-foundry/poc-ids-token-ex-foundry-project",
+    "type": "Microsoft.CognitiveServices/accounts/projects"
+  }
+]

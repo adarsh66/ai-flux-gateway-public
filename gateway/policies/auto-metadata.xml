@@ -1,0 +1,10 @@
+    <!-- After existing normalization, usage capture AND output safety. Decision
+         overhead is response metadata only, NOT completion usage or FinOps.
+         Never overwrite the provider actual model or claim unknown cost is free. -->
+    <choose><when condition='@(context.Response.StatusCode == 200 &amp;&amp; context.Request.Method == "POST" &amp;&amp; context.Variables.GetValueOrDefault&lt;bool&gt;("aiflux-auto", false))'>
+      <set-body id="aiflux-auto-metadata"><![CDATA[@{
+        var response = context.Response.Body.As<JObject>(preserveContent: true);
+        response["routing"] = JObject.Parse((string)context.Variables["aiflux-auto-result"]);
+        return response.ToString();
+      }]]></set-body>
+    </when></choose>

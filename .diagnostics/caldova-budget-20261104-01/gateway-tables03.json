@@ -1,0 +1,4178 @@
+[
+  {
+    "name": "ADFTriggerRun",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "StorageFileLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "StorageQueueLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "StorageTableLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AADDomainServicesDNSAuditsDynamicUpdates",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AADDomainServicesDNSAuditsGeneral",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AGWPerformanceLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "ACSCallDiagnostics",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "ACSCallDiagnosticsUpdates",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "ACSCallSummary",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "ACSCallSummaryUpdates",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "ContainerAppConsoleLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AppEnvSpringAppConsoleLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AppEnvSessionConsoleLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AppEnvSessionPoolEventLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AppEnvSessionLifecycleLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "DevCenterDiagnosticLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "DevCenterResourceOperationLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "IntuneDevices",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "APIMDevPortalAuditDiagnosticLog",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "ApiManagementGatewayLlmLog",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "ArcK8sAudit",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "ArcK8sAuditAdmin",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "ArcK8sControlPlane",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "TOUserAudits",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "TOUserDiagnostics",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "DataTransferOperations",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "EGNSuccessfulMqttConnections",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "EGNFailedMqttConnections",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "EGNMqttDisconnections",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "EGNFailedMqttPublishedMessages",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "EGNFailedMqttSubscriptions",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AZMSVnetConnectionEvents",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AZMSArchiveLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AZMSAutoscaleLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AZMSKafkaCoordinatorLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AZMSKafkaUserErrorLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AZMSCustomerManagedKeyUserLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AHDSMedTechDiagnosticLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AHDSDicomDiagnosticLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AHDSDicomAuditLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AZKVAuditLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AZKVPolicyEvaluationDetailsLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "MNFDeviceUpdates",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "MNFSystemStateMessageUpdates",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "MNFSystemSessionHistoryUpdates",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "ASRv2JobEvents",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "ASRv2HealthEvents",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "ASRv2ReplicationVaults",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "ASRv2ReplicationPolicies",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "ASRv2ReplicationExtensions",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "ASRv2ProtectedItems",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "NCMClusterOperationsLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "NCCKubernetesLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "NCCPlatformOperationsLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "NCCVMOrchestrationLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "NCSStorageAudits",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "NCSStorageAlerts",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "NCSStorageLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "ALBHealthEvent",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "NatGatewayFlowlogsV1",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "REDConnectionEvents",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AZMSHybridConnectionsEvents",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "ASCAuditLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "SCGPoolExecutionLog",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "SCGPoolRequestLog",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AVNMNetworkGroupMembershipChange",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AVNMRuleCollectionChange",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AVNMConnectivityConfigurationChange",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AVNMIPAMPoolAllocationChange",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "ChaosStudioExperimentEventLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "DevCenterBillingEventLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "MDPResourceLog",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AEWExperimentAssignmentSummary",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AEWExperimentScorecards",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AEWExperimentScorecardMetricPairs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AHDSDeidAuditLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "CCFApplicationLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "MDCFileIntegrityMonitoringEvents",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "MDCDetectionFimEvents",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "MDCDetectionK8SApiEvents",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "MDCDetectionDNSEvents",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "MDCDetectionGatingValidationEvents",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "MDCDetectionProcessV2Events",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AMSKeyDeliveryRequests",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AMSMediaAccountHealth",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AMSLiveEventOperations",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AMSStreamingEndpointRequests",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AOIDigestion",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AOIDatabaseQuery",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AOIStorage",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "NGXOperationLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "NginxUpstreamUpdateLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AFSAuditLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "StorageMoverCopyLogsFailed",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "StorageMoverCopyLogsTransferred",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "SynapseSqlPoolExecRequests",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "SynapseSqlPoolRequestSteps",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "SynapseSqlPoolDmsWorkers",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "SynapseSqlPoolWaits",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AmlComputeClusterEvent",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AmlComputeClusterNodeEvent",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AmlComputeJobEvent",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "ACSCallAutomationIncomingOperations",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "ACSCallAutomationStreamingUsage",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AZMSApplicationMetricLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AppAvailabilityResults",
+    "plan": "Analytics",
+    "retentionInDays": 90,
+    "totalRetentionInDays": 90
+  },
+  {
+    "name": "AppBrowserTimings",
+    "plan": "Analytics",
+    "retentionInDays": 90,
+    "totalRetentionInDays": 90
+  },
+  {
+    "name": "AppDependencies",
+    "plan": "Analytics",
+    "retentionInDays": 90,
+    "totalRetentionInDays": 90
+  },
+  {
+    "name": "AppEvents",
+    "plan": "Analytics",
+    "retentionInDays": 90,
+    "totalRetentionInDays": 90
+  },
+  {
+    "name": "AppExceptions",
+    "plan": "Analytics",
+    "retentionInDays": 90,
+    "totalRetentionInDays": 90
+  },
+  {
+    "name": "AppMetrics",
+    "plan": "Analytics",
+    "retentionInDays": 90,
+    "totalRetentionInDays": 90
+  },
+  {
+    "name": "AppPageViews",
+    "plan": "Analytics",
+    "retentionInDays": 90,
+    "totalRetentionInDays": 90
+  },
+  {
+    "name": "AppPerformanceCounters",
+    "plan": "Analytics",
+    "retentionInDays": 90,
+    "totalRetentionInDays": 90
+  },
+  {
+    "name": "AppRequests",
+    "plan": "Analytics",
+    "retentionInDays": 90,
+    "totalRetentionInDays": 90
+  },
+  {
+    "name": "AppSystemEvents",
+    "plan": "Analytics",
+    "retentionInDays": 90,
+    "totalRetentionInDays": 90
+  },
+  {
+    "name": "WVDCheckpoints",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AADDomainServicesSystemSecurity",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "DatabricksTables",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "ACSEmailUserEngagementOperational",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AirflowDagProcessingLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "ADFAirflowSchedulerLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "ADFAirflowTaskLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "ADFAirflowWebLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "ADFAirflowWorkerLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "WorkloadDiagnosticLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "SynapseLinkEvent",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "SynapseIntegrationTriggerRuns",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "SQLSecurityAuditEvents",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "SynapseScopePoolScopeJobsEnded",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "SynapseScopePoolScopeJobsStateChange",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "UCDOAggregatedStatus",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "ComputerGroup",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "W3CIISLog",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "ETWEvent",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "ServiceFabricReliableActorEvent",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "ServiceFabricOperationalEvent",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "ServiceFabricReliableServiceEvent",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "Operation",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AppCenterError",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "BlockchainProxyLog",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "BlockchainApplicationLog",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "ContainerRegistryLoginEvents",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "MicrosoftDataShareShareLog",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AppServiceAuditLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AppServiceFileAuditLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "ContainerRegistryRepositoryEvents",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AppServiceAppLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "NWConnectionMonitorDestinationListenerResult",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AppServiceIPSecAuditLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AppServiceAntivirusScanAuditLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "ADFSSISIntegrationRuntimeLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "ADFSSISPackageEventMessages",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "ADFSSISPackageEventMessageContext",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "ADFSSISPackageExecutableStatistics",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "ADFSSISPackageExecutionComponentPhases",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "ADFSSISPackageExecutionDataStatistics",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "ABSBotRequests",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AEWAuditLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "MicrosoftDataShareReceivedSnapshotLog",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "MicrosoftDataShareSentSnapshotLog",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "PurviewScanStatusLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "HDInsightKafkaLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "HDInsightKafkaMetrics",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "HDInsightHBaseLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "HDInsightHBaseMetrics",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "HDInsightStormLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "HDInsightStormMetrics",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "HDInsightStormTopologyMetrics",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "HDInsightAmbariSystemMetrics",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "HDInsightAmbariClusterAlerts",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "HDInsightSparkApplicationEvents",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "HDInsightSparkBlockManagerEvents",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "HDInsightSparkEnvironmentEvents",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "HDInsightJupyterNotebookEvents",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "HDInsightSparkExecutorEvents",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "HDInsightSparkExtraEvents",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "HDInsightSparkJobEvents",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "HDInsightSparkSQLExecutionEvents",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "HDInsightSparkStageEvents",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "HDInsightSparkStageTaskAccumulables",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "HDInsightSparkTaskEvents",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "HDInsightSparkLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "HDInsightSecurityLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "HDInsightRangerAuditLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "HDInsightHiveAndLLAPLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "HDInsightHiveAndLLAPMetrics",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "HDInsightHadoopAndYarnLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "HDInsightHadoopAndYarnMetrics",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "HDInsightOozieLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "HDInsightHiveQueryAppStats",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "HDInsightHiveTezAppStats",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "ADTDigitalTwinsOperation",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "ADTEventRoutesOperation",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "ADTModelsOperation",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "ACICollaborationAudit",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AppPlatformLogsforSpring",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "MCCEventLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AmlComputeInstanceEvent",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AmlDataLabelEvent",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AmlDataSetEvent",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AmlDataStoreEvent",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AmlDeploymentEvent",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AmlInferencingEvent",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AmlModelsEvent",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AmlPipelineEvent",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AmlRunEvent",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AmlEnvironmentEvent",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "SynapseDXCommand",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "SynapseDXFailedIngestion",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "SynapseDXIngestionBatching",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "SynapseDXQuery",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "SynapseDXSucceededIngestion",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "SynapseDXTableDetails",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "SynapseDXTableUsageStatistics",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "WVDErrors",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AppPlatformIngressLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "ADFSandboxActivityRun",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AppPlatformBuildLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "WebPubSubConnectivity",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "WebPubSubMessaging",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "WebPubSubHttpRequest",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "WVDAgentHealthStatus",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "Heartbeat",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AppServiceHTTPLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "WVDConnectionNetworkData",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AegDeliveryFailureLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AegPublishFailureLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AppPlatformSystemLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AuditLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AppPlatformContainerEventLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AppServicePlatformLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "Event",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "OLPSupplyChainEvents",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AutoscaleScaleActionsLog",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "ADTQueryOperation",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "ADTDataHistoryOperation",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "ADFPipelineRun",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "ADFSandboxPipelineRun",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AmlOnlineEndpointEventLog",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "SignalRServiceDiagnosticLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "PFTitleAuditLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "VIAudit",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "VIIndexing",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "WVDConnectionGraphicsDataPreview",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AzureAttestationDiagnostics",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "MCVPOperationLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "MCVPAuditLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "SynapseGatewayApiRequests",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "SynapseIntegrationPipelineRuns",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "SynapseIntegrationActivityRuns",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "SynapseBigDataPoolApplicationsEnded",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "SynapseBuiltinSqlPoolRequestsEnded",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "UCClientReadinessStatus",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "UCDeviceAlert",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "UCServiceUpdateStatus",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "UCUpdateAlert",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "StorageAntimalwareScanResults",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AADB2CRequestLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "LogicAppWorkflowRuntime",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "ASCDeviceEvents",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "WVDHostRegistrations",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AgriFoodFarmManagementLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AgriFoodWeatherLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AgriFoodSatelliteLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AgriFoodFarmOperationLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AgriFoodProviderAuthLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AgriFoodApplicationAuditLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AgriFoodModelInferenceLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AgriFoodInsightLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AgriFoodJobProcessedLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AgriFoodSensorManagementLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "ResourceManagementPublicAccessLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AGSGrafanaLoginEvents",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AzureLoadTestingOperation",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "CassandraAudit",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AEWComputePipelinesLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "HDInsightGatewayAuditLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "OLPSupplyChainEntityOperations",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AppServiceServerlessSecurityPluginData",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "StorageCacheOperationEvents",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "StorageCacheUpgradeEvents",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "StorageCacheWarningEvents",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "StorageMoverJobRunLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "HDInsightKafkaServerLog",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "TSIIngress",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "MicrosoftAzureBastionAuditLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AmlOnlineEndpointConsoleLog",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AmlOnlineEndpointTrafficLog",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AmlRegistryReadEventsLog",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AmlRegistryWriteEventsLog",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AADDomainServicesAccountManagement",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AADDomainServicesDirectoryServiceAccess",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AADDomainServicesPolicyChange",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AADDomainServicesPrivilegeUse",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "WVDAutoscaleEvaluationPooled",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "OEPAuditLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "ApiManagementWebSocketConnectionLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "OEPAirFlowTask",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "PurviewSecurityLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AmlComputeCpuGpuUtilization",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "ContainerInstanceLog",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "ContainerEvent",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "DCRLogErrors",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "DCRLogTroubleshooting",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "CassandraLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "FailedIngestion",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "ADXIngestionBatching",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "ADXJournal",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "SucceededIngestion",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "ADXTableDetails",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "ADXTableUsageStatistics",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "Windows365AuditLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AzureMetricsV2",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AmlRunStatusChangedEvent",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AppServiceAuthenticationLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AEWAssignmentBlobLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "LASummaryLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AADDomainServicesLogonLogoff",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "ASRReplicatedItems",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AzureBackupOperations",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "CIEventsAudit",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "CIEventsOperational",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "SynapseRbacOperations",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AddonAzureBackupAlerts",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AddonAzureBackupJobs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AddonAzureBackupPolicy",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AddonAzureBackupStorage",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "CoreAzureBackup",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AddonAzureBackupProtectedInstance",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AzureActivity",
+    "plan": "Analytics",
+    "retentionInDays": 90,
+    "totalRetentionInDays": 90
+  },
+  {
+    "name": "AMWMetricsUsageDetails",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "ASRJobs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "UCClient",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "UCClientUpdateStatus",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "NTAIpDetails",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "NTAInsights",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "ApiManagementGatewayLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AzureActivityV2",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "ContainerAppSystemLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "NGXSecurityLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "CHSMServiceOperationAuditLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AzureMetrics",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "WVDFeeds",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "WVDManagement",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "WVDSessionHostManagement",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "ADXDataOperation",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AGSGrafanaUsageInsightsEvents",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "SVMPoolExecutionLog",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "SVMPoolRequestLog",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "OEWExperimentScorecardMetricPairs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "Alert",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "ADXCommand",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "ADXQuery",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "WVDConnections",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "ACSEmailStatusUpdateOperational",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "ACSChatIncomingOperations",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "ACSSMSIncomingOperations",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "ACSOptOutManagementOperations",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "ACSAuthIncomingOperations",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "ACSBillingUsage",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "ACSCallingMetrics",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "ACSCallSurvey",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "ACSCallClientServiceRequestAndOutcome",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "ACSCallClientOperations",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "ACSCallClientMediaStatsTimeSeries",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "ACSEmailSendMailOperational",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "ACSCallRecordingIncomingOperations",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "ACSCallRecordingSummary",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "ACSCallClosedCaptionsSummary",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "ACSJobRouterIncomingOperations",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "ACSRoomsIncomingOperations",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "ACSCallAutomationMediaSummary",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "ACSAdvancedMessagingOperations",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AKSAudit",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AKSAuditAdmin",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "WOUserAudits",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "WOUserDiagnostics",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AzureDevOpsAuditing",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "ACRConnectedClientList",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AZFWNetworkRule",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AZFWFatFlow",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AZFWFlowTrace",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AZFWApplicationRule",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AZFWThreatIntel",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AZFWNatRule",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AZFWIdpsSignature",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AZFWInternalFqdnResolutionFailure",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AZFWNetworkRuleAggregation",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AZFWApplicationRuleAggregation",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AZFWNatRuleAggregation",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "NCBMSystemLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "NCBMSecurityLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "NCBMSecurityDefenderLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "NCBMBreakGlassAuditLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AZMSOperationalLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AZMSRunTimeAuditLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AZMSDiagnosticErrorLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AADFirstPartyToFirstPartySignInLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "BehaviorInfo",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "BehaviorEntities",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "DeviceBehaviorInfo",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "DeviceBehaviorEntities",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "PowerBIDatasetsTenant",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "PowerBIDatasetsWorkspace",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "DatabricksAccounts",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "DatabricksClusters",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "DatabricksDBFS",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "DatabricksInstancePools",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "DatabricksJobs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "DatabricksNotebook",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "DatabricksSecrets",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "DatabricksSQLPermissions",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "DatabricksSSH",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "DatabricksWorkspace",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "OEWAuditLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "OEWExperimentAssignmentSummary",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "OEWExperimentScorecards",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "SynapseSqlPoolSqlRequests",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "DatabricksCapsule8Dataplane",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "DatabricksClamAVScan",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "DatabricksClusterLibraries",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "DatabricksDatabricksSQL",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "DatabricksDeltaPipelines",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "DatabricksFeatureStore",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "DatabricksGenie",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "DatabricksGitCredentials",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "DatabricksGlobalInitScripts",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "DatabricksIAMRole",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "DatabricksMLflowAcledArtifact",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "DatabricksMLflowExperiment",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "DatabricksModelRegistry",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "DatabricksServerlessRealTimeInference",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "DatabricksPartnerHub",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "DatabricksRemoteHistoryService",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "DatabricksRepos",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "DatabricksSQL",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "DatabricksUnityCatalog",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "DatabricksWebTerminal",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "IntuneAuditLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "IntuneDeviceComplianceOrg",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "IntuneOperationalLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AVSVcSyslog",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AVSEsxiFirewallSyslog",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AVSEsxiSyslog",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AVSNsxManagerSyslog",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AVSNsxEdgeSyslog",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AVSSyslog",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AADGraphActivityLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "LIATrackingEvents",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AKSControlPlane",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "NSPAccessLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "LAJobLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "DSMDataClassificationLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "DSMDataLabelingLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AGCAccessLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AGCFirewallLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "CDBDataPlaneRequests",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "CDBPartitionKeyStatistics",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "CDBPartitionKeyRUConsumption",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "CDBQueryRuntimeStatistics",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "CDBMongoRequests",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "CDBCassandraRequests",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "CDBGremlinRequests",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "CDBTableApiRequests",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "EGNSuccessfulHttpDataPlaneOperations",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "EGNFailedHttpDataPlaneOperations",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AegDataPlaneRequests",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "NCCIDRACLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "PurviewDataSensitivityLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "ATCExpressRouteCircuitIpfix",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "ATCPrivatePeeringMetadata",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "ATCMicrosoftPeeringMetadata",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "MySqlAuditLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "MySqlSlowLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "PGSQLPgStatActivitySessions",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "PGSQLDbTransactionsStats",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "PGSQLQueryStoreRuntime",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "PGSQLQueryStoreWaits",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "PGSQLAutovacuumStats",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "PGSQLServerLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "PGSQLPgBouncer",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "MicrosoftServicePrincipalSignInLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AADCustomSecurityAttributeAuditLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AADProvisioningLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "ADFSSignInLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AADUserRiskEvents",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AADRiskyUsers",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AADServicePrincipalRiskEvents",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AADRiskyServicePrincipals",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "ACREntraAuthenticationAuditLog",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "OGOAuditLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "MPCIngestionLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "OracleCloudDatabase",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "ADFActivityRun",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AppServiceConsoleLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AppTraces",
+    "plan": "Analytics",
+    "retentionInDays": 90,
+    "totalRetentionInDays": 90
+  },
+  {
+    "name": "AutoscaleEvaluationsLog",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "FunctionAppLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "InsightsMetrics",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "MicrosoftHealthcareApisAuditLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AADDomainServicesAccountLogon",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "DataSetRuns",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "DataSetOutput",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "PerfInsightsRun",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "PerfInsightsFindings",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "PerfInsightsImpactedResources",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AppServiceEnvironmentPlatformLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AACHttpRequest",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "ACLTransactionLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "ACLUserDefinedLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "DevCenterAgentHealthLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "DevCenterConnectionLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "NTARuleRecommendation",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "Syslog",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "RetinaNetworkFlowLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "ContainerNetworkLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "MeshControlPlane",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AZFWDnsQuery",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AZFWDnsFlowTrace",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AHCIDiagnosticLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "DurableTaskSchedulerLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "ApiManagementGatewayMCPLog",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "PGSQLQueryStoreQueryText",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "OTelResources",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "OTelEvents",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "ZTSRequest",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AGSUpdateEvents",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "DatabricksBrickStoreHttpGateway",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "DatabricksDashboards",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "DatabricksCloudStorageMetadata",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "DatabricksPredictiveOptimization",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "DatabricksDataMonitoring",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "DatabricksIngestion",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "DatabricksMarketplaceConsumer",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "DatabricksLineageTracking",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "DatabricksFilesystem",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "DatabricksApps",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "DatabricksClusterPolicies",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "DatabricksDataRooms",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "DatabricksGroups",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "DatabricksMarketplaceProvider",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "DatabricksOnlineTables",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "DatabricksRBAC",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "DatabricksRFA",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "DatabricksVectorSearch",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "DatabricksWebhookNotifications",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "DatabricksWorkspaceFiles",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "DatabricksLakeviewConfig",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "DatabricksFiles",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "DatabricksBudgetPolicyCentral",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "OEPElasticOperator",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "OEPElasticsearch",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "WVDMultiLinkAdd",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "EdgeActionConsoleLog",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "EdgeActionServiceLog",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "CDBDataPlaneRequests5M",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "CDBDataPlaneRequests15M",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "StorageMalwareScanningResults",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "NCCKubernetesAPIAuditLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "EnrichedMicrosoft365AuditLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "NetworkAccessAlerts",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AACAudit",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AppGenAIContent",
+    "plan": "Analytics",
+    "retentionInDays": 90,
+    "totalRetentionInDays": 90
+  },
+  {
+    "name": "QuantumProviderAccountJobAuditLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "QuantumProviderAccountQueueAuditLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "QuantumProviderAccountTargetAuditLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "QuantumWorkspaceJobAuditLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "LedgerUserDefinedLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "LedgerTransactionLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AADServicePrincipalSignInLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AADManagedIdentitySignInLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AADAgentRiskEvents",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AADRiskyAgents",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "RemoteNetworkHealthLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "StorageMoverAuditLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "Usage",
+    "plan": "Analytics",
+    "retentionInDays": 90,
+    "totalRetentionInDays": 90
+  },
+  {
+    "name": "AMAHealth",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "MicrosoftGraphPolicyLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AGWFirewallLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "ANFFileAccess",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "ANFTopClientReadIOPS",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "ANFTopClientWriteIOPS",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "ANFTopFileReadIOPS",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "ANFTopFileWriteIOPS",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AzureSQLQueryStoreWaitStatistics",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AzureSQLAutomaticTuning",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AzureSQLBlocks",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AzureSQLDatabaseWaitStatistics",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AzureSQLDeadlocks",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AzureSQLErrors",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AzureSQLQueryStoreRuntimeStatistics",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AzureSQLResourceUsageStats",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AzureSQLTimeouts",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "DeviceCustomFileEvents",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "DeviceCustomNetworkEvents",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "DeviceCustomRegistryEvents",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "DeviceCustomScriptEvents",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "DeviceCustomProcessEvents",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "DeviceCustomImageLoadEvents",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "ADGSyslogEvent",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "OTelLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "VCoreMongoRequests",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "ContainerAppHTTPLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "DiscoveryBookshelfAuditLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "DiscoverySupercomputerAuditLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "DiscoveryWorkspaceAuditLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "GraphNotificationsActivityLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "UCDOStatus",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "LAQueryLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "ZTSJobStatus",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "CloudHsmServiceOperationAuditLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "CloudHsmHardwareOperationAuditLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "PreAuthenticationDiscoveryLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "MPCAuditLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "ZTSGraph",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "ZTSMetadata",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "DevOpsOperationsAudit",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AzureMonitorPipelineLogErrors",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "MDECustomCollectionDeviceFileEvents",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "QuantumProviderAccountDeviceOperationLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "DragonCopilot",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "Windows365ConnectionLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "Windows365NetworkLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "Windows365ConnectionErrorLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "Windows365CheckpointLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "StorageBlobLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "PaymentHsmHardwareOperationAuditLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "NWConnectionMonitorTestResult",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "NWConnectionMonitorPathResult",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "NWConnectionMonitorDNSResult",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "SigninLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AGWAccessLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AGSGrafanaAlertAuthFailure",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "QuantumProviderAccountMessageAuditLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AADNonInteractiveUserSignInLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "NetworkAccessGenerativeAIInsights",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AMLManagedNetworkEvent",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "OEPDataplaneLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "CDBControlPlaneRequests",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "DNSQueryLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "HorizonDBPgStatActivitySessions",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "HorizonDBTransactionsStats",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "HorizonDBQueryStoreRuntimeStats",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "HorizonDBQueryStoreWaitsStats",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "HorizonDBAutovacuumStats",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "HorizonDBServerLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "HorizonDBQueryStoreQueryText",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "NetworkAccessTraffic",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "NetworkAccessConnectionEvents",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "OTelSpans",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "OTelTraces",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "OTelTracesAgent",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "NTANspRuleRecommendation",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AgentFabricFlowLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "NWPacketCaptureNetworkSession",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "NWPacketCaptureTlsSession",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "NWPacketCaptureDnsQuery",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "NWPacketCaptureHttpTransaction",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "Perf",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "MicrosoftGraphActivityLogs",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "NTANetAnalytics",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "NTATopologyDetails",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "ContainerImageInventory",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "ContainerNodeInventory",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "ContainerServiceLog",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "KubeEvents",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "KubeHealth",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "KubeMonAgentEvents",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "KubePodInventory",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "KubeServices",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "VMConnection",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "KubePVInventory",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "WindowsClientAssessmentRecommendation",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "AzureAssessmentRecommendation",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "ExchangeAssessmentRecommendation",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "ExchangeOnlineAssessmentRecommendation",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "SCCMAssessmentRecommendation",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "SfBAssessmentRecommendation",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "SfBOnlineAssessmentRecommendation",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "SharePointOnlineAssessmentRecommendation",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "SPAssessmentRecommendation",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "WindowsServerAssessmentRecommendation",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "ADAssessmentRecommendation",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "ADSecurityAssessmentRecommendation",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "SCOMAssessmentRecommendation",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "SQLAssessmentRecommendation",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "HealthStateChangeEvent",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "ADReplicationResult",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "VMBoundPort",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "VMComputer",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "VMProcess",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "KubeNodeInventory",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "ContainerLogV2",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "ContainerInventory",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  },
+  {
+    "name": "ContainerLog",
+    "plan": "Analytics",
+    "retentionInDays": 30,
+    "totalRetentionInDays": 30
+  }
+]

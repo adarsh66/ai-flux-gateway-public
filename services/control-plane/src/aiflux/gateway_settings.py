@@ -8,11 +8,12 @@ from fastapi import HTTPException
 from sqlalchemy import select, update
 from sqlalchemy.orm import Session
 
-from aiflux.apim import ApimClient, ApimError
+from aiflux.apim import ApimClient, ApimError, safe_apim_diagnostics
 from aiflux.auth import Principal
 from aiflux.config import Settings
+from aiflux.default_limits import POC_RPM, POC_TPM, defaults_only_envelope, global_defaults_status
 from aiflux.managed_controls import render_managed, safety_relaxed, validate_configuration
-from aiflux.models import GatewaySettings, GatewaySettingsRevision
+from aiflux.models import GatewaySettings, GatewaySettingsRevision, TeamSubscription
 from aiflux.schemas import (
     GatewayCapabilities,
     GatewayConfiguration,
@@ -40,15 +41,32 @@ def require_poc(settings: Settings, scope: GatewayScope) -> None:
 def save_poc(db, settings, apim, principal, scope, payload, *, safety_update=False):
     from aiflux.poc_controls import render, validate
     require_poc(settings, scope)
+    if getattr(payload, "defaults_only", False):
+        if safety_update:
+            raise HTTPException(422, "Default migration belongs to gateway settings")
+        return migrate_poc_defaults(db, settings, apim, principal, scope,
+                                    payload.expected_version, payload.reason,
+                                    requested_configuration=payload.configuration)
     config = payload.configuration
     if not isinstance(config, PocGatewayConfiguration):
         raise HTTPException(422, "POC schema 3 is required")
     head = locked_head(db, scope)
     if (head.version if head else 0) != payload.expected_version:
         raise HTTPException(409, "Settings changed; refresh before saving")
+    if head is not None:
+        # Also acquire the SQLite write mutex BEFORE metadata/baseline reads.
+        # PostgreSQL/MSSQL retain the row lock across this same transaction.
+        locked = db.execute(update(GatewaySettings).where(
+            GatewaySettings.scope == scope, GatewaySettings.version == payload.expected_version,
+        ).values(version=payload.expected_version))
+        if locked.rowcount != 1:
+            raise HTTPException(409, "Settings changed; refresh before saving")
     previous = None
+    shared_metadata = {}
     if head and head.version:
         row = revision_at(db, scope, head.version)
+        stored = json.loads(row.configuration)
+        shared_metadata = {k: v for k, v in stored.items() if k not in {"configuration", "bindings"}}
         if row.state != "published":
             raise HTTPException(409, "Reconcile the pending revision before saving")
         previous = configuration_at(row)
@@ -70,9 +88,14 @@ def save_poc(db, settings, apim, principal, scope, payload, *, safety_update=Fal
     desired = render(config, bindings)
     current, etag = apim.get_settings_fragment(scope)
     # Safe default fragment MUST already exist before explicit DB initialization.
-    baseline = render_revision(scope, revision_at(db, scope, head.version)) if head else render(PocGatewayConfiguration(), [])
+    baseline = render_revision(scope, revision_at(db, scope, head.version)) if head and head.version else render(PocGatewayConfiguration(), [])
+    pool_transition = None
     if fingerprint(current) != fingerprint(baseline):
-        raise HTTPException(409, "APIM settings drift detected; operator review required")
+        from aiflux.auto_pool_transition import adopt
+        adoption = adopt(settings, row, stored, baseline, current) if head and head.version else None
+        if adoption is None:
+            raise HTTPException(409, "APIM settings drift detected; operator review required")
+        shared_metadata, pool_transition = adoption
     version = payload.expected_version + 1
     if head is None:
         db.add(GatewaySettings(scope=scope, version=version))
@@ -84,10 +107,13 @@ def save_poc(db, settings, apim, principal, scope, payload, *, safety_update=Fal
             raise HTTPException(409, "Settings changed; refresh before saving")
     db.add(GatewaySettingsRevision(
         scope=scope, version=version, reason=payload.reason, object_id=principal.object_id,
-        configuration=json.dumps({"configuration": config.model_dump(mode="json"), "bindings": bindings}),
+        configuration=json.dumps({**shared_metadata,
+            "configuration": config.model_dump(mode="json"), "bindings": bindings}),
         base_hash=fingerprint(current), base_etag=etag,
     ))
     audit(db, principal, "gateway.settings.requested", f"{scope}:{version}")
+    if pool_transition is not None:
+        audit(db, principal, "gateway.settings.pool-binding-adopted", f"{scope}:{version}")
     db.commit()
     return publish_poc(db, settings, apim, principal, scope, version)
 
@@ -103,25 +129,105 @@ def publish_poc(db, settings, apim, principal, scope, expected_version):
     if not isinstance(configuration_at(row), PocGatewayConfiguration):
         raise HTTPException(409, "Explicit audited POC migration required")
     desired = render_revision(scope, row)
+    stage = "baseline_read"
     try:
         current, etag = apim.get_settings_fragment(scope)
         if fingerprint(current) != fingerprint(desired):
             if fingerprint(current) != row.base_hash or etag != row.base_etag:
-                raise ApimError(412)
+                raise ApimError(412, reason="drift_conflict", diagnostics={
+                    "substage": "baseline_read", "etag_present": bool(etag), "canonical_match": False,
+                })
+            stage = "conditional_put_and_readiness"
             apim.put_settings_fragment(scope, desired, etag)
+        stage = "strict_readback"
         readback, _ = apim.get_settings_fragment(scope)
         if fingerprint(readback) != fingerprint(desired):
-            raise ApimError(409)
+            raise ApimError(409, reason="readback_mismatch", diagnostics={
+                "substage": "strict_readback", "canonical_match": False,
+            })
     except ApimError as exc:
+        # Re-filter even mutable/caller-supplied exception metadata at the sink.
+        # No exception text/traceback, headers, URLs, tokens, XML or payloads.
+        diagnostic = safe_apim_diagnostics({"reason": "operation_failed", "substage": stage,
+            "error_status": exc.status_code, **safe_apim_diagnostics(exc.diagnostics)})
+        log.error("POC fragment publication failed stage=%s diagnostics=%s", stage, diagnostic,
+                  extra={"apim_diagnostics": diagnostic})
         row.state, row.error = "failed", "Optional overrides publication incomplete; reconcile to retry. Default access is not gated."
         audit(db, principal, "gateway.settings.failed", f"{scope}:{expected_version}")
         db.commit()
         raise HTTPException(502, row.error) from exc
     row.state, row.error = "published", None
+    stored = json.loads(row.configuration)
+    pricing_state = stored.get("auto_pricing")
+    default_migration = False
+    if expected_version > 1:
+        predecessor = json.loads(revision_at(db, scope, expected_version - 1).configuration)
+        try:
+            default_migration = defaults_only_envelope(predecessor) == stored
+        except (ValueError, TypeError):
+            pass
+    if pricing_state is not None and not default_migration:
+        # A controls publish replaces the predecessor's control content.
+        # Old price attempt hashes must not authorize restoring that content.
+        pricing_state["attempted_hash"] = None
+        pricing_state["attempt_predecessor_hash"] = None
+        row.configuration = json.dumps(stored)
     head.published_version = expected_version
     audit(db, principal, "gateway.settings.published", f"{scope}:{expected_version}")
     db.commit()
     return settings_output(db, scope, settings)
+
+
+def migrate_poc_defaults(db, settings, apim, principal, scope, expected_version, reason,
+                         *, requested_configuration=None):
+    """Explicit append-only default update; never activate detached API controls.
+
+    Preserve the complete stored envelope, exact override/binding/safety data,
+    and last-good pricing projection. No ownership refresh or history rewrite.
+    A narrow API-policy release is separately required for inline enforcement.
+    """
+    require_poc(settings, scope)
+    if type(expected_version) is not int or expected_version < 1 or not isinstance(reason, str) or not 1 <= len(reason.strip()) <= 500:
+        raise HTTPException(422, "Existing revision and audited reason are required")
+    head = locked_head(db, scope)
+    if head is None or head.version != expected_version or head.published_version != expected_version:
+        raise HTTPException(409, "Settings changed or publication is pending")
+    locked = db.execute(update(GatewaySettings).where(
+        GatewaySettings.scope == scope, GatewaySettings.version == expected_version,
+    ).values(version=expected_version))
+    if locked.rowcount != 1:
+        raise HTTPException(409, "Settings changed; refresh before migrating")
+    previous = revision_at(db, scope, expected_version)
+    if previous.state != "published":
+        raise HTTPException(409, "Publication must be complete before migrating")
+    stored = json.loads(previous.configuration)
+    try:
+        updated = defaults_only_envelope(stored)
+        # Validate all recognized data without discarding any unknown envelope
+        # fields. Unknown configuration fields require explicit operator review.
+        PocGatewayConfiguration.model_validate(updated["configuration"])
+        if requested_configuration is not None and (
+            not isinstance(requested_configuration, PocGatewayConfiguration)
+            or requested_configuration.model_dump(mode="json") != updated["configuration"]
+        ):
+            raise HTTPException(409, "Defaults-only update must preserve safety and every override")
+    except (ValueError, TypeError) as exc:
+        raise HTTPException(409, "Existing schema requires operator review") from exc
+    current, etag = apim.get_settings_fragment(scope)
+    if fingerprint(current) != fingerprint(render_revision(scope, previous)):
+        raise HTTPException(409, "APIM settings drift detected; no migration")
+    version = expected_version + 1
+    result = db.execute(update(GatewaySettings).where(
+        GatewaySettings.scope == scope, GatewaySettings.version == expected_version,
+    ).values(version=version))
+    if result.rowcount != 1:
+        raise HTTPException(409, "Settings changed; refresh before migrating")
+    db.add(GatewaySettingsRevision(scope=scope, version=version,
+        reason=reason.strip(), object_id=principal.object_id,
+        configuration=json.dumps(updated), base_hash=fingerprint(current), base_etag=etag))
+    audit(db, principal, "gateway.defaults.requested", f"{scope}:{version}")
+    db.commit()
+    return publish_poc(db, settings, apim, principal, scope, version)
 
 
 def bootstrap_fragment() -> str:
@@ -171,7 +277,7 @@ def revision_at(db: Session, scope: str, version: int) -> GatewaySettingsRevisio
     return db.scalars(
         select(GatewaySettingsRevision).where(
             GatewaySettingsRevision.scope == scope, GatewaySettingsRevision.version == version,
-        )
+        ).execution_options(populate_existing=True)
     ).one()
 
 
@@ -202,7 +308,10 @@ def render_revision(scope: GatewayScope, row: GatewaySettingsRevision) -> str:
     config = configuration_at(row)
     if isinstance(config, PocGatewayConfiguration):
         from aiflux.poc_controls import render
-        return render(config, json.loads(row.configuration)["bindings"])
+        from aiflux.settings_envelope import render as envelope
+        stored = json.loads(row.configuration)
+        return envelope(render(config, stored["bindings"]), stored.get("auto_pricing", {}).get("applied"),
+                stored.get("model_access", {}).get("applied"))
     if isinstance(config, ManagedGatewayConfiguration):
         return render_managed(config, json.loads(row.configuration)["bindings"])
     return render_fragment(scope, config)
@@ -218,8 +327,8 @@ def settings_output(
     ) else max_tpm(scope)
     poc = bool(settings and settings.gateway_controls_poc_enabled)
     return GatewaySettingsOutput(
-        scope=scope, max_tpm=2048 if poc else ceiling,
-        max_rpm=60 if poc else settings.gateway_max_rpm if settings else 2,
+        scope=scope, max_tpm=POC_TPM if poc else ceiling,
+        max_rpm=POC_RPM if poc else settings.gateway_max_rpm if settings else 2,
         version=head.version if head else 0,
         published_version=head.published_version if head else None,
         desired=revision_output(revision_at(db, key, head.version)) if head and head.version else None,
@@ -236,12 +345,17 @@ def settings_output(
             enforcement_enabled=settings.gateway_enforcement_enabled,
             initial_safety_threshold=settings.gateway_initial_safety_threshold,
         ) if settings else GatewayCapabilities(),
+        global_defaults_status=global_defaults_status(
+            json.loads(revision_at(db, key, head.version).configuration) if head and head.version else None,
+            head.version if head else 0, head.published_version if head else None,
+        ) if poc else None,
     )
 
 
 def locked_head(db: Session, scope: GatewayScope) -> GatewaySettings | None:
     return db.scalar(
         select(GatewaySettings).where(GatewaySettings.scope == scope)
+        .with_for_update()
         .with_hint(GatewaySettings, "WITH (UPDLOCK, HOLDLOCK)", dialect_name="mssql")
         .execution_options(populate_existing=True)
     )
@@ -333,6 +447,19 @@ def save_managed(
 
 
 def subscription_access(db: Session, settings: Settings, sid: str) -> tuple[str, str | None]:
+    lifecycle = db.get(TeamSubscription, sid)
+    if lifecycle and (lifecycle.deleted_at or lifecycle.deletion_requested_at):
+        return "pending", "Subscription access is revoked locally; only deletion retry is allowed."
+    if settings.model_access_enabled:
+        from aiflux.models import ModelAccessPublication
+        sub = db.get(TeamSubscription, sid)
+        job = db.get(ModelAccessPublication, "default")
+        projection = json.loads(job.applied_json) if job and job.applied_json else {}
+        if (sub and sub.state == "active" and sub.desired_state == "active"
+                and projection.get("bindings", {}).get(sid) == sub.organization_id
+                and projection.get("organizations", {}).get(sub.organization_id, {}).get("enabled") is True):
+            return "ready", "Trusted organization binding applied; model restrictions apply."
+        return "pending", "Trusted model access publication is pending; keys are not ready."
     if settings.gateway_controls_poc_enabled:
         head = db.get(GatewaySettings, "dev-unified")
         if head and head.published_version:
@@ -358,6 +485,16 @@ def subscription_access(db: Session, settings: Settings, sid: str) -> tuple[str,
 def refresh_subscription_bindings(
     db: Session, settings: Settings, apim: ApimClient, principal: Principal, sid: str,
 ) -> None:
+    from aiflux.subscriptions import lock_organization, require_live_subscription
+    lifecycle = db.get(TeamSubscription, sid)
+    if lifecycle is None:
+        raise HTTPException(404, "Subscription not found")
+    lock_organization(db, lifecycle.organization_id)
+    db.refresh(lifecycle)
+    require_live_subscription(lifecycle)
+    if settings.model_access_enabled:
+        # Subscription reconciliation queued the durable binding transaction.
+        return
     if settings.gateway_controls_poc_enabled:
         from aiflux.poc_controls import validate
         head = locked_head(db, "dev-unified")

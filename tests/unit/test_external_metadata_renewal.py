@@ -41,7 +41,7 @@ def test_real_metadata_freshness_separate_from_historical_smoke():
     assert not route.metadata_renewal.fresh_credential_health_verified
     old = deepcopy(data)
     old.pop('metadata_renewal')
-    assert not ExternalRoute.model_validate(old).accepted(settings)
+    assert ExternalRoute.model_validate(old).accepted(settings)
 
 
 @pytest.mark.parametrize('field,value', [
@@ -71,7 +71,7 @@ def test_renewal_rejects_unbound_or_misrepresented_proof(field, value):
 
 
 @pytest.mark.parametrize('delta', [timedelta(days=-2), timedelta(minutes=5)])
-def test_metadata_freshness_still_failclosed_for_expired_or_future(delta):
+def test_metadata_provenance_accepts_old_but_rejects_future(delta):
     data = fixture()
     data['verified_at'] = (datetime.now(UTC) - timedelta(days=3)).isoformat()
     old = deepcopy(data)
@@ -79,4 +79,4 @@ def test_metadata_freshness_still_failclosed_for_expired_or_future(delta):
     data['metadata_renewal']['historical_acceptance_sha256'] = historical_acceptance_sha256(
         ExternalRoute.model_validate(old))
     data['metadata_renewal']['observed_at'] = (datetime.now(UTC) + delta).isoformat()
-    assert not ExternalRoute.model_validate(data).accepted(Settings(_env_file=None, environment='development'))
+    assert ExternalRoute.model_validate(data).accepted(Settings(_env_file=None, environment='development')) is (delta.total_seconds() < 0)

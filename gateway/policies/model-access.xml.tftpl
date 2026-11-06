@@ -1,0 +1,63 @@
+        <!-- Data-only inclusion once, after trusted auth/model parsing, before
+             quota/scoring/provider work. Never accepts organization headers. -->
+        <set-variable name="aiflux-model-access-only" value="@(true)" />
+        <include-fragment fragment-id="${fragment}" />
+        <set-variable name="aiflux-model-access-only" value="@(false)" />
+        <set-variable name="aiflux-model-access" value='@{
+          try {
+            var raw = context.Variables.GetValueOrDefault&lt;string&gt;("aiflux-model-access-projection", "");
+            if (System.Text.Encoding.UTF8.GetByteCount(raw) > 65536) { return ""; }
+            var projection = JObject.Parse(raw);
+            var fields = new [] { "schema", "generation", "catalog", "catalog_sha256", "bindings", "organizations", "sha256" };
+            if (projection.Properties().Count() != fields.Length || fields.Any(f => projection[f] == null) ||
+                projection["schema"].Type != JTokenType.Integer || (int)projection["schema"] != 1 ||
+                projection["generation"].Type != JTokenType.Integer || (long)projection["generation"] &lt; 0) { return ""; }
+            var catalog = projection["catalog"] as JArray;
+            var bindings = projection["bindings"] as JObject;
+            var organizations = projection["organizations"] as JObject;
+            if (catalog == null || catalog.Count > 200 || bindings == null || bindings.Properties().Count() > 200 || organizations == null || organizations.Properties().Count() > 200 ||
+                catalog.Any(a => a.Type != JTokenType.String || !System.Text.RegularExpressions.Regex.IsMatch((string)a, "\\A[A-Za-z0-9_.-]{1,100}\\z")) ||
+                catalog.Select(a => (string)a).Distinct().Count() != catalog.Count ||
+                catalog.Any(a => !new [] { ${aliases} }.Contains((string)a))) { return ""; }
+            var canonical = (JObject)projection.DeepClone();
+            canonical.Remove("sha256");
+            foreach (var obj in canonical.DescendantsAndSelf().OfType&lt;JObject&gt;().ToArray().Reverse()) {
+              var properties = obj.Properties().OrderBy(p => p.Name, StringComparer.Ordinal).ToArray();
+              obj.RemoveAll();
+              foreach (var property in properties) { obj.Add(property.Name, property.Value); }
+            }
+            var actual = "";
+            var catalogHash = "";
+            using (var hasher = System.Security.Cryptography.SHA256.Create()) {
+              actual = BitConverter.ToString(hasher.ComputeHash(System.Text.Encoding.UTF8.GetBytes(canonical.ToString(Newtonsoft.Json.Formatting.None)))).Replace("-", "").ToLowerInvariant();
+              catalogHash = BitConverter.ToString(hasher.ComputeHash(System.Text.Encoding.UTF8.GetBytes(catalog.ToString(Newtonsoft.Json.Formatting.None)))).Replace("-", "").ToLowerInvariant();
+            }
+            if ((string)projection["sha256"] != actual || (string)projection["catalog_sha256"] != catalogHash || context.Subscription == null) { return ""; }
+            var orgId = bindings[(string)context.Subscription.Id];
+            if (orgId == null || orgId.Type != JTokenType.String) { return ""; }
+            var org = organizations[(string)orgId] as JObject;
+            if (org == null || org.Properties().Count() != 4 || org["enabled"] == null || org["enabled"].Type != JTokenType.Boolean ||
+                org["auto_enabled"] == null || org["auto_enabled"].Type != JTokenType.Boolean || org["version"] == null ||
+                org["version"].Type != JTokenType.Integer || (long)org["version"] &lt; 0 || !(org["denied_models"] is JArray)) { return ""; }
+            var denies = (JArray)org["denied_models"];
+            if (denies.Count > 200 || denies.Any(a => a.Type != JTokenType.String || !System.Text.RegularExpressions.Regex.IsMatch((string)a, "\\A[A-Za-z0-9_.-]{1,100}\\z")) || denies.Select(a => (string)a).Distinct().Count() != denies.Count) { return ""; }
+            var allowed = new JArray(catalog.Where(a => !denies.Any(d => (string)d == (string)a)));
+            return new JObject { ["enabled"] = org["enabled"], ["auto_enabled"] = org["auto_enabled"], ["allowed"] = allowed }.ToString(Newtonsoft.Json.Formatting.None);
+          } catch { return ""; }
+        }' />
+        <choose><when condition='@(string.IsNullOrEmpty((string)context.Variables["aiflux-model-access"]))'>
+          <return-response><set-status code="503" reason="Model access unavailable" />
+            <set-header name="Content-Type" exists-action="override"><value>application/json</value></set-header>
+            <set-body>{"error":{"code":"model_access_unavailable","message":"Trusted model access is unavailable; no inference was forwarded."}}</set-body>
+          </return-response>
+        </when></choose>
+        <choose><when condition='@{
+          var access = JObject.Parse((string)context.Variables["aiflux-model-access"]);
+          var model = (string)context.Variables["aiflux-model"];
+          return !(bool)access["enabled"] || (model == "auto" ? !(bool)access["auto_enabled"] : !((JArray)access["allowed"]).Any(a => (string)a == model));
+        }'>
+          <return-response><set-status code="403" reason="Model not allowed" />
+            <set-header name="Content-Type" exists-action="override"><value>application/json</value></set-header>
+            <set-body>{"error":{"code":"model_not_allowed","message":"Model is not allowed for this organization."}}</set-body>
+          </return-response>
+        </when></choose>

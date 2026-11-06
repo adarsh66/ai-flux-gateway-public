@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { ApiError } from "../client";
 import { buildChatCompletionBody, chatCompletion, chatCompletionUrl, textChatRequest, type ChatMessage, type ChatRequest, type ChatResult } from "../chat";
 import { useSession } from "../session";
+import { routingLabels, routingProfiles, type RoutingProfile } from "../autoRouting";
 import type { KeyName } from "../types";
 import { buildToolChoice, supportsStructured, supportsTools, validateResponseFormat, validateTools, type ToolChoiceMode } from "../validation";
 import { AsyncView, Badge, EmptyState, Field, PageHeader, useAsync } from "../components/ui";
@@ -32,9 +32,15 @@ export function outcomeView(r: ChatResult): { tone: "ok" | "warn" | "bad" | "inf
 }
 
 export function PlaygroundPage() {
-  const { api, config, keys, setKey } = useSession();
-  const models = useAsync(() => api.models(), [api]);
-  const subs = useAsync(() => api.subscriptions(0, 100), [api]);
+  const { api, config, keys, setKey, me } = useSession();
+  const models = useAsync(() => api.models(), [api, me.organization_id]);
+  const subs = useAsync(() => api.subscriptions(0, 100), [api, me.organization_id]);
+  const auto = useAsync(() => api.autoRoutingAvailability(), [api, me.organization_id]);
+  useEffect(() => {
+    const refresh = () => { models.reload(); auto.reload(); subs.reload(); };
+    window.addEventListener("focus", refresh);
+    return () => window.removeEventListener("focus", refresh);
+  }, [models.reload, auto.reload, subs.reload]);
 
   return (
     <>
@@ -43,11 +49,15 @@ export function PlaygroundPage() {
         {(m) => (
           <AsyncView state={subs}>
             {(s) => {
-              const enabled = m.items.filter((x) => x.enabled && !x.placeholder && x.capabilities.includes("chat"));
+              const enabled = m.items.filter((x) => x.id !== "auto" && x.enabled && !x.placeholder && x.capabilities.includes("chat"));
               const active = s.items.filter((x) => x.state === "active");
-              if (enabled.length === 0) return <EmptyState title="No enabled models" hint="The catalog is empty, so there is nothing to call." />;
-              if (active.length === 0) return <EmptyState title="No active subscription" hint="Contact your administrator to create or activate a team subscription for the playground." />;
-              return <Chat models={enabled} subs={active} gatewayUrl={config.gatewayUrl} keys={keys} setKey={setKey} reveal={api.revealKey} />;
+              const choices = auto.data?.ready === true ? [...enabled, { id: "auto", capabilities: ["chat"], max_completion_tokens: auto.data.max_completion_tokens }] : enabled;
+              return <>
+                {!enabled.length && <p role="status">No enabled models. Conversation history is retained; no request can be sent.</p>}
+                {!active.length && <p role="status">No active subscription. Contact your administrator.</p>}
+                {auto.data?.ready === false && <p role="status">Auto routing is unavailable: {auto.data.reason ?? "not ready"}.</p>}
+                <Chat key={me.organization_id} models={choices} subs={active} gatewayUrl={config.gatewayUrl} keys={keys} setKey={setKey} reveal={api.revealKey} />
+              </>;
             }}
           </AsyncView>
         )}
@@ -62,18 +72,19 @@ interface ChatProps {
   gatewayUrl: string;
   keys: Record<string, Partial<Record<KeyName, string>>>;
   setKey: (id: string, name: KeyName, value: string) => void;
-  reveal: (id: string, key: KeyName) => Promise<string>;
+  reveal: (id: string, key: KeyName, signal?: AbortSignal) => Promise<string>;
 }
 
 function Chat({ models, subs, gatewayUrl, keys, setKey, reveal }: ChatProps) {
   const [searchParams] = useSearchParams();
-  const initialModelId = models.find((m) => m.id === searchParams.get("model"))?.id ?? models[0]!.id;
+  const initialModelId = models.find((m) => m.id === searchParams.get("model"))?.id ?? models[0]?.id ?? "";
   const [modelId, setModelId] = useState(initialModelId);
-  const [subId, setSubId] = useState(subs[0]!.id);
+  const [routingProfile, setRoutingProfile] = useState<RoutingProfile>("balanced");
+  const [subId, setSubId] = useState(subs[0]?.id ?? "");
   const [pasted, setPasted] = useState("");
   const [system, setSystem] = useState("");
   const [input, setInput] = useState("");
-  const [stream, setStream] = useState(models[0]!.capabilities.includes("stream"));
+  const [stream, setStream] = useState(models[0]?.capabilities.includes("stream") ?? false);
   const [useTools, setUseTools] = useState(false);
   const [toolsText, setToolsText] = useState(SAMPLE_TOOLS);
   const [choiceMode, setChoiceMode] = useState<ToolChoiceMode>("auto");
@@ -88,14 +99,31 @@ function Chat({ models, subs, gatewayUrl, keys, setKey, reveal }: ChatProps) {
   const [formError, setFormError] = useState<string>();
   const [revealMsg, setRevealMsg] = useState<string>();
   const abort = useRef<AbortController | null>(null);
+  const [phase, setPhase] = useState<"revealing" | "sending" | null>(null);
   const codeButton = useRef<HTMLButtonElement>(null);
   const dialog = useRef<HTMLDivElement>(null);
-  const busy = live?.outcome === "streaming";
+  const busy = phase !== null;
 
-  const model = models.find((m) => m.id === modelId) ?? models[0]!;
+  // Invalidate ownership before aborting: even a transport ignoring abort cannot
+  // cache a late credential, update this conversation, or send to the gateway.
+  useEffect(() => () => {
+    const ctrl = abort.current;
+    abort.current = null;
+    ctrl?.abort();
+  }, [subId, gatewayUrl]);
+
+  const model = models.find((m) => m.id === modelId) ?? { id: "", capabilities: [] };
+  const available = !!model.id && subs.some(s => s.id === subId);
   useEffect(() => {
-    if (!models.some((m) => m.id === modelId)) setModelId(models[0]!.id);
+    if (modelId && !models.some((m) => m.id === modelId)) {
+      setModelId("");
+      setFormError("The selected model is no longer available. Conversation history is retained; choose an available model before sending.");
+      cancel(false);
+    }
   }, [models, modelId]);
+  useEffect(() => {
+    if (subId && !subs.some(s => s.id === subId)) { setSubId(""); setPasted(""); cancel(false); }
+  }, [subs, subId]);
   useEffect(() => {
     setStream(model.capabilities.includes("stream"));
     setUseTools(false);
@@ -116,6 +144,7 @@ function Chat({ models, subs, gatewayUrl, keys, setKey, reveal }: ChatProps) {
   ];
   function requestFor(messages: ChatMessage[]): ChatRequest {
     const request = textChatRequest(modelId, messages, model.max_completion_tokens);
+    if (modelId === "auto") request.routing_profile = routingProfile;
     if (useTools && toolsOk && toolsCheck?.ok) {
       request.tools = toolsCheck.value;
       const choice = buildToolChoice(choiceMode, choiceFn, toolsCheck.value);
@@ -145,6 +174,7 @@ function Chat({ models, subs, gatewayUrl, keys, setKey, reveal }: ChatProps) {
     ")",
     "",
     `request = json.loads(${JSON.stringify(JSON.stringify(requestBody))})`,
+    ...(modelId === "auto" ? ['request["extra_body"] = {"routing_profile": request.pop("routing_profile")}'] : []),
     "response = client.chat.completions.create(**request)",
     ...(stream && streamOk ? ["for chunk in response:", "    if chunk.choices:", '        print(chunk.choices[0].delta.content or "", end="")'] : ["print(response.choices[0].message.content)"]),
   ].join("\n");
@@ -170,33 +200,74 @@ function Chat({ models, subs, gatewayUrl, keys, setKey, reveal }: ChatProps) {
     }
   }
 
+  function begin() {
+    if (abort.current) return null;
+    const ctrl = new AbortController();
+    abort.current = ctrl;
+    setPhase("revealing");
+    return ctrl;
+  }
+
+  function owns(ctrl: AbortController) {
+    return abort.current === ctrl;
+  }
+
+  function finish(ctrl: AbortController) {
+    if (!owns(ctrl)) return;
+    abort.current = null;
+    setPhase(null);
+    setLive(null);
+  }
+
+  async function retrieveKey(ctrl: AbortController): Promise<string> {
+    // Bound the await as well as fetch, including token acquisition and custom
+    // reveal implementations which do not honor AbortSignal.
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    let onAbort = () => {};
+    try {
+      const stopped = new Promise<never>((_, reject) => {
+        onAbort = () => reject(new Error("Credential retrieval stopped."));
+        ctrl.signal.addEventListener("abort", onAbort, { once: true });
+        timer = setTimeout(() => ctrl.abort("credential-timeout"), 15_000);
+      });
+      ctrl.signal.throwIfAborted();
+      return await Promise.race([reveal(subId, "primary", ctrl.signal), stopped]);
+    } finally {
+      clearTimeout(timer);
+      ctrl.signal.removeEventListener("abort", onAbort);
+    }
+  }
+
+  function revealError(ctrl: AbortController) {
+    return ctrl.signal.reason === "credential-timeout"
+      ? "Key retrieval timed out. No gateway request was sent."
+      : "Could not reveal the key. Reveal one or paste it below.";
+  }
+
   async function doReveal() {
+    if (!subs.some(s => s.id === subId)) return;
+    const ctrl = begin();
+    if (!ctrl) return;
     setRevealMsg(undefined);
     try {
-      setKey(subId, "primary", await reveal(subId, "primary"));
+      const fetched = await retrieveKey(ctrl);
+      if (!owns(ctrl) || ctrl.signal.aborted) return;
+      if (!fetched) throw new Error("Missing credential.");
+      setKey(subId, "primary", fetched);
       setRevealMsg("Primary key revealed and held in memory.");
-    } catch (e) {
-      setRevealMsg(e instanceof ApiError ? e.detail : "Could not reveal the key.");
+    } catch {
+      if (owns(ctrl)) setRevealMsg(revealError(ctrl));
+    } finally {
+      finish(ctrl);
     }
   }
 
   async function send() {
+    if (abort.current) return;
+    if (!available) return setFormError("Choose an available model and active subscription before sending.");
     setFormError(undefined);
     const text = input.trim();
     if (!text) return setFormError("Enter a message.");
-    let activeKey = key;
-    if (!activeKey) {
-      try {
-        const fetched = await reveal(subId, "primary");
-        if (fetched) {
-          setKey(subId, "primary", fetched);
-          activeKey = fetched;
-        }
-      } catch {
-        /* ignore auto-reveal failure and show standard error below */
-      }
-    }
-    if (!activeKey) return setFormError("A subscription key is required. Reveal one or paste it below.");
     if (useTools && toolsOk) {
       if (!toolsCheck?.ok) return setFormError(toolsCheck?.error ?? "Tools are invalid.");
       const choice = buildToolChoice(choiceMode, choiceFn, toolsCheck.value);
@@ -206,50 +277,87 @@ function Chat({ models, subs, gatewayUrl, keys, setKey, reveal }: ChatProps) {
     const history: ChatMessage[] = turns.filter((t) => t.role === "user" || (t.result && t.result.outcome === "completed" && t.result.toolCalls.length === 0))
       .map((t) => ({ role: t.role, content: t.content }) as ChatMessage);
     const messages: ChatMessage[] = [...(system.trim() ? [{ role: "system", content: system.trim() } as ChatMessage] : []), ...history, { role: "user", content: text }];
-    const ctrl = new AbortController();
-    abort.current = ctrl;
-    setInput("");
-    setTurns((t) => [...t, { role: "user", content: text }]);
-    setLive({ outcome: "streaming", content: "", toolCalls: [], finishReason: null, usage: null, sawDone: false });
-    const result = await chatCompletion({
-      gatewayUrl,
-      key: activeKey,
-      stream: stream && streamOk,
-      signal: ctrl.signal,
-      request: requestFor(messages),
-      onUpdate: setLive,
-    });
+    const ctrl = begin();
+    if (!ctrl) return;
+    let sending = false;
+    try {
+      let activeKey = key;
+      if (!activeKey) {
+        activeKey = await retrieveKey(ctrl);
+        if (!owns(ctrl) || ctrl.signal.aborted) return;
+        if (!activeKey) throw new Error("Missing credential.");
+        setKey(subId, "primary", activeKey);
+      }
+      if (!owns(ctrl) || ctrl.signal.aborted) return;
+      sending = true;
+      setPhase("sending");
+      setInput("");
+      setTurns((t) => [...t, { role: "user", content: text }]);
+      setLive({ outcome: "streaming", content: "", toolCalls: [], finishReason: null, usage: null, sawDone: false });
+      const result = await chatCompletion({
+        gatewayUrl,
+        key: activeKey,
+        stream: stream && streamOk,
+        signal: ctrl.signal,
+        request: requestFor(messages),
+        onUpdate: (update) => { if (owns(ctrl) && !ctrl.signal.aborted) setLive(update); },
+      });
+      if (!owns(ctrl) || ctrl.signal.aborted) return;
+      setTurns((t) => [...t, { role: "assistant", content: result.content, result }]);
+      // The public error parser intentionally exposes message, not raw code.
+      // Treat any forbidden request conservatively; never silently resend it.
+      if (result.httpStatus === 403) {
+        setModelId("");
+        setFormError("Model access was denied. History is retained; choose an available model. The request was not retried.");
+      }
+    } catch {
+      if (owns(ctrl)) setFormError(sending ? "The request could not be completed. It was not retried." : revealError(ctrl));
+    } finally {
+      finish(ctrl);
+    }
+  }
+
+  function cancel(showOutcome = true) {
+    const ctrl = abort.current;
     abort.current = null;
+    ctrl?.abort();
+    setPhase(null);
+    if (showOutcome && ctrl) {
+      if (live) setTurns((t) => [...t, { role: "assistant", content: live.content, result: { ...live, outcome: "cancelled" } }]);
+      else setRevealMsg("Key retrieval cancelled. No gateway request was sent.");
+    }
     setLive(null);
-    setTurns((t) => [...t, { role: "assistant", content: result.content, result }]);
   }
 
   function reset() {
-    abort.current?.abort();
+    cancel(false);
     setTurns([]);
     setLive(null);
     setFormError(undefined);
+    setRevealMsg(undefined);
   }
 
   return (
     <div className="playground">
       <section className="panel config" aria-label="Request settings">
-        <Field label="Model">{(id) => <select id={id} value={modelId} onChange={(e) => setModelId(e.target.value)} disabled={busy}>{models.map((m) => <option key={m.id}>{m.id}</option>)}</select>}</Field>
+        <Field label="Model">{(id) => <select id={id} value={modelId} onChange={(e) => setModelId(e.target.value)} disabled={busy}><option value="">Select an available model</option>{models.map((m) => <option key={m.id}>{m.id}</option>)}</select>}</Field>
+        {modelId === "auto" && <Field label="Routing profile" hint="Decision-1 scores eligible options; completion usage is separate from Decision overhead.">{(id) => <select id={id} value={routingProfile} disabled={busy} onChange={(e) => setRoutingProfile(e.target.value as RoutingProfile)}>{routingProfiles.map((p) => <option key={p} value={p}>{routingLabels[p]}</option>)}</select>}</Field>}
         <div className="endpoint-details">
           <p><strong>Gateway base URI</strong><code>{gatewayUrl}</code></p>
           <p><strong>REST endpoint</strong><code>{endpoint}</code></p>
           <button ref={codeButton} type="button" className="btn" onClick={() => setExamplesOpen(true)}>Code</button>
         </div>
-        <Field label="Subscription">{(id) => <select id={id} value={subId} onChange={(e) => setSubId(e.target.value)} disabled={busy}>{subs.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}</select>}</Field>
+        <Field label="Subscription">{(id) => <select id={id} value={subId} onChange={(e) => { reset(); setPasted(""); setSubId(e.target.value); }} disabled={busy}><option value="">Select an active subscription</option>{subs.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}</select>}</Field>
         {revealed ? (
           <p className="notice" role="status">Using the revealed key (memory only).</p>
         ) : (
           <>
-            <button className="btn" onClick={() => void doReveal()}>Reveal primary key</button>
-            <Field label="Or paste a key" hint="Held in memory only; never stored.">{(id, d) => <input id={id} aria-describedby={d} type="password" autoComplete="off" value={pasted} onChange={(e) => setPasted(e.target.value)} />}</Field>
+            <button className="btn" disabled={busy} onClick={() => void doReveal()}>Reveal primary key</button>
+            <Field label="Or paste a key" hint="Held in memory only; never stored.">{(id, d) => <input id={id} aria-describedby={d} type="password" autoComplete="off" disabled={busy} value={pasted} onChange={(e) => setPasted(e.target.value)} />}</Field>
           </>
         )}
         {revealMsg && <p role="status" className="muted">{revealMsg}</p>}
+        {phase === "revealing" && <p role="status">Preparing request: retrieving subscription key…</p>}
         <Field label="System prompt (optional)">{(id) => <textarea id={id} rows={2} value={system} onChange={(e) => setSystem(e.target.value)} disabled={busy} />}</Field>
         <label className="check"><input type="checkbox" checked={stream && streamOk} onChange={(e) => setStream(e.target.checked)} disabled={busy || !streamOk} /> Stream response (SSE)</label>
         {!streamOk && !toolsOk && !schemaOk && <p className="muted">Guarded text-only requests; streaming, tools, and structured output are not sent.</p>}
@@ -287,7 +395,7 @@ function Chat({ models, subs, gatewayUrl, keys, setKey, reveal }: ChatProps) {
         <form onSubmit={(e) => { e.preventDefault(); if (!busy) void send(); }} className="composer">
           <Field label="Message">{(id) => <textarea id={id} rows={3} value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter" && (e.ctrlKey || e.metaKey) && !busy) { e.preventDefault(); void send(); } }} />}</Field>
           <div className="actions">
-            {busy ? <button type="button" className="btn danger" onClick={() => abort.current?.abort()}>Cancel</button> : <button className="btn primary">Send</button>}
+            {busy ? <button type="button" className="btn danger" onClick={() => cancel()}>Cancel</button> : <button className="btn primary" disabled={!available}>Send</button>}
             <button type="button" className="btn" onClick={reset}>Clear conversation</button>
             <small className="muted">Ctrl+Enter to send</small>
           </div>
@@ -357,6 +465,10 @@ function TurnView({ turn }: { turn: Turn }) {
       )}
       {outcome && <p className="notice" role={outcome.tone === "bad" ? "alert" : "status"}><Badge tone={outcome.tone}>{outcome.label}</Badge> {outcome.text}</p>}
       {r?.usage && <p className="muted usage-line">Usage reported by server: {JSON.stringify(r.usage)}</p>}
+      {r?.routing && <p className="muted" aria-label="Actual Auto routing result">
+        Completion model: {r.actualModel ?? "not reported"} · selected alias: {r.routing.selected_model} · profile: {r.routing.routing_profile} · fallback: {r.routing.fallback_used ? "yes" : "no"} · config: {r.routing.config_version}.
+        Decision usage: {r.routing.decision_usage ? JSON.stringify(r.routing.decision_usage) : "unknown"}; Decision cost: {r.routing.decision_cost_usd ?? "unknown"} (separate from completion).
+      </p>}
     </article>
   );
 }

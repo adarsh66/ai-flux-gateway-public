@@ -1,0 +1,7 @@
+{
+  "host": "poc-ids-token-ex-admin.azurewebsites.net",
+  "id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Web/sites/poc-ids-token-ex-admin",
+  "lastModifiedTimeUtc": "2026-11-04T06:38:08.83",
+  "name": "poc-ids-token-ex-admin",
+  "state": "Running"
+}

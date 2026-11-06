@@ -1,0 +1,4 @@
+{
+  "exit": 1,
+  "stderr": "ERROR: Bad Request({\"error\":{\"message\":\"The request had some invalid properties\",\"code\":\"BadArgumentError\",\"correlationId\":\"8e68ac7b-0de6-4b21-ad4f-cbffea17f1ca\",\"innererror\":{\"code\":\"SyntaxError\",\"message\":\"A recognition error occurred in the query.\",\"innererror\":{\"code\":\"SYN0002\",\"message\":\"Query could not be parsed at 'first' on line [1,341]\",\"line\":1,\"pos\":341,\"token\":\"first\"}}}})\n"
+}

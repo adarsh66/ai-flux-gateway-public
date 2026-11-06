@@ -72,9 +72,10 @@ class FoundryInventory(EvidenceModel):
             if settings.foundry_inventory_path is None:
                 raise ValueError("missing inventory")
             data = cls.model_validate_json(settings.foundry_inventory_path.read_text(encoding="utf-8"))
-            age = (datetime.now(UTC) - data.verified_at).total_seconds()
-            if not 0 <= age <= settings.foundry_inventory_max_age_seconds:
-                raise ValueError("expired inventory")
+            # Operator acceptance persists until explicit disable or incompatible
+            # metadata. Timestamps remain provenance, not availability leases.
+            if data.verified_at.tzinfo is None or data.verified_at > datetime.now(UTC):
+                raise ValueError("invalid inventory timestamp")
             if data.project_endpoint != settings.foundry_project_endpoint.rstrip("/"):
                 raise ValueError("wrong project endpoint")
             if data.project_resource_id.lower() != settings.foundry_project_resource_id.lower():
@@ -112,7 +113,9 @@ class FoundryInventory(EvidenceModel):
         route = next((r for r in self.routes if r.alias == alias and r.gateway_validated), None)
         if route is None:
             return None
-        if route.expires_at is not None and (route.expires_at.tzinfo is None or datetime.now(UTC) >= route.expires_at):
+        # Legacy expiry is retained as provenance only. A naive deadline is still
+        # invalid evidence; elapsed time alone cannot revoke operator acceptance.
+        if route.expires_at is not None and route.expires_at.tzinfo is None:
             return None
         deployment = next((d for d in self.deployments if d.id.lower() == route.deployment_id.lower()), None)
         if (

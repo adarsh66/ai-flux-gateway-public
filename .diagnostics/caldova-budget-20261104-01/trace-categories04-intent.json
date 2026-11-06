@@ -1,0 +1,7 @@
+{
+  "at": "2026-11-04T08:15:06.948307+00:00",
+  "workspace": "004a359b-dde6-40fb-843c-4d5651785e17",
+  "operation": "read-only KQL query",
+  "query": "ApiManagementGatewayLogs | where TimeGenerated >= datetime(2026-11-01) and TimeGenerated <= datetime(2026-11-04T08:15:01.032739+00:00) | where _ResourceId =~ \"/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.ApiManagement/service/poc-ids-token-ex-apim\" | mv-expand record=TraceRecords | where tostring(record.source) == \"aiflux\" | extend m=parse_json(tostring(record.metadata)) | summarize traces=count() by category=tostring(m.category) | order by category asc",
+  "raw_messages_headers_bodies_exported": false
+}

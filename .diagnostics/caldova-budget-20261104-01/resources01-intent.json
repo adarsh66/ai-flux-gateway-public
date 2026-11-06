@@ -1,0 +1,14 @@
+{
+  "at": "2026-11-04T08:10:14.371043+00:00",
+  "args": [
+    "resource",
+    "list",
+    "--subscription",
+    "aa28274d-fea0-46d4-b9c8-30f3ef0a0e52",
+    "--resource-group",
+    "IDS-TOKEN-EXCHANGE-POC",
+    "--query",
+    "[].{name:name,type:type,id:id,location:location}"
+  ],
+  "operation": "read-only management GET; projected metadata"
+}

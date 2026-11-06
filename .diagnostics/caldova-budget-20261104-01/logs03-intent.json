@@ -1,0 +1,7 @@
+{
+  "at": "2026-11-04T08:13:38.331649+00:00",
+  "operation": "Log Analytics query-only POST; no data/configuration mutation",
+  "workspace": "004a359b-dde6-40fb-843c-4d5651785e17",
+  "fields": "table schema names/types only",
+  "prompts_or_raw_payload_export": false
+}

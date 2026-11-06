@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { ApiError, ControlApi } from "./client";
 
 function api(handler: (url: string, init: RequestInit) => Response) {
@@ -8,6 +8,54 @@ function api(handler: (url: string, init: RequestInit) => Response) {
 }
 
 describe("ControlApi", () => {
+  it("forwards reveal cancellation to fetch without retry", async () => {
+    const ctrl = new AbortController();
+    const fetchImpl = vi.fn((_url: unknown, init?: RequestInit) => new Promise<Response>((_resolve, reject) => {
+      init!.signal!.addEventListener("abort", () => reject(new DOMException("Aborted", "AbortError")), { once: true });
+    }));
+    const client = new ControlApi("/api", async () => "tok", fetchImpl as typeof fetch);
+    const request = client.revealKey("s1", "primary", ctrl.signal);
+    const rejected = expect(request).rejects.toBeInstanceOf(ApiError);
+    await Promise.resolve();
+    expect(fetchImpl).toHaveBeenCalledTimes(1);
+    expect(fetchImpl.mock.calls[0]![1]!.signal).toBe(ctrl.signal);
+    ctrl.abort();
+    await rejected;
+    expect(fetchImpl).toHaveBeenCalledTimes(1);
+  });
+
+  it("never starts reveal fetch when cancelled during token acquisition", async () => {
+    let token!: (value: string) => void;
+    const tokenPromise = new Promise<string>(resolve => { token = resolve; });
+    const fetchImpl = vi.fn();
+    const client = new ControlApi("/api", () => tokenPromise, fetchImpl);
+    const ctrl = new AbortController();
+    const request = client.revealKey("s1", "primary", ctrl.signal);
+    const rejected = expect(request).rejects.toMatchObject({ name: "AbortError" });
+    ctrl.abort();
+    token("tok");
+    await rejected;
+    expect(fetchImpl).not.toHaveBeenCalled();
+    await expect(client.revealKey("s1", "primary", ctrl.signal)).rejects.toMatchObject({ name: "AbortError" });
+    expect(fetchImpl).not.toHaveBeenCalled();
+  });
+
+  it("keeps Auto availability/read separate from explicit initialization and versioned profile saves", async () => {
+    const { client, calls } = api(() => new Response("{}"));
+    await client.autoRoutingAvailability();
+    await client.adminAutoRouting();
+    await client.initializeAutoRouting();
+    const input = { enabled: false, candidate_models: ["alpha", "beta"], fallback_model: "alpha", expected_version: "2026-10-29T10:00:00+00:00" };
+    for (const profile of ["balanced", "cost", "quality"] as const) await client.saveAutoProfile(profile, input);
+    expect(calls.map(c => [c.url, c.init.method ?? "GET"])).toEqual([
+      ["/api/auto-routing/availability", "GET"], ["/api/admin/auto-routing", "GET"],
+      ["/api/admin/auto-routing/initialize", "POST"], ["/api/admin/auto-routing/balanced", "PUT"],
+      ["/api/admin/auto-routing/cost", "PUT"], ["/api/admin/auto-routing/quality", "PUT"],
+    ]);
+    for (const call of calls.slice(3)) expect(JSON.parse(call.init.body as string)).toEqual(input);
+    for (const call of calls) expect(call.init.cache).toBe("no-store");
+  });
+
   it("sends bearer token with no-store and idempotency key", async () => {
     const { client, calls } = api(() => new Response(JSON.stringify({ id: "1", name: "n", team: "t", state: "pending", created_at: "x" }), { status: 201 }));
     const s = await client.createSubscription({ name: "n", team: "t" }, "key-1");
@@ -44,6 +92,23 @@ describe("ControlApi", () => {
     expect(calls[0]!.url).toBe("/api/usage/timeseries?days=7&subscription_id=sub+1&start=2026-01-01T00%3A00%3A00.000Z&end=2026-01-02T00%3A00%3A00.000Z");
     expect(calls[1]!.url).toBe("/api/admin/usage/timeseries?days=7&subscription_id=sub+1&organization_id=org%2F1&start=2026-01-01T00%3A00%3A00.000Z&end=2026-01-02T00%3A00%3A00.000Z");
   });
+  it("sends explicit SGT granularity on every chart without changing UTC instants", async () => {
+    const { client, calls } = api(() => new Response(JSON.stringify({ items: [] })));
+    const q = { days: 7, start: "2026-10-01T16:00:00Z", end: "2026-10-02T16:00:00Z", time_zone: "Asia/Singapore" as const, granularity: "day" as const, organization_id: "org" };
+    await client.usageSeries(q);
+    await client.adminUsageSeries(q);
+    await client.modelTokens(q);
+    await client.adminModelTokens(q);
+    calls.forEach((call, index) => {
+      const url = new URL(call.url, "https://portal");
+      expect(url.searchParams.get("granularity")).toBe("day");
+      expect(url.searchParams.get("time_zone")).toBe("Asia/Singapore");
+      expect(url.searchParams.get("start")).toBe(q.start);
+      expect(url.searchParams.get("end")).toBe(q.end);
+      expect(url.searchParams.get("organization_id")).toBe(index % 2 ? "org" : null);
+      expect(call.init.cache).toBe("no-store");
+    });
+  });
   it("applies model and subscription to all usage surfaces without leaking customer organization", async () => {
     const { client, calls } = api(() => new Response(JSON.stringify({ items: [], total: 0 })));
     const filters = { days: 7, subscription_id: "sub 1", organization_id: "org/1", model: "old model/+&" };
@@ -64,14 +129,14 @@ describe("ControlApi", () => {
     }
     expect(calls[4]!.url).not.toMatch(/offset|limit|start|end/);
   });
-  it("discovers historical model options independently of model, pagination and viewport", async () => {
+  it("keeps model discovery independent of model and pagination; only admin forwards the exact viewport", async () => {
     const { client, calls } = api(() => new Response(JSON.stringify({ items: ["retired"], total: 1 })));
-    const q = { days: 1, subscription_id: "s", organization_id: "o", model: "ignored", offset: 50, start: "ignored" };
+    const q = { days: 1, subscription_id: "s", organization_id: "o", model: "ignored", offset: 50, start: "2026-10-01T00:00:00Z", end: "2026-10-02T00:00:00Z" };
     expect(await client.usageModels(q)).toEqual({ items: ["retired"], total: 1 });
     await client.adminUsageModels(q);
     expect(calls.map((c) => c.url)).toEqual([
       "/api/usage/models?days=1&subscription_id=s",
-      "/api/admin/usage/models?days=1&subscription_id=s&organization_id=o",
+      "/api/admin/usage/models?days=1&subscription_id=s&organization_id=o&start=2026-10-01T00%3A00%3A00Z&end=2026-10-02T00%3A00%3A00Z",
     ]);
   });
   it("closes a price period with a timezone-aware timestamp", async () => {

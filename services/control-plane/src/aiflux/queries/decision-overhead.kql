@@ -1,0 +1,45 @@
+// Read-only trace-store view, NOT a UsageRecord ingestion source or completion.
+// Render the same trusted start/end/resource/product/row_limit parameters as usage.kql.
+let gateway =
+    ApiManagementGatewayLogs
+    | where TimeGenerated >= datetime({start}) and TimeGenerated < datetime({end})
+    | where _ResourceId =~ {resource}
+    | where ProductId == {product} and OperationId in ("chat", "chat-completions")
+    | extend resource_id=tolower(_ResourceId), correlation_id=tolower(tostring(CorrelationId))
+    | summarize arg_max(TimeGenerated, *) by resource_id, correlation_id
+    | project resource_id, correlation_id, occurred_at=TimeGenerated,
+              subscription_id=ApimSubscriptionId, parent_status_code=ResponseCode,
+              parent_e2e_ms=TotalTime, parent_backend_id=BackendId,
+              gateway_region=Region, trace_records=TraceRecords;
+let decisions =
+    gateway
+    | mv-expand record=parse_json(trace_records)
+    | where tostring(record.source) == "aiflux"
+    | extend metadata=parse_json(tostring(record.metadata))
+    | where tostring(metadata.category) == "decision-overhead"
+    // Reject duplicate events, not sum them or pick a synthetic second completion.
+    | summarize decision_trace_count=count(), payload_text=take_any(tostring(metadata.payload))
+        by resource_id, correlation_id
+    | where decision_trace_count == 1 and strlen(payload_text) <= 2048
+    | extend decision=parse_json(payload_text)
+    | where tostring(decision.schema) == "decision-overhead-v1"
+    | where tolower(tostring(decision.request_id)) == correlation_id
+    | project resource_id, correlation_id, decision_trace_count,
+              decision_schema=tostring(decision.schema),
+              request_id=tostring(decision.request_id),
+              routing_profile=tostring(decision.routing_profile),
+              selected_model=tostring(decision.selected_model),
+              config_version=tostring(decision.config_version),
+              decision_latency_ms=todouble(decision.latency_ms),
+              decision_input_tokens=tolong(decision.usage.input_tokens),
+              decision_output_tokens=tolong(decision.usage.output_tokens),
+              decision_cost_usd=todouble(decision.cost_usd);
+gateway
+| join kind=inner decisions on resource_id, correlation_id
+| project resource_id, correlation_id, occurred_at, subscription_id,
+          parent_status_code, parent_e2e_ms, parent_backend_id, gateway_region,
+          decision_schema, request_id, routing_profile, selected_model, config_version,
+          decision_latency_ms, decision_input_tokens, decision_output_tokens,
+          decision_cost_usd, decision_trace_count
+| order by occurred_at asc
+| take {row_limit}

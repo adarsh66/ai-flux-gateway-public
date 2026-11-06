@@ -1,14 +1,17 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
+import { useSearchParams } from "react-router-dom";
+import { DeletionDialog } from "../components/DeletionDialog";
 import { ApiError } from "../client";
 import { useSession } from "../session";
-import type { AdminSubscription, KeyName } from "../types";
+import type { AdminSubscription, DeletionResult, KeyName } from "../types";
 import { AsyncView, Badge, ErrorState, Field, PageHeader, Pager, StateBadge, fmtDate, useAsync } from "../components/ui";
 
 const LIMIT = 25;
 
 export function SubscriptionsPage() {
   const { api, clearKeys } = useSession();
-  const [organization, setOrganization] = useState("");
+  const [params] = useSearchParams();
+  const [organization, setOrganization] = useState(params.get("organization_id") ?? "");
   const organizations = useAsync(() => api.organizations(), [api]);
   useEffect(() => { clearKeys(); return () => clearKeys(); }, [organization, clearKeys]);
   return <>
@@ -17,28 +20,33 @@ export function SubscriptionsPage() {
       {data => <>
         <Field label="Organization">{id => <select id={id} value={organization} onChange={e => setOrganization(e.target.value)}>
           <option value="">All organizations</option>
-          {data.items.map(org => <option key={org.id} value={org.id} disabled={!org.enabled}>{org.name}{!org.enabled ? " (disabled)" : ""}</option>)}
+          {data.items.map(org => <option key={org.id} value={org.id}>{org.name}{!org.enabled ? " (disabled)" : ""}</option>)}
         </select>}</Field>
-        <SubscriptionList key={organization} organization={organization} />
+        <SubscriptionList key={organization} organization={organization} canCreate={data.items.some(o => o.id === organization && o.enabled)} />
       </>}
     </AsyncView>
   </>;
 }
 
-function SubscriptionList({ organization }: { organization: string }) {
+function SubscriptionList({ organization, canCreate }: { organization: string; canCreate: boolean }) {
   const { api } = useSession();
   const [offset, setOffset] = useState(0);
   const [version, setVersion] = useState(0);
+  const [notice, setNotice] = useState<DeletionResult>();
   const state = useAsync(() => api.adminSubscriptions(offset, LIMIT, organization || undefined), [api, offset, version, organization]);
+  useEffect(() => {
+    if (state.data && offset >= state.data.total && offset > 0) setOffset(Math.max(0, Math.ceil(state.data.total / LIMIT) - 1) * LIMIT);
+  }, [state.data, offset]);
   return (
     <>
-      {organization ? <CreateForm organization={organization} onCreated={() => { setOffset(0); setVersion((v) => v + 1); }} />
-        : <p className="muted">Select an organization to create a subscription.</p>}
+      {canCreate ? <CreateForm organization={organization} onCreated={() => { setOffset(0); setVersion((v) => v + 1); }} />
+        : <p className="muted">Select an enabled, nonarchived organization to create a subscription.</p>}
+      {notice && <p role={notice.status === "archived" ? "status" : "alert"} className={`notice ${notice.status === "archived" ? "" : "bad"}`}>{notice.message}</p>}
       <AsyncView state={state} isEmpty={(d) => d.items.length === 0} emptyTitle="No subscriptions yet" emptyHint="Select an organization and create a team subscription.">
         {(d) => (
           <>
             <ul className="cards">
-              {d.items.map((s) => <SubscriptionCard key={s.id} sub={s} onChanged={() => setVersion((v) => v + 1)} />)}
+              {d.items.map((s) => <SubscriptionCard key={s.id} sub={s} onChanged={r => { if (r) setNotice(r); setVersion((v) => v + 1); }} />)}
             </ul>
             <Pager offset={offset} limit={LIMIT} total={d.total} onChange={setOffset} />
           </>
@@ -101,11 +109,15 @@ function CreateForm({ organization, onCreated }: { organization: string; onCreat
   );
 }
 
-function SubscriptionCard({ sub, onChanged }: { sub: AdminSubscription; onChanged: () => void }) {
+function SubscriptionCard({ sub, onChanged }: { sub: AdminSubscription; onChanged: (result?: DeletionResult) => void }) {
   const { api, keys, setKey, clearKeys } = useSession();
   const [busy, setBusy] = useState<string>();
   const [msg, setMsg] = useState<{ tone: "ok" | "bad"; text: string }>();
   const [visible, setVisible] = useState<Partial<Record<KeyName, boolean>>>({});
+  const [deleting, setDeleting] = useState(false);
+  const [attempted, setAttempted] = useState(false);
+  const deletionAttempt = useRef(false);
+  const deletingAccess = attempted || !!sub.deletion_status || !!sub.deleted_at;
   const revealed = keys[sub.id] ?? {};
   const mounted = useRef(true);
   useEffect(() => {
@@ -128,7 +140,7 @@ function SubscriptionCard({ sub, onChanged }: { sub: AdminSubscription; onChange
 
   const reveal = (k: KeyName) => act(`reveal-${k}`, async () => {
     const value = await api.adminRevealKey(sub.id, k);
-    if (!mounted.current) return;
+    if (!mounted.current || deletionAttempt.current || deletingAccess) return;
     setKey(sub.id, k, value);
     setVisible((v) => ({ ...v, [k]: false }));
     return `${k} key revealed. It is held in memory only until you hide it or sign out.`;
@@ -159,11 +171,12 @@ function SubscriptionCard({ sub, onChanged }: { sub: AdminSubscription; onChange
         </div>
         <StateBadge state={sub.state} />
       </div>
-      {sub.state === "failed" && <p className="notice bad">Provisioning failed. Reconcile to retry or contact IDS.</p>}
-      {sub.state === "pending" && <p className="notice">Provisioning is pending. Keys are unavailable until the subscription is active.</p>}
+      {deletingAccess && <p role="alert" className="notice bad">Deletion {sub.deletion_status ?? (sub.deleted_at ? "archived" : "outcome unknown")}. Key actions are unavailable here. APIM revocation is not complete until suspension is verified; retry deletion.</p>}
+      {!deletingAccess && sub.state === "failed" && <p className="notice bad">Provisioning failed. Reconcile to retry or contact IDS.</p>}
+      {!deletingAccess && sub.state === "pending" && <p className="notice">Provisioning is pending. Keys are unavailable until the subscription is active.</p>}
       {sub.gateway_access === "pending" && <p role="alert" className="notice bad">Gateway access pending: {sub.gateway_message}</p>}
       {sub.gateway_access === "not_managed" && <p className="notice">{sub.gateway_message}</p>}
-      <div className="keys">
+      {!deletingAccess && <div className="keys">
         {(["primary", "secondary"] as KeyName[]).map((k) => (
           <div key={k} className="key-row">
             <span className="key-label">{k} key</span>
@@ -180,14 +193,18 @@ function SubscriptionCard({ sub, onChanged }: { sub: AdminSubscription; onChange
             <button className="btn danger" disabled={sub.state !== "active" || !!busy} onClick={() => void rotate(k)}>Rotate</button>
           </div>
         ))}
-      </div>
+      </div>}
       <div className="actions">
-        {sub.state === "active" && <button className="btn" disabled={!!busy} onClick={() => void setState("suspended")}>Suspend</button>}
-        {sub.state === "suspended" && <button className="btn" disabled={!!busy} onClick={() => void setState("active")}>Activate</button>}
-        <button className="btn" disabled={!!busy} onClick={() => void reconcile()}>Reconcile</button>
+        {!deletingAccess && sub.state === "active" && <button className="btn" disabled={!!busy || deleting} onClick={() => void setState("suspended")}>Suspend</button>}
+        {!deletingAccess && sub.state === "suspended" && <button className="btn" disabled={!!busy || deleting} onClick={() => void setState("active")}>Activate</button>}
+        {!deletingAccess && <button className="btn" disabled={!!busy || deleting} onClick={() => void reconcile()}>Reconcile</button>}
+        <button className="btn danger" disabled={!!busy || deleting} onClick={() => { clearKeys(sub.id); setVisible({}); setDeleting(true); }}>{deletingAccess ? "Retry deletion" : "Delete"}</button>
         {busy && <Badge tone="info">Working…</Badge>}
       </div>
       {msg && <p role={msg.tone === "bad" ? "alert" : "status"} className={`notice ${msg.tone === "bad" ? "bad" : ""}`}>{msg.text}</p>}
+      {deleting && <DeletionDialog collection="subscriptions" entityId={sub.id} onClose={() => setDeleting(false)}
+        onAttempt={() => { deletionAttempt.current = true; setAttempted(true); clearKeys(sub.id); setVisible({}); }} onUncertain={onChanged}
+        onChanged={r => { setMsg({ tone: r.status === "archived" ? "ok" : "bad", text: r.message }); onChanged(r); }} />}
     </li>
   );
 }

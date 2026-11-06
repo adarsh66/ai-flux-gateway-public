@@ -35,22 +35,37 @@ def usage(db, id="r", **kwargs):
     db.flush()
 
 
-def test_manifest_exact_current_eleven_and_sources():
+def test_manifest_exact_existing_twenty_two_and_sources():
     accepted = json.loads(Path("services/usage-ingestion/ingestion-approved.json").read_text())
     tuples = {(r["id"], r["provider"], r["region"]) for r in accepted["models"] if r["enabled"]}
+    additive = {
+        (alias, "Anthropic", "eastus") for alias in (
+            "claude-sonnet-5-5", "claude-opus-5-5", "claude-opus-5-5-fast",
+            "claude-haiku-5-5", "claude-opus-4-8",
+        )
+    } | {("gpt-6.1-terra", "OpenAI", "eastus"), ("gpt-6-luna", "OpenAI", "eastus"),
+         ("Mistral-Large-3", "Mistral AI", "eastus")}
     priced = {(r["model"], r["provider"], r["region"])
               for r in manifest()["rates"] if r["status"] != "unknown"}
     unknown = {(r["model"], r["provider"], r["region"])
                for r in manifest()["rates"] if r["status"] == "unknown"}
+    successor = {("mistral-medium-3-5", "Mistral AI", "eastus")}
+    historical = {(r["model"], r["provider"], r["region"])
+                  for r in manifest(False)["rates"]}
+    assert len(historical) == 13 and len(additive) == 8
+    assert not historical & additive and not successor & (historical | additive)
+    assert len(tuples) == 22 and tuples == historical | additive | successor
     assert priced | unknown == tuples and not priced & unknown
+    assert len(manifest()["rates"]) == 22
     assert unknown == {("FW-GLM-5.3", "Fireworks", "eastus"), ("FW-MiniMax-M3", "Fireworks", "eastus")}
-    assert len(tuples) == 13
     for model, provider, region in unknown:
         assert catalog_price(model, provider, region) is None
     for model, provider, region in priced:
         price = catalog_price(model, provider, region)
         assert price["source_url"].startswith("https://")
-        assert price["checked_at"] == "2026-10-27"
+        scope = (model, provider, region)
+        assert price["checked_at"] == ("2026-10-31" if scope in successor else
+                           "2026-10-30" if scope in additive else "2026-10-27")
         assert price["unit"] == "per_million_tokens"
         assert len(price["manifest_sha256"]) == 64
     glm = catalog_price("glm-5.3", "ModelArts", "ap-southeast-1")

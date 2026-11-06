@@ -1,0 +1,10 @@
+{
+  "revision": "default-estimates-20261030-v1",
+  "checked_at": "2026-10-30",
+  "unit": "per_million_tokens",
+  "assumption": "Platform planning estimate (best estimate, not a vendor quote or invoice) used only because no published Azure tariff is available for this model. Administrators can replace it on the Rate card page. It never affects model access, subscriptions, the Playground, the API or budgets.",
+  "rates": [
+    {"model": "FW-GLM-5.3", "provider": "Fireworks", "region": "eastus", "input": "1.00", "output": "3.50", "cached": "0.20"},
+    {"model": "FW-MiniMax-M3", "provider": "Fireworks", "region": "eastus", "input": "0.30", "output": "1.20", "cached": "0.03"}
+  ]
+}

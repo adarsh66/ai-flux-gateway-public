@@ -151,7 +151,7 @@ class ProductRun(CandidateRun):
                 + "/providers/Microsoft.Storage/storageAccounts/projpoctokenex?api-version=2023-05-01"])["properties"]
         acl = state["networkAcls"]
         require(acl["defaultAction"] == "Deny" and {r["value"] for r in acl["ipRules"]}
-                == {"167.103.66.248", "167.103.66.93", "167.103.65.36"}, "Preserve exact approved state ACL")
+                == {"167.103.66.248", "167.103.66.93", "167.103.65.36", "167.103.63.12"}, "Preserve exact approved state ACL")
         result["state_network"] = {k: state.get(k) for k in ("networkAcls", "publicNetworkAccess", "allowSharedKeyAccess")}
         result["apim"] = {}
         for name, suffix in (("global", "/policies/policy"), ("legacy", "/apis/aiflux-dev-openai/policies/policy"),

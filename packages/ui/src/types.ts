@@ -2,6 +2,39 @@ export type Role = "customer" | "ids_admin";
 export type SubscriptionState = "pending" | "active" | "suspended" | "failed";
 export type KeyName = "primary" | "secondary";
 
+export type DeletionCollection = "organizations" | "subscriptions" | "local-users" | "members";
+export interface DeletionPreview {
+  entity_type: "organization" | "subscription" | "local_user" | "member";
+  entity_id: string;
+  label: string;
+  can_delete: boolean;
+  blockers: string[];
+  dependencies: { subscriptions: number; users: number; members: number };
+  effect: string;
+}
+export interface DeletionRequest { confirmation: string; reason: string }
+export interface DeletionResult {
+  entity_id: string;
+  status: "archived" | "pending" | "failed";
+  message: string;
+}
+
+export interface OrganizationModelAccess {
+  organization_id: string;
+  organization_enabled: boolean;
+  version: number;
+  denied_models: string[];
+  auto_enabled: boolean;
+  applied_version: number | null;
+  applied_sha256: string | null;
+  state: "pending" | "applied" | "error";
+  error: string | null;
+  attempts?: number;
+  applied_at?: string | null;
+  next_attempt_at?: string | null;
+  items: { id: string; display_name: string; provider: string; globally_enabled: boolean; model_kind: "chat" | "informational"; internal_price_available?: boolean; external_price_available?: boolean }[];
+}
+
 export interface Me {
   organization_id: string;
   organization_name: string;
@@ -13,6 +46,57 @@ export interface Me {
 export interface Paged<T> {
   items: T[];
   total: number;
+}
+
+/** Advisory only. USD values are server-calculated decimal strings, never credit balances. */
+export interface MonthlyBudgetSummary {
+  organization_id: string;
+  organization_name: string;
+  allocated_usd: string | null;
+  estimated_used_usd: string | null;
+  estimated_remaining_usd: string | null;
+  estimated_overrun_usd: string | null;
+  estimated_utilization_pct: number | null;
+  advisory_threshold_pct: number;
+  status: "unconfigured" | "below_threshold" | "threshold_reached" | "over_budget" | "unknown";
+  period_start: string;
+  period_end: string;
+  as_of: string;
+  latest_usage_at: string | null;
+  estimated_requests: number;
+  unestimated_requests: number;
+  pricing_revision: string;
+  version: number;
+  estimate_complete: boolean;
+  basis: "external_customer_prices";
+  hard_stop_enabled: false;
+}
+
+/** Admin-only projection; never added to customer payloads. */
+export interface AdminMonthlyBudgetDashboard {
+  budget: MonthlyBudgetSummary;
+  internal: OrganizationCostEstimate;
+  internal_basis: "internal_price_estimate";
+  internal_scope: "completion_usage";
+  archived_at: string | null;
+  read_only: boolean;
+  as_of: string;
+}
+
+export interface MonthlyBudgetUpdate {
+  allocated_usd: string;
+  advisory_threshold_pct: number;
+  expected_version: number;
+  reason: string;
+}
+
+export interface MonthlyBudgetRevision {
+  version: number;
+  allocated_usd: string;
+  advisory_threshold_pct: number;
+  reason: string;
+  changed_by: string;
+  changed_at: string;
 }
 
 export interface CatalogModel {
@@ -30,6 +114,8 @@ export interface Subscription {
   team: string;
   state: SubscriptionState;
   created_at: string;
+  deleted_at?: string | null;
+  deletion_status?: "pending" | "failed" | null;
 }
 
 export interface AdminSubscription extends Subscription {
@@ -50,9 +136,12 @@ export interface DisplayEstimate {
 
 export interface DisplayPrice {
   input: string;
-  output: string;
-  cached?: string;
-  write?: string;
+  output?: string | null;
+  cached?: string | null;
+  write?: string | null;
+  model_kind?: "chat" | "scoring";
+  billing_dimensions?: string[];
+  provenance?: Record<string, unknown>;
   currency: string;
   status: string;
   source_url: string;
@@ -66,6 +155,119 @@ export interface DisplayPrice {
   basis: string;
 }
 
+export type RateOrigin = "configured" | "platform_default" | "public_list" | "sourced_proxy" | "tbc" | "unknown";
+
+export interface RateRow {
+  model: string;
+  /** Omitted by legacy responses: chat, with input and output billing. */
+  model_kind?: "chat" | "scoring";
+  billing_dimensions?: string[];
+  provider: string;
+  region: string;
+  model_version: string;
+  sku: string;
+  origin: RateOrigin;
+  note: string | null;
+  source_url: string | null;
+  input: string | null;
+  output: string | null;
+  cached: string | null;
+  write: string | null;
+  default_input: string | null;
+  default_output: string | null;
+  default_cached: string | null;
+  default_write: string | null;
+  configured_from: string | null;
+}
+
+/** Optional RateCardOutput metadata from auto_pricing.status / after_save.
+ * The fallback after_save response deliberately omits revisions and timestamps.
+ * Informational only: never an admission or Save permission signal.
+ */
+export interface RateCardAutoPricingStatus {
+  enabled: boolean;
+  desired_revision?: string | null;
+  applied_revision?: string | null;
+  applied_sha256?: string | null;
+  source: "rate-card" | "packaged-default" | "last-good-or-packaged-default";
+  state: "default" | "pending" | "applied";
+  stale?: boolean;
+  error?: string | null;
+  applied_at?: string | null;
+  next_attempt_at?: string | null;
+  access_gated: false;
+}
+
+export interface RateCard {
+  version: number;
+  revision: string;
+  currency: string;
+  unit: string;
+  items: RateRow[];
+  total: number;
+  changed: boolean;
+  auto_pricing?: RateCardAutoPricingStatus | null;
+}
+
+export interface RateInput {
+  model: string;
+  input: string;
+  output?: string | null;
+  cached?: string | null;
+  write?: string | null;
+}
+
+export interface PricingHistoryPoint {
+  id: string;
+  source: string;
+  effective_at: string;
+  reason: string | null;
+  internal_version: number | null;
+  default_version: number | null;
+  organization_version: number | null;
+  simultaneous: boolean;
+}
+export interface PricingHistoryPage {
+  items: PricingHistoryPoint[];
+  total: number;
+  next_offset: number | null;
+}
+export interface HistoricalRateRow {
+  model: string;
+  canonical_model: string;
+  provider: string;
+  region: string;
+  model_version: string | null;
+  sku: string | null;
+  model_kind: "chat" | "scoring";
+  billing_dimensions: string[];
+  state: "known" | "unknown" | "unavailable";
+  input: string | null;
+  output: string | null;
+  cached: string | null;
+  write: string | null;
+  note: string | null;
+}
+export interface PricingHistoryDetail {
+  source: PricingHistoryPoint;
+  items: HistoricalRateRow[];
+  skipped: string[];
+  current_version: number;
+  requires_acknowledgement: boolean;
+}
+
+/** External cards never participate in internal Auto pricing synchronization. */
+export type ExternalRateCard = Omit<RateCard, "auto_pricing">;
+export type ExternalRateInput = { model: string } & (
+  | { operation: "set"; input: string; output?: string | null; cached?: string | null; write?: string | null }
+  | { operation: "unknown" | "inherit" }
+);
+export interface ExternalCardUpdate {
+  expected_version: number;
+  reason: string;
+  rates: ExternalRateInput[];
+}
+
 export interface UsageSummary extends DisplayEstimate {
   requests: number;
   input_tokens: number;
@@ -74,7 +276,7 @@ export interface UsageSummary extends DisplayEstimate {
   measured_requests?: number;
   missing_token_requests?: number;
   health?: ModelTokenSeries["health"];
-  known_cost: string | null;
+  known_cost?: string | null;
   currency: string | null;
   incomplete_requests: number;
   failed_requests: number;
@@ -97,7 +299,7 @@ export interface UsageItem extends DisplayEstimate {
   output_tokens: number | null;
   cached_input_tokens: number | null;
   cache_write_tokens: number | null;
-  cost: string | null;
+  cost?: string | null;
   currency: string | null;
   status_code: number;
   e2e_ms: number | null;
@@ -109,8 +311,55 @@ export interface UsagePage extends Paged<UsageItem> {
   summary: UsageSummary;
 }
 
+export interface UsageRankingTotals {
+  requests: number;
+  input_tokens: number | null;
+  output_tokens: number | null;
+  total_tokens: number | null;
+  missing_token_requests: number;
+  incomplete_requests: number;
+}
+
+export interface UsageRankingItem extends UsageRankingTotals {
+  id: string;
+  name: string;
+  share: number | null;
+}
+
+export interface UsageRankings extends Paged<UsageRankingItem> {
+  dimension: "organizations" | "subscriptions";
+  organization_id: string | null;
+  start: string;
+  end: string;
+  totals: UsageRankingTotals;
+}
+
+export type UsageRankingQuery = Pick<UsageFilters, "days" | "model" | "start" | "end" | "organization_id"> & {
+  dimension: "organizations" | "subscriptions";
+  offset: number;
+  limit: number;
+};
+
+export type OrganizationCostsQuery = Pick<UsageFilters, "days" | "model" | "start" | "end"> & { offset: number; limit: number };
+export interface OrganizationCostEstimate {
+  estimated_cost_usd: string | null;
+  estimated_requests: number;
+  unestimated_requests: number;
+  approximate_requests: number;
+  pricing_revision: string;
+}
+export interface OrganizationCostItem {
+  id: string; name: string; requests: number; total_tokens: number | null;
+  internal: OrganizationCostEstimate; external: OrganizationCostEstimate;
+}
+export interface OrganizationCosts extends Paged<OrganizationCostItem> {
+  start: string; end: string; currency: "USD"; order: "measured_tokens_desc_id_asc";
+}
+
 export interface UsageMinute {
   minute: string;
+  end?: string;
+  partial_bucket?: boolean;
   requests: number;
   input_tokens: number | null;
   output_tokens: number | null;
@@ -124,7 +373,9 @@ export interface UsageSeries {
   items: UsageMinute[];
   start: string;
   end: string;
-  interval_seconds: 60;
+  interval_seconds: number;
+  time_zone?: string;
+  bucket_origin?: string;
 }
 
 export interface ModelTokenBucket {
@@ -145,6 +396,8 @@ export interface ModelTokenSeries {
   start: string;
   end: string;
   interval_seconds: number;
+  time_zone?: string;
+  bucket_origin?: string;
   granularity?: "auto" | "hour" | "day";
   health?: {
     status: "healthy" | "stale" | "unverified" | "disabled" | "error";
@@ -173,6 +426,8 @@ export interface UsageQuery extends UsageFilters {
 export interface UsageSeriesQuery extends UsageFilters {
   start?: string;
   end?: string;
+  granularity?: "minute" | "hour" | "day";
+  time_zone?: "UTC" | "Asia/Singapore";
 }
 
 export interface Organization {
@@ -302,6 +557,9 @@ export interface GatewaySettings {
 
 export interface ModelGardenItem {
   display_price?: DisplayPrice | null;
+  /** Omitted by legacy responses: chat. Scoring availability is independent of chat eligibility. */
+  model_kind?: "chat" | "scoring";
+  scoring_available?: boolean | null;
   id: string;
   display_name: string;
   provider: string;
@@ -365,7 +623,7 @@ export interface ModelUsageBreakdownItem extends DisplayEstimate {
   input_tokens: number;
   output_tokens: number;
   total_tokens: number;
-  cost_usd: string | null;
+  cost_usd?: string | null;
   unpriced_requests?: number;
   share_pct: number;
 }
@@ -377,7 +635,7 @@ export interface ProductUsageBreakdownItem extends DisplayEstimate {
   product_name: string;
   requests: number;
   total_tokens: number;
-  cost_usd: string | null;
+  cost_usd?: string | null;
   unpriced_requests?: number;
   share_pct: number;
 }
@@ -386,7 +644,7 @@ export interface ChannelUsageBreakdownItem extends DisplayEstimate {
   channel: string;
   requests: number;
   total_tokens: number;
-  cost_usd: string | null;
+  cost_usd?: string | null;
   unpriced_requests?: number;
   share_pct: number;
 }
@@ -410,6 +668,16 @@ export interface CreditSummary extends DisplayEstimate {
   by_product: ProductUsageBreakdownItem[];
   by_channel: ChannelUsageBreakdownItem[];
 }
+
+/** Customer responses exclude all internal-cost-derived balance signals. */
+export type CustomerCreditSummary = Omit<CreditSummary,
+  "used_credits" | "remaining_credits" | "utilization_pct" | "low_credit_alert" | "cost_complete" | "unpriced_requests"
+  | "by_model" | "by_product" | "by_channel"
+> & {
+  by_model: Omit<ModelUsageBreakdownItem, "cost_usd" | "unpriced_requests">[];
+  by_product: Omit<ProductUsageBreakdownItem, "cost_usd" | "unpriced_requests">[];
+  by_channel: Omit<ChannelUsageBreakdownItem, "cost_usd" | "unpriced_requests">[];
+};
 
 export type RouterStrategy = "microsoft-decision-1" | "cost-optimized" | "latency-optimized" | "quality-first";
 
@@ -498,5 +766,81 @@ export interface LocalUserCreateInput {
   display_name: string;
   organization_id: string;
   role: Role;
+}
+
+/** Decision traces are separate from completion requests and billing records. */
+export interface DecisionScoringQuery {
+  days?: number;
+  start?: string;
+  end?: string;
+  subscription_id?: string;
+  organization_id?: string;
+  offset?: number;
+  limit?: number;
+  granularity?: "minute" | "hour" | "day";
+  time_zone?: "UTC" | "Asia/Singapore";
+}
+
+export interface DecisionScoringAggregate {
+  invocations: number | null;
+  input_tokens: number | null;
+  output_tokens: number | null;
+  total_tokens: number | null;
+}
+
+export interface DecisionScoringTelemetry {
+  model: "Decision-1";
+  source: "log_analytics";
+  status: "available" | "unavailable" | "partial";
+  notice: string | null;
+  start: string;
+  end: string;
+  retention_notice: string;
+  granularity: "minute" | "hour" | "day";
+  time_zone: "UTC" | "Asia/Singapore";
+  offset: number;
+  limit: number;
+  total: number | null;
+  summary: DecisionScoringAggregate & {
+    measured_invocations: number;
+    missing_token_invocations: number;
+    estimated_cost_usd: string | null;
+    recorded_cost_usd?: string | null;
+    estimated_invocations: number;
+    unestimated_invocations: number;
+    avg_latency_ms: number | null;
+    pricing_revision: string | null;
+  };
+  items: Array<{
+    id: string;
+    parent_request_id: string;
+    subscription_id: string;
+    organization_id: string;
+    occurred_at: string;
+    routing_profile: string;
+    selected_model: string;
+    config_version: string;
+    input_tokens: number | null;
+    output_tokens: number | null;
+    total_tokens: number | null;
+    latency_ms: number | null;
+    recorded_cost_usd?: string | null;
+    estimated_cost_usd: string | null;
+    estimate_basis: string;
+    pricing_revision: string | null;
+    parent_status_code: number | null;
+    usage_kind: "decision_scoring";
+  }>;
+  series: Array<DecisionScoringAggregate & {
+    start: string;
+    end: string;
+    partial_bucket: boolean;
+    avg_latency_ms: number | null;
+  }>;
+  breakdown: Array<DecisionScoringAggregate & {
+    organization_id: string;
+    subscription_id: string;
+    estimated_cost_usd: string | null;
+  }>;
 }
 

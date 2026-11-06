@@ -1,0 +1,7 @@
+{
+  "at": "2026-11-04T08:15:13.601484+00:00",
+  "workspace": "004a359b-dde6-40fb-843c-4d5651785e17",
+  "operation": "read-only KQL query",
+  "query": "ApiManagementGatewayLlmLog | getschema | project ColumnName, DataType",
+  "raw_messages_headers_bodies_exported": false
+}

@@ -23,7 +23,7 @@ def api_sources():
     paths = [rt.ROOT / "pyproject.toml", rt.ROOT / "services/control-plane/Dockerfile",
              rt.ROOT / "services/control-plane/alembic.ini",
              rt.ROOT / "gateway/policies/settings-unconfigured.xml"]
-    for folder, suffixes in [("services/control-plane/src", {".py", ".kql"}),
+    for folder, suffixes in [("services/control-plane/src", {".py", ".kql", ".json"}),
                              ("services/control-plane/migrations", {".py"}),
                              ("gateway/catalog", {".json"})]:
         for path in (rt.ROOT / folder).rglob("*"):

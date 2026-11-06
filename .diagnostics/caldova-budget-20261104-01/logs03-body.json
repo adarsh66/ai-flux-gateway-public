@@ -1,0 +1,3 @@
+{
+  "query": "ApiManagementGatewayLogs | getschema | project ColumnName, DataType"
+}

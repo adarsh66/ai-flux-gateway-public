@@ -1,0 +1,59 @@
+{
+  "revision": "decision1-scoring-20261031-v1",
+  "checked_at": "2026-10-31",
+  "currency": "USD",
+  "unit": "per_million_tokens",
+  "applicable_from": "2026-10-01T00:00:00Z",
+  "basis": "Microsoft Decision-1 scoring input tokens only, USD per 1M input tokens. Showback estimate, not an invoice or an access/enforcement rate.",
+  "assumptions": "The Microsoft pricing table first/input column supplies the input-token basis; the Retail Prices API corroborates the rate and effective date but labels its meter generically as tokens. Output and cached tokens are N/A, not zero-priced. The eastus retail meter is a tariff scope, not evidence of deployment location or runtime authorization.",
+  "sources": {
+    "microsoft": "https://azure.microsoft.com/en-us/pricing/details/ai-foundry-models/microsoft/",
+    "azure_retail": "https://prices.azure.com/api/retail/prices?$filter=contains(productName,%27Decision%27)"
+  },
+  "provenance": {
+    "pricing_table": {
+      "section": "Microsoft",
+      "model": "Microsoft-Decision-1",
+      "input": "$0.042",
+      "cached": "N/A",
+      "output": "N/A"
+    },
+    "retail": {
+      "currencyCode": "USD",
+      "tierMinimumUnits": 0,
+      "retailPrice": 0.042,
+      "unitPrice": 0.042,
+      "armRegionName": "eastus",
+      "location": "US East",
+      "effectiveStartDate": "2026-10-01T00:00:00Z",
+      "meterId": "3340205e-23e1-59c4-9be6-0e158131ec64",
+      "meterName": "Microsoft Decision 1 1M Tokens",
+      "productId": "DZH318XZNG20",
+      "skuId": "DZH318XZNG20/0079",
+      "productName": "Microsoft Decision Models",
+      "skuName": "Microsoft Decision 1",
+      "serviceName": "Foundry Models",
+      "serviceId": "DZH31600VF1F",
+      "serviceFamily": "AI + Machine Learning",
+      "unitOfMeasure": "1M",
+      "type": "Consumption",
+      "isPrimaryMeterRegion": true,
+      "armSkuName": "Pi 1 glbl"
+    }
+  },
+  "rate": {
+    "model": "Decision-1",
+    "display_name": "Microsoft Decision-1",
+    "model_kind": "scoring",
+    "provider": "Microsoft",
+    "region": "eastus",
+    "model_version": "1",
+    "deployment_model": "Microsoft-Decision-1",
+    "sku": "Pi 1 glbl",
+    "source": "microsoft",
+    "source_model": "Microsoft-Decision-1",
+    "status": "public_list",
+    "billing_dimensions": ["input"],
+    "input": "0.042"
+  }
+}

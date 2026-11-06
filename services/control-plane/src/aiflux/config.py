@@ -24,6 +24,7 @@ class Settings(BaseSettings):
     required_scope: str = "access_as_user"
     gateway_url: str = ""
     gateway_max_completion_tokens: int | None = Field(default=None, ge=1, le=100000)
+    gateway_completion_limits_path: Path | None = None
     apim_resource_id: str = ""
     apim_product_id: str = "aiflux"
     gateway_settings_scopes: list[Literal["dev-openai", "dev-unified"]] = []
@@ -64,6 +65,22 @@ class Settings(BaseSettings):
     decision_router_enabled: bool = True
     decision_router_endpoint: str = "/providers/microsoft/v1/systemone"
     decision_router_default_model: str = "gpt-5.4-mini"
+    # Independent of the legacy keyword simulator. All release gates default OFF.
+    auto_routing_enabled: bool = False
+    model_access_enabled: bool = False
+    auto_pricing_sync_enabled: bool = False
+    auto_pricing_reconcile_seconds: int = Field(default=15, ge=5, le=300)
+    auto_routing_snapshot_inventory_path: Path | None = None
+    auto_routing_direct_validation_enabled: bool = False
+    auto_routing_gateway_ready: bool = False
+    auto_routing_contract_verified: bool = False
+    auto_routing_publication_path: Path | None = None
+    auto_routing_publication_json: str | None = None
+    auto_routing_published_policy_sha256: str = ""
+    auto_routing_legacy_resolver_enabled: bool = False
+    auto_gateway_principal_id: str = ""
+    auto_gateway_client_id: str = ""
+    auto_decision_timeout_seconds: float = Field(default=5.0, ge=0.1, le=10)
     local_auth_enabled: bool = False
     local_jwt_secret: str = Field(default="turnstile-local-postgres-jwt-signing-secret-key-2026", repr=False)
     bootstrap_admin_email: str = "admin@tokenx-ids.com"

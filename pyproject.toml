@@ -30,6 +30,7 @@ dev = ["pytest==8.4.0", "ruff==0.11.13", "mypy==1.16.0"]
 [project.scripts]
 aiflux-bootstrap = "aiflux.bootstrap:main"
 aiflux-ingest = "aiflux.ingestion:main"
+aiflux-model-access-bootstrap = "aiflux.model_access_bootstrap:main"
 
 [tool.setuptools.packages.find]
 where = ["services/control-plane/src"]

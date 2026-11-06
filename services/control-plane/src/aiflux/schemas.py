@@ -1,9 +1,11 @@
-from datetime import datetime
+from datetime import UTC, datetime
 from decimal import Decimal
 from typing import Any, Generic, Literal, TypeVar
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
+
+from aiflux.default_limits import POC_DAILY_CALLS, POC_DAILY_TOKENS, POC_RPM, POC_TPM
 
 
 class Input(BaseModel):
@@ -166,10 +168,10 @@ class ManagedGatewayConfiguration(Input):
 
 
 class PocLimits(Input):
-    rpm: int = Field(default=60, strict=True, ge=1, le=60)
-    tpm: int = Field(default=2048, strict=True, ge=1, le=2048)
-    token_quota: int = Field(default=10000, strict=True, ge=1, le=10000)
-    request_quota: int = Field(default=1000, strict=True, ge=1, le=1000)
+    rpm: int = Field(default=POC_RPM, strict=True, ge=1, le=POC_RPM)
+    tpm: int = Field(default=POC_TPM, strict=True, ge=1, le=POC_TPM)
+    token_quota: int = Field(default=POC_DAILY_TOKENS, strict=True, ge=1, le=POC_DAILY_TOKENS)
+    request_quota: int = Field(default=POC_DAILY_CALLS, strict=True, ge=1, le=POC_DAILY_CALLS)
 
 
 def poc_safety() -> SafetyConfiguration:
@@ -213,6 +215,7 @@ class GatewaySettingsUpdate(Input):
     expected_version: int = Field(strict=True, ge=0)
     configuration: GatewayConfiguration | ManagedGatewayConfiguration | PocGatewayConfiguration
     reason: str = Field(min_length=1, max_length=500)
+    defaults_only: bool = Field(default=False, strict=True)
 
 
 class GatewaySettingsRetry(Input):
@@ -250,6 +253,7 @@ class GatewaySettingsOutput(BaseModel):
     effective_defaults: PocGatewayConfiguration | None = None
     published: GatewayRevisionOutput | None = None
     capabilities: GatewayCapabilities = Field(default_factory=GatewayCapabilities)
+    global_defaults_status: dict[str, object] | None = None
 
 
 class GatewayTarget(BaseModel):
@@ -287,7 +291,39 @@ class CatalogOutput(BaseModel):
     max_completion_tokens: int | None = None
 
 
-class SubscriptionOutput(BaseModel):
+class ArchiveOutput(BaseModel):
+    deleted_at: datetime | None = None
+    deletion_status: Literal["pending", "failed"] | None = None
+
+
+class DeletionRequest(Input):
+    confirmation: str = Field(min_length=1, max_length=255)
+    reason: str = Field(min_length=1, max_length=500)
+
+
+class DeletionDependencies(BaseModel):
+    subscriptions: int = 0
+    users: int = 0
+    members: int = 0
+
+
+class DeletionPreview(BaseModel):
+    entity_type: Literal["organization", "subscription", "local_user", "member"]
+    entity_id: str
+    label: str
+    can_delete: bool
+    blockers: list[str]
+    dependencies: DeletionDependencies
+    effect: str
+
+
+class DeletionResult(BaseModel):
+    entity_id: str
+    status: Literal["archived", "pending", "failed"]
+    message: str
+
+
+class SubscriptionOutput(ArchiveOutput):
     id: str
     name: str
     team: str
@@ -303,14 +339,14 @@ class AdminSubscriptionOutput(SubscriptionOutput):
     gateway_message: str | None = None
 
 
-class OrganizationOutput(BaseModel):
+class OrganizationOutput(ArchiveOutput):
     id: str
     name: str
     tenant_id: str
     enabled: bool
 
 
-class MemberOutput(BaseModel):
+class MemberOutput(ArchiveOutput):
     id: str
     organization_id: str
     object_id: str
@@ -372,8 +408,57 @@ class UsagePage(Page[UsageOutput]):
     summary: UsageSummary
 
 
+class UsageRankingTotals(BaseModel):
+    requests: int
+    input_tokens: int | None
+    output_tokens: int | None
+    total_tokens: int | None
+    missing_token_requests: int
+    incomplete_requests: int
+
+
+class UsageRankingItem(UsageRankingTotals):
+    id: str
+    name: str
+    share: float | None
+
+
+class UsageRankings(Page[UsageRankingItem]):
+    dimension: str
+    organization_id: str | None
+    start: datetime
+    end: datetime
+    totals: UsageRankingTotals
+
+
+class OrganizationCostEstimate(BaseModel):
+    estimated_cost_usd: str | None
+    estimated_requests: int
+    unestimated_requests: int
+    approximate_requests: int
+    pricing_revision: str
+
+
+class OrganizationCostItem(BaseModel):
+    id: str
+    name: str
+    requests: int
+    total_tokens: int | None
+    internal: OrganizationCostEstimate
+    external: OrganizationCostEstimate
+
+
+class OrganizationCosts(Page[OrganizationCostItem]):
+    start: datetime
+    end: datetime
+    currency: Literal["USD"]
+    order: Literal["measured_tokens_desc_id_asc"]
+
+
 class UsageMinute(BaseModel):
     minute: datetime
+    end: datetime | None = None
+    partial_bucket: bool | None = None
     requests: int
     input_tokens: int | None
     output_tokens: int | None
@@ -388,6 +473,8 @@ class UsageSeries(BaseModel):
     start: datetime
     end: datetime
     interval_seconds: int = 60
+    time_zone: str = "UTC"
+    bucket_origin: datetime = datetime(2000, 1, 1, tzinfo=UTC)
 
 
 class ModelTokenBucket(BaseModel):
@@ -418,6 +505,8 @@ class ModelTokenSeries(BaseModel):
     start: datetime
     end: datetime
     interval_seconds: int
+    time_zone: str = "UTC"
+    bucket_origin: datetime = datetime(2000, 1, 1, tzinfo=UTC)
     granularity: str = "auto"
     health: IngestionHealth | None = None
 
@@ -434,6 +523,8 @@ class SafetyOutput(BaseModel):
 
 class ModelGardenItemOutput(BaseModel):
     display_price: dict[str, Any] | None = None
+    model_kind: Literal["chat", "scoring"] = "chat"
+    scoring_available: bool | None = None
     id: str
     display_name: str
     provider: str
@@ -477,6 +568,70 @@ class ModelGardenUpsert(Input):
     priority: int = Field(default=100, ge=1, le=1000)
 
 
+class MonthlyBudgetUpdate(Input):
+    allocated_usd: str = Field(min_length=1, max_length=32)
+    advisory_threshold_pct: int = Field(default=80, ge=1, le=100, strict=True)
+    expected_version: int = Field(ge=0, le=2147483646, strict=True)
+    reason: str = Field(min_length=1, max_length=500)
+
+    @field_validator("allocated_usd")
+    @classmethod
+    def positive_currency(cls, value: str) -> str:
+        import re
+        if not re.fullmatch(r"(?:0|[1-9][0-9]{0,9})(?:\.[0-9]{1,4})?", value):
+            raise ValueError("Use a USD decimal string with at most four decimal places")
+        amount = Decimal(value)
+        if not Decimal(0) < amount <= Decimal("1000000000"):
+            raise ValueError("Allocation must be positive and no greater than 1000000000 USD")
+        return format(amount, ".4f")
+
+
+class MonthlyBudgetSummary(BaseModel):
+    organization_id: str
+    organization_name: str
+    allocated_usd: str | None
+    estimated_used_usd: str | None
+    estimated_remaining_usd: str | None
+    estimated_overrun_usd: str | None
+    estimated_utilization_pct: float | None
+    advisory_threshold_pct: int = 80
+    status: Literal["unconfigured", "below_threshold", "threshold_reached", "over_budget", "unknown"]
+    period_start: str
+    period_end: str
+    as_of: str
+    latest_usage_at: str | None
+    estimated_requests: int
+    unestimated_requests: int
+    pricing_revision: str
+    version: int
+    estimate_complete: bool
+    basis: Literal["external_customer_prices"] = "external_customer_prices"
+    hard_stop_enabled: Literal[False] = False
+
+
+class AdminMonthlyBudgetListItem(MonthlyBudgetSummary):
+    archived_at: str | None
+
+
+class AdminMonthlyBudgetDashboard(BaseModel):
+    budget: MonthlyBudgetSummary
+    internal: OrganizationCostEstimate
+    internal_basis: Literal["internal_price_estimate"] = "internal_price_estimate"
+    internal_scope: Literal["completion_usage"] = "completion_usage"
+    archived_at: str | None
+    read_only: bool
+    as_of: str
+
+
+class MonthlyBudgetRevisionOutput(BaseModel):
+    version: int
+    allocated_usd: str
+    advisory_threshold_pct: int
+    reason: str
+    changed_by: str
+    changed_at: str
+
+
 class CreditBudgetUpdate(Input):
     subscription_id: UUID | None = None
     monthly_budget_usd: Decimal = Field(ge=0, max_digits=20, decimal_places=4)
@@ -485,7 +640,7 @@ class CreditBudgetUpdate(Input):
     allowed_models: list[str] = Field(default_factory=lambda: ["*"])
     product_name: str = Field(default="Enterprise AI Gateway", min_length=1, max_length=100)
     channel: str = Field(default="api-gateway", min_length=1, max_length=60)
-    hard_stop_enabled: bool = True
+    hard_stop_enabled: Literal[False] = False
 
 
 class CreditBudgetOutput(BaseModel):
@@ -506,7 +661,7 @@ class CreditBudgetOutput(BaseModel):
     allowed_models: list[str]
     product_name: str
     channel: str
-    hard_stop_enabled: bool
+    hard_stop_enabled: Literal[False] = False
     ledger_row_key: str
     updated_at: datetime
 
@@ -571,7 +726,7 @@ class CreditSummaryOutput(BaseModel):
     cost_complete: bool = True
     alert_threshold_pct: int
     low_credit_alert: bool
-    hard_stop_enabled: bool
+    hard_stop_enabled: Literal[False] = False
     total_requests: int
     total_tokens: int
     by_model: list[ModelUsageBreakdownItem]
@@ -704,7 +859,7 @@ class LocalUserUpdate(Input):
     password: str | None = Field(default=None, min_length=6, max_length=128)
 
 
-class LocalUserOutput(BaseModel):
+class LocalUserOutput(ArchiveOutput):
     id: str
     email: str
     display_name: str

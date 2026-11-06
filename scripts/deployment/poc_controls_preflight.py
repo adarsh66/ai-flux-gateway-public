@@ -28,6 +28,23 @@ def allowed_actions(grants):
         for g in grants) for action in ACTIONS}
 
 
+def assignment_permissions(assignments, fragment_scope):
+    """Resolve full ARM role IDs directly; CLI --name expects a name or UUID."""
+    grants = []
+    for assignment in assignments:
+        scope = assignment["scope"].lower().rstrip("/")
+        rt.require(fragment_scope.lower() == scope or fragment_scope.lower().startswith(scope + "/"),
+                   "nonapplicable_publisher_scope")
+        if assignment.get("condition"):
+            continue
+        definition = rt.cli(["rest", "--method", "get", "--url",
+            "https://management.azure.com" + assignment["roleDefinitionId"] + "?api-version=2022-04-01",
+            "--subscription", rt.SUB])
+        rt.require(definition["id"].lower() == assignment["roleDefinitionId"].lower(), "role_definition_identity")
+        grants.extend(definition["properties"]["permissions"])
+    return grants
+
+
 def collect():
     account = rt.cli(["account", "show"])
     rt.require(account["id"] == rt.SUB and account["tenantId"] == rt.TENANT, "account_scope")
@@ -46,14 +63,7 @@ def collect():
     for principal in [principal]:
         assignments = rt.cli(["role", "assignment", "list", "--assignee-object-id", principal,
                       "--scope", fragment_scope, "--include-inherited"])
-        grants = []
-        for assignment in assignments:
-            if assignment.get("condition"):
-                continue  # Conditional grants are not proof of unconditional access.
-            role = rt.cli(["role", "definition", "list", "--name", assignment["roleDefinitionId"]])
-            for definition in role:
-                for permission in definition["permissions"]:
-                    grants.append(permission)
+        grants = assignment_permissions(assignments, fragment_scope)
         permissions.append({"principal_id": principal, "fragment_actions": allowed_actions(grants),
                             "assignment_metadata": [{k: a.get(k) for k in
                                 ("id", "roleDefinitionId", "scope", "condition")} for a in assignments]})

@@ -1,11 +1,11 @@
 import { useId, useMemo, useState, type CSSProperties, type KeyboardEvent } from "react";
 import type { ModelTokenBucket, ModelTokenSeries } from "../types";
-import { fmtInt, NA } from "./ui";
+import { fmtDate, fmtInt, NA } from "./ui";
+import { bucketOrigin, formatSgt } from "../time";
 
 const COLORS = ["accent", "link", "success", "warning", "danger", "text-soft"];
-const EPOCH = Date.UTC(2000, 0, 1);
 const WIDTH = 920, HEIGHT = 240, LEFT = 64, RIGHT = 16, TOP = 16, BOTTOM = 34;
-const timeLabel = (time: number) => `${new Date(time).toISOString().slice(0, 16).replace("T", " ")} UTC`;
+const timeLabel = formatSgt;
 const modelLabel = (model: string) => model.trim() || "Unknown model";
 const tokenLabel = (item: ModelTokenBucket | undefined) => item
   ? `${item.total_tokens === null ? NA : fmtInt(item.total_tokens)}${item.missing_token_requests ? " (partial)" : ""}`
@@ -18,7 +18,8 @@ export function ModelTokenChart({ series }: { series: ModelTokenSeries }) {
     const models = [...new Set(series.items.map(item => item.model))].sort();
     const start = Date.parse(series.start), end = Date.parse(series.end);
     const interval = series.interval_seconds * 1000;
-    const first = EPOCH + Math.floor((start - EPOCH) / interval) * interval;
+    const origin = bucketOrigin(series.bucket_origin);
+    const first = origin + Math.floor((start - origin) / interval) * interval;
     const rows = new Map<number, Map<string, ModelTokenBucket>>();
     for (const item of series.items) {
       const time = Date.parse(item.start);
@@ -34,7 +35,7 @@ export function ModelTokenChart({ series }: { series: ModelTokenSeries }) {
         missing: [...items.values()].reduce((sum, item) => sum + item.missing_token_requests, 0),
         measured: [...items.values()].some(item => item.total_tokens !== null)
           || (items.size === 0 && series.health?.status === "healthy"),
-        partial: from !== first + index * interval || first + (index + 1) * interval > end,
+        partial: from !== first + index * interval || first + (index + 1) * interval > end || [...items.values()].some(item => item.partial_bucket),
       };
     });
     return { models, buckets };
@@ -60,8 +61,8 @@ export function ModelTokenChart({ series }: { series: ModelTokenSeries }) {
 
   return <section className="chart-panel model-token-chart" aria-labelledby={`${id}-title`}>
     <h2 id={`${id}-title`}>Token consumption by model</h2>
-    <p className="muted">Measured input + output tokens per bucket · {intervalText} · UTC. Edge buckets may cover partial intervals; component subtotals include known measurements.</p>
-    {series.health?.status !== "healthy" && <p role="status" className="notice">Telemetry {series.health?.status ?? "unverified"}: empty buckets are not proof of zero traffic. Last query success: {series.health?.last_query_success_at ?? "unavailable"}. Expected ingestion delay: {Math.round((series.health?.expected_delay_seconds ?? 300) / 60)} minutes.</p>}
+    <p className="muted">Measured input + output tokens per bucket · {intervalText} · SGT display ({series.time_zone ?? "UTC"} bucket alignment). Edge buckets may cover partial intervals; component subtotals include known measurements.</p>
+    {series.health?.status !== "healthy" && <p role="status" className="notice">Telemetry {series.health?.status ?? "unverified"}: empty buckets are not proof of zero traffic. Last query success: {series.health?.last_query_success_at ? fmtDate(series.health.last_query_success_at) : "unavailable"}. Expected ingestion delay: {Math.round((series.health?.expected_delay_seconds ?? 300) / 60)} minutes.</p>}
     {missing > 0 && <p role="status" className="notice">Partial data: {fmtInt(missing)} request(s) lack complete token usage. Bars show known totals only, not zero usage for missing measurements.</p>}
     {!series.items.length ? <p>{series.health?.status === "healthy" ? "No token usage in this viewport." : "No measured token rows available; ingestion health is not confirmed."}</p> : <>
       <ul className="model-token-legend" aria-label="Model legend">{models.map((model, index) =>
@@ -106,8 +107,8 @@ export function ModelTokenChart({ series }: { series: ModelTokenSeries }) {
       <details className="chart-data">
         <summary>View exact model token data</summary>
         <div className="table-wrap"><table>
-          <caption className="sr-only">Known token consumption by model and UTC bucket</caption>
-          <thead><tr><th scope="col">UTC bucket</th>{models.map(model => <th scope="col" key={model}>{modelLabel(model)}</th>)}<th scope="col">Known total</th><th scope="col">Missing usage</th></tr></thead>
+          <caption className="sr-only">Known token consumption by model and SGT bucket</caption>
+          <thead><tr><th scope="col">SGT bucket</th>{models.map(model => <th scope="col" key={model}>{modelLabel(model)}</th>)}<th scope="col">Known total</th><th scope="col">Missing usage</th></tr></thead>
           <tbody>{buckets.map(item => <tr key={item.start}><th scope="row">{timeLabel(item.start)} – {timeLabel(item.end)}{item.partial ? " (partial interval)" : ""}</th>
             {models.map(model => <td className="num" key={model}>{tokenLabel(item.items.get(model))}<small className="block">Known in {fmtInt(item.items.get(model)?.input_tokens ?? null)} / out {fmtInt(item.items.get(model)?.output_tokens ?? null)}</small></td>)}
             <td className="num">{item.measured ? fmtInt(item.total) : NA}{item.missing ? " (partial)" : ""}</td><td>{fmtInt(item.missing)} request(s)</td>

@@ -104,16 +104,45 @@ function mount(handler: (url: URL) => unknown | Promise<unknown>, admin = false)
   return urls;
 }
 
+// Match model_token_response: requested granularity, SGT epoch and clipped edges.
+// Never stretch the three-minute component fixture over a monthly viewport.
+function requestedModelSeries(url: URL, items: ModelTokenSeries["items"] = []): ModelTokenSeries {
+  const from = Date.parse(url.searchParams.get("start")!);
+  const to = Date.parse(url.searchParams.get("end")!);
+  const time_zone = url.searchParams.get("time_zone") === "Asia/Singapore" ? "Asia/Singapore" : "UTC";
+  const bucket_origin = time_zone === "Asia/Singapore" ? "1999-12-31T16:00:00Z" : "2000-01-01T00:00:00Z";
+  const origin = Date.parse(bucket_origin);
+  const granularity = url.searchParams.get("granularity") ?? "auto";
+  const count = (seconds: number) => Math.ceil((to - origin) / (seconds * 1000)) - Math.floor((from - origin) / (seconds * 1000));
+  const interval_seconds = granularity === "hour" ? 3600 : granularity === "day" ? 86400
+    : [60, 300, 900, 3600, 21600, 43200, 86400, 604800].find(seconds => count(seconds) <= 120)!;
+  if (!(from < to) || !interval_seconds || count(interval_seconds) > 744) throw new Error("Unsupported fixture viewport");
+  const interval = interval_seconds * 1000;
+  const first = origin + Math.floor((from - origin) / interval) * interval;
+  const last = origin + (Math.ceil((to - origin) / interval) - 1) * interval;
+  return {
+    start: new Date(from).toISOString(), end: new Date(to).toISOString(), interval_seconds,
+    granularity: granularity as ModelTokenSeries["granularity"], time_zone, bucket_origin,
+    items: items.map((item, index) => {
+      const bucket = index === items.length - 1 && items.length > 1 ? last : first;
+      return { ...item, start: new Date(Math.max(from, bucket)).toISOString(),
+        end: new Date(Math.min(to, bucket + interval)).toISOString(),
+        partial_bucket: bucket < from || bucket + interval > to };
+    }),
+  };
+}
+
 function response(url: URL) {
+  if (url.pathname === "/api/admin/usage/organization-costs") return { items: [], total: 0 };
+  if (url.pathname.endsWith("/decision-scoring")) return { status: "unavailable", notice: null, retention_notice: "Test fixture: scoring telemetry unavailable." };
+  if (url.pathname.endsWith("/rankings")) return { items: [], total: 0, totals: { requests: 0, total_tokens: null, missing_token_requests: 0, incomplete_requests: 0 } };
   if (url.pathname.endsWith("/models")) return { items: ["alpha", "beta"], total: 2 };
   if (url.pathname.endsWith("/subscriptions")) return { items: [{ id: "sub", name: "Team" }], total: 1 };
   if (url.pathname.endsWith("/organizations")) return { items: [], total: 0 };
   if (url.pathname.endsWith("/timeseries")) return {
     items: [], start: url.searchParams.get("start"), end: url.searchParams.get("end"), interval_seconds: 60,
   };
-  if (url.pathname.endsWith("/model-tokens")) return {
-    ...series, start: url.searchParams.get("start"), end: url.searchParams.get("end"), interval_seconds: 86400, items: [],
-  };
+  if (url.pathname.endsWith("/model-tokens")) return requestedModelSeries(url);
   return { items: [{
     id: "request", subscription_id: "sub", model: "beta", provider: "test", region: "test", occurred_at: start,
     input_tokens: 1, output_tokens: 2, cached_input_tokens: null, cache_write_tokens: null,
@@ -129,6 +158,7 @@ describe("customer model-token integration", () => {
   it("uses one aggregate request, follows filters and viewport, and ignores request pagination", async () => {
     const urls = mount(response);
     await screen.findByRole("heading", { name: "Token consumption by model" });
+    expect(screen.getByRole("heading", { name: "Token share by model" })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Tokens per minute" })).toBeInTheDocument();
     const requests = () => urls.filter(url => url.pathname.endsWith("/model-tokens"));
     expect(requests()).toHaveLength(1);
@@ -152,16 +182,20 @@ describe("customer model-token integration", () => {
     const urls = mount(response, true);
     await screen.findByRole("heading", { name: "Tokens per minute" });
     await screen.findByRole("heading", { name: "Token consumption by model" });
+    expect(screen.queryByRole("heading", { name: "Token share by model" })).not.toBeInTheDocument();
+    expect(document.querySelector(".customer-usage-page")).not.toBeInTheDocument();
     expect(urls.some(url => url.pathname === "/api/admin/usage/model-tokens" && url.searchParams.get("granularity") === "day")).toBe(true);
   });
 
-  it("passes organization and explicit UTC granularity to admin aggregation", async () => {
+  it("passes organization and explicit SGT granularity to admin aggregation", async () => {
     const urls = mount(url => url.pathname.endsWith("/organizations") ? { items: [{ id: "org-selected", name: "Selected" }], total: 1 } : response(url), true);
     await screen.findByRole("heading", { name: "Token consumption by model" });
     await userEvent.selectOptions(screen.getByLabelText("Organization"), "org-selected");
+    await userEvent.selectOptions(screen.getByLabelText("Period"), "7");
     await userEvent.selectOptions(screen.getByLabelText("Token chart granularity"), "hour");
     await waitFor(() => expect(urls.some(url => url.pathname === "/api/admin/usage/model-tokens"
-      && url.searchParams.get("organization_id") === "org-selected" && url.searchParams.get("granularity") === "hour")).toBe(true));
+      && url.searchParams.get("organization_id") === "org-selected" && url.searchParams.get("granularity") === "hour"
+      && url.searchParams.get("time_zone") === "Asia/Singapore")).toBe(true));
     await userEvent.selectOptions(screen.getByLabelText("Period"), "1");
     expect(screen.getByLabelText("Token chart granularity")).toHaveValue("hour");
   });
@@ -190,5 +224,82 @@ describe("customer model-token integration", () => {
     await screen.findByRole("heading", { name: "Token consumption by model" });
     await act(async () => resolveOld!({ ...series, items: [{ ...series.items[0]!, model: "STALE" }] }));
     expect(screen.queryByText("STALE")).not.toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Token share by model" })).toBeInTheDocument();
+  });
+
+  it("shares the filtered aggregate across every bucket, not the transaction page, and hides shares on fetch errors", async () => {
+    let fail = false;
+    const urls = mount(url => {
+      if (!url.pathname.endsWith("/model-tokens")) return response(url);
+      if (fail) return new Response(JSON.stringify({ detail: "Share aggregation unavailable" }), { status: 503 });
+      const model = url.searchParams.get("model");
+      return requestedModelSeries(url, series.items.filter(item => !model || item.model === model));
+    });
+    await screen.findByRole("heading", { name: "Token share by model" });
+    let table = screen.getByRole("table", { name: /Exact model token shares/ });
+    expect(within(table).getByText("66.7%")).toBeInTheDocument();
+    expect(document.querySelectorAll("[data-bucket-total]").length).toBeLessThanOrEqual(32);
+    expect(document.querySelectorAll("[data-bucket-total]").length).toBeGreaterThan(0);
+    await userEvent.selectOptions(screen.getByLabelText("Model"), "beta");
+    await waitFor(() => expect(screen.getByRole("table", { name: /Exact model token shares/ })).not.toHaveTextContent("alpha"));
+    table = screen.getByRole("table", { name: /Exact model token shares/ });
+    expect(within(table).getByText("100.0%")).toBeInTheDocument();
+    const count = urls.filter(url => url.pathname.endsWith("/model-tokens")).length;
+    await userEvent.click(screen.getByText("Transaction details"));
+    await userEvent.click(screen.getByRole("button", { name: "Next" }));
+    await waitFor(() => expect(urls.some(url => url.searchParams.get("offset") === "50")).toBe(true));
+    expect(urls.filter(url => url.pathname.endsWith("/model-tokens"))).toHaveLength(count);
+    expect(screen.getByRole("table", { name: /Exact model token shares/ })).toHaveTextContent("100.0%");
+    fail = true;
+    await userEvent.click(screen.getByRole("button", { name: "Refresh telemetry" }));
+    await screen.findByText("Share aggregation unavailable");
+    expect(screen.queryByRole("heading", { name: "Token share by model" })).not.toBeInTheDocument();
+  });
+
+  it("hides old shares during a new scope fetch and for an oversized hourly token viewport", async () => {
+    let resolveNext: ((value: unknown) => void) | undefined;
+    mount(url => url.pathname.endsWith("/model-tokens") && url.searchParams.get("model") === "beta"
+      ? new Promise(resolve => { resolveNext = () => resolve(requestedModelSeries(url, series.items.filter(item => item.model === "beta"))); }) : response(url));
+    await screen.findByRole("heading", { name: "Token share by model" });
+    await userEvent.selectOptions(screen.getByLabelText("Model"), "beta");
+    await waitFor(() => expect(resolveNext).toBeDefined());
+    expect(screen.queryByRole("heading", { name: "Token share by model" })).not.toBeInTheDocument();
+    await act(async () => resolveNext!({ ...series, items: series.items.filter(item => item.model === "beta") }));
+    await screen.findByRole("heading", { name: "Token share by model" });
+    await userEvent.selectOptions(screen.getByLabelText("Period"), "90");
+    await userEvent.selectOptions(screen.getByLabelText("Token chart granularity"), "hour");
+    await waitFor(() => expect(screen.queryByRole("heading", { name: "Token share by model" })).not.toBeInTheDocument());
+    expect(screen.getByText(/^Token chart:/)).toBeInTheDocument();
+  });
+});
+
+describe("requested model-token fixture contract", () => {
+  it.each(["day", "hour"])("honors %s granularity, SGT origin, clipped viewport and unknown totals", granularity => {
+    const url = new URL("https://portal/api/usage/model-tokens");
+    url.search = new URLSearchParams({ start: "2026-10-01T00:30:00Z", end: "2026-10-31T00:30:00Z",
+      time_zone: "Asia/Singapore", granularity }).toString();
+    const result = requestedModelSeries(url, series.items);
+    const seconds = granularity === "day" ? 86400 : 3600;
+    expect(result.interval_seconds).toBe(seconds);
+    expect(result.bucket_origin).toBe("1999-12-31T16:00:00Z");
+    expect(result.time_zone).toBe("Asia/Singapore");
+    expect(result.start).toBe("2026-10-01T00:30:00.000Z");
+    expect(result.end).toBe("2026-10-31T00:30:00.000Z");
+    expect(result.items[0]!.start).toBe(result.start);
+    expect(result.items.at(-1)!.end).toBe(result.end);
+    expect(result.items[0]!.partial_bucket).toBe(true);
+    expect(result.items.at(-1)!.partial_bucket).toBe(true);
+    expect(result.items.map(item => item.total_tokens)).toEqual([100, 50, null]);
+    expect(result.items.map(item => item.missing_token_requests)).toEqual([0, 1, 1]);
+    expect(result.health).toBeUndefined();
+    const buckets = Math.ceil((Date.parse(result.end) - Date.parse(result.bucket_origin!)) / (seconds * 1000))
+      - Math.floor((Date.parse(result.start) - Date.parse(result.bucket_origin!)) / (seconds * 1000));
+    expect(buckets).toBe(granularity === "day" ? 31 : 721);
+    expect(buckets).toBeLessThanOrEqual(744);
+  });
+
+  it("rejects an hourly viewport the server would reject instead of masking its bucket guard", () => {
+    const url = new URL("https://portal/api/usage/model-tokens?start=2026-08-01T00:00:00Z&end=2026-10-31T00:00:00Z&granularity=hour&time_zone=Asia/Singapore");
+    expect(() => requestedModelSeries(url)).toThrow("Unsupported fixture viewport");
   });
 });

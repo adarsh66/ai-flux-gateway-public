@@ -1,0 +1,26 @@
+{
+  "node": "v24.13.0",
+  "receipts": [
+    {
+      "check": "UI_TYPECHECK",
+      "exit": 0,
+      "signal": null,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "check": "ADMIN_TYPECHECK",
+      "exit": 0,
+      "signal": null,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "check": "CUSTOMER_TYPECHECK",
+      "exit": 0,
+      "signal": null,
+      "stdout": "",
+      "stderr": ""
+    }
+  ]
+}

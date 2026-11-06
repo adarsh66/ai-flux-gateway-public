@@ -66,6 +66,26 @@ class FakeRunner:
 
 @pytest.fixture
 def launcher(config, tmp_path, monkeypatch):
+    # Launcher resolves source and locks through its module ROOT, not its output directory.
+    # Copy ordinary source only; never use the operator's generated overrides/state/providers.
+    source_root = tmp_path / "source"
+    sources = subprocess.run(
+        [
+            "git", "-C", str(ROOT), "ls-files", "--cached", "--others",
+            "--exclude-standard", "-z", "--", "infra/terraform", "infra/models",
+            "gateway", "services/control-plane/Dockerfile", "apps/customer-portal/Dockerfile",
+        ],
+        capture_output=True,
+        check=True,
+    )
+    for name in sorted(set(sources.stdout.decode().split("\0")) - {""}):
+        relative = Path(name)
+        if relative.name.endswith(("override.tf", "override.tf.json")):
+            continue
+        target = source_root / relative
+        target.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(ROOT / relative, target)
+    monkeypatch.setattr("scripts.deployment.launcher.ROOT", source_root)
     runner = FakeRunner()
     instance = Launcher(config, tmp_path, runner)
     monkeypatch.setattr(instance, "preflight", lambda: None)
@@ -653,9 +673,9 @@ def test_migrations_use_supplied_operator_connection_without_default_credential(
     migration = Config(str(ROOT / "services" / "control-plane" / "alembic.ini"))
     with engine.begin() as connection:
         migration.attributes["connection"] = connection
-        command.upgrade(migration, "head")
+        command.upgrade(migration, "0003")
         assert connection.scalar(text("SELECT version_num FROM alembic_version")) == "0003"
-        command.upgrade(migration, "head")
+        command.upgrade(migration, "0003")
     engine.dispose()
 
 

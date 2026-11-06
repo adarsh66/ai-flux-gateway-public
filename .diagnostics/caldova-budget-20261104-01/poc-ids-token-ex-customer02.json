@@ -1,0 +1,7 @@
+{
+  "host": "poc-ids-token-ex-customer.azurewebsites.net",
+  "id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.Web/sites/poc-ids-token-ex-customer",
+  "lastModifiedTimeUtc": "2026-11-04T07:39:12.3366667",
+  "name": "poc-ids-token-ex-customer",
+  "state": "Running"
+}

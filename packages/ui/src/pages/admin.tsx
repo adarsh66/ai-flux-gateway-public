@@ -1,9 +1,13 @@
 import { useState, type FormEvent } from "react";
+import { useSearchParams } from "react-router-dom";
+import { DeletionDialog } from "../components/DeletionDialog";
 import { ApiError } from "../client";
 import { useSession } from "../session";
 import type { Member, Price, PriceInput, Role } from "../types";
 import { isDecimal, isGuid } from "../validation";
 import { AsyncView, Badge, ErrorState, Field, PageHeader, Pager, Table, fmtDate, useAsync } from "../components/ui";
+import { parseSgtInput } from "../time";
+import { RateCardEditor } from "./RateCardEditor";
 
 const errText = (e: unknown, fb: string) => (e instanceof ApiError ? e.detail : fb);
 
@@ -15,6 +19,8 @@ export function OrganizationsPage() {
   const [tenant, setTenant] = useState("");
   const [error, setError] = useState<string>();
   const [busy, setBusy] = useState(false);
+  const [deleting, setDeleting] = useState<string>();
+  const [notice, setNotice] = useState<string>();
   const valid = name.trim().length >= 2 && isGuid(tenant);
 
   async function create(e: FormEvent) {
@@ -54,6 +60,7 @@ export function OrganizationsPage() {
         </form>
       </section>
       {error && <ErrorState message={error} />}
+      {notice && <p role="status" className="notice">{notice}</p>}
       <AsyncView state={state} isEmpty={(d) => d.items.length === 0} emptyTitle="No organizations approved" emptyHint="Add a customer tenant above to begin onboarding.">
         {(d) => (
           <Table caption="Organizations" head={["Name", "Tenant ID", "Status", "Action"]}>
@@ -62,12 +69,15 @@ export function OrganizationsPage() {
                 <th scope="row">{o.name}</th>
                 <td><code>{o.tenant_id}</code></td>
                 <td><Badge tone={o.enabled ? "ok" : "neutral"}>{o.enabled ? "enabled" : "disabled"}</Badge></td>
-                <td><button className="btn" onClick={() => void toggle(o.id, !o.enabled)}>{o.enabled ? "Disable" : "Enable"}</button></td>
+                <td><button className="btn" disabled={!!deleting} onClick={() => void toggle(o.id, !o.enabled)}>{o.enabled ? "Disable" : "Enable"}</button>{" "}
+                  <button className="btn danger" disabled={!!deleting} onClick={() => setDeleting(o.id)}>Delete</button></td>
               </tr>
             ))}
           </Table>
         )}
       </AsyncView>
+      {deleting && <DeletionDialog key={deleting} collection="organizations" entityId={deleting} onClose={() => setDeleting(undefined)}
+        onChanged={r => { setNotice(r.message); setV(x => x + 1); }} />}
     </>
   );
 }
@@ -75,8 +85,11 @@ export function OrganizationsPage() {
 export function MembersPage() {
   const { api } = useSession();
   const orgs = useAsync(() => api.organizations(), [api]);
-  const [orgId, setOrgId] = useState("");
+  const [params] = useSearchParams();
+  const [orgId, setOrgId] = useState(params.get("organization_id") ?? "");
+  const [deleting, setDeleting] = useState<string>();
   const [v, setV] = useState(0);
+  const [notice, setNotice] = useState<string>();
   const members = useAsync(() => (orgId ? api.members(orgId) : Promise.resolve({ items: [] as Member[], total: 0 })), [api, orgId, v]);
   const [objectId, setObjectId] = useState("");
   const [role, setRole] = useState<Role>("customer");
@@ -118,7 +131,7 @@ export function MembersPage() {
                 </select>
               )}</Field>
             </div>
-            {orgId && (
+            {orgId && o.items.some(x => x.id === orgId && x.enabled) && (
               <section className="panel">
                 <h2>Approve a user</h2>
                 <form className="form-row" onSubmit={(e) => void add(e)}>
@@ -129,6 +142,7 @@ export function MembersPage() {
               </section>
             )}
             {error && <ErrorState message={error} />}
+            {notice && <p role="status" className="notice">{notice}</p>}
             {orgId && (
               <AsyncView state={members} isEmpty={(d) => d.items.length === 0} emptyTitle="No approved members" emptyHint="No user can sign in to this organization until approved.">
                 {(d) => (
@@ -138,7 +152,8 @@ export function MembersPage() {
                         <th scope="row"><code>{m.object_id}</code></th>
                         <td>{m.role === "ids_admin" ? "IDS administrator" : "Customer"}</td>
                         <td><Badge tone={m.enabled ? "ok" : "neutral"}>{m.enabled ? "enabled" : "disabled"}</Badge></td>
-                        <td><button className="btn" onClick={() => void toggle(m)}>{m.enabled ? "Disable" : "Enable"}</button></td>
+                        <td><button className="btn" disabled={!!deleting} onClick={() => void toggle(m)}>{m.enabled ? "Disable" : "Enable"}</button>{" "}
+                          <button className="btn danger" disabled={!!deleting} onClick={() => setDeleting(m.id)}>Delete</button></td>
                       </tr>
                     ))}
                   </Table>
@@ -148,6 +163,8 @@ export function MembersPage() {
           </>
         )}
       </AsyncView>
+      {deleting && <DeletionDialog key={deleting} collection="members" entityId={deleting} onClose={() => setDeleting(undefined)}
+        onChanged={r => { setNotice(r.message); setV(x => x + 1); }} />}
     </>
   );
 }
@@ -206,12 +223,12 @@ export function validatePrice(f: Record<keyof PriceInput, string>): { ok: true; 
   if (!f.model.trim() || !f.provider.trim() || !f.region.trim()) return { ok: false, error: "Model, provider and region are required." };
   if (!/^[A-Z]{3}$/.test(f.currency.trim())) return { ok: false, error: "Currency must be a 3-letter ISO code such as USD." };
   if (!f.effective_from) return { ok: false, error: "Effective-from is required." };
-  const from = new Date(f.effective_from);
-  if (Number.isNaN(from.getTime())) return { ok: false, error: "Effective-from is not a valid date." };
+  const from = parseSgtInput(f.effective_from);
+  if (!from) return { ok: false, error: "Effective-from is not a valid SGT date." };
   let to: string | null = null;
   if (f.effective_to) {
-    const t = new Date(f.effective_to);
-    if (Number.isNaN(t.getTime()) || t <= from) return { ok: false, error: "Effective-to must be after effective-from." };
+    const t = parseSgtInput(f.effective_to);
+    if (!t || t <= from) return { ok: false, error: "Effective-to must be a valid SGT date after effective-from." };
     to = t.toISOString();
   }
   if (!isDecimal(f.input_per_million) || !isDecimal(f.output_per_million)) return { ok: false, error: "Input and output prices must be non-negative decimals (e.g. 2.50)." };
@@ -231,6 +248,20 @@ export function validatePrice(f: Record<keyof PriceInput, string>): { ok: true; 
 }
 
 export function PricesPage() {
+  return (
+    <>
+      <PageHeader title="Rate card & pricing" subtitle="Set the price of every available model in one place. Customers see these rates in the model catalog and the same rates drive estimated cost in usage, telemetry and showback." />
+      <RateCardEditor />
+      <details className="panel">
+        <summary><strong>Recorded-cost price periods (advanced)</strong></summary>
+        <p className="muted">Effective-dated prices applied by usage ingestion to the recorded cost of new requests. Most administrators only need the rates above.</p>
+        <RecordedPrices />
+      </details>
+    </>
+  );
+}
+
+function RecordedPrices() {
   const { api } = useSession();
   const [v, setV] = useState(0);
   const state = useAsync(() => api.prices(), [api, v]);
@@ -242,8 +273,8 @@ export function PricesPage() {
   const set = (k: keyof PriceInput) => (e: { target: { value: string } }) => setForm((f) => ({ ...f, [k]: e.target.value }));
 
   async function closePeriod(p: Price) {
-    const at = new Date(closeAt);
-    if (Number.isNaN(at.getTime())) return setError("Choose a valid end date and time.");
+    const at = parseSgtInput(closeAt);
+    if (!at) return setError("Choose a valid SGT end date and time.");
     if (at <= new Date(p.effective_from)) return setError("The end must be after the effective-from time.");
     setError(undefined);
     try {
@@ -275,7 +306,6 @@ export function PricesPage() {
 
   return (
     <>
-      <PageHeader title="Price configuration" subtitle="Effective-dated prices per million tokens drive estimated showback. Prices are append-only; add a new row to change a rate." />
       <section className="panel">
         <h2>Add an effective-dated price</h2>
         <form onSubmit={(e) => void submit(e)} className="grid-form">
@@ -283,8 +313,8 @@ export function PricesPage() {
           <Field label="Provider">{(id) => <input id={id} value={form.provider} onChange={set("provider")} />}</Field>
           <Field label="Region">{(id) => <input id={id} value={form.region} onChange={set("region")} />}</Field>
           <Field label="Currency">{(id) => <input id={id} value={form.currency} maxLength={3} onChange={set("currency")} />}</Field>
-          <Field label="Effective from">{(id) => <input id={id} type="datetime-local" value={form.effective_from} onChange={set("effective_from")} />}</Field>
-          <Field label="Effective to (optional)">{(id) => <input id={id} type="datetime-local" value={form.effective_to} onChange={set("effective_to")} />}</Field>
+          <Field label="Effective from (SGT)">{(id) => <input id={id} type="datetime-local" value={form.effective_from} onChange={set("effective_from")} />}</Field>
+          <Field label="Effective to (SGT, optional)">{(id) => <input id={id} type="datetime-local" value={form.effective_to} onChange={set("effective_to")} />}</Field>
           <Field label="Input / 1M tokens">{(id) => <input id={id} inputMode="decimal" value={form.input_per_million} onChange={set("input_per_million")} />}</Field>
           <Field label="Output / 1M tokens">{(id) => <input id={id} inputMode="decimal" value={form.output_per_million} onChange={set("output_per_million")} />}</Field>
           <Field label="Cached input / 1M (optional)" hint="Leave blank if unpriced.">{(id, d) => <input id={id} aria-describedby={d} inputMode="decimal" value={form.cached_input_per_million} onChange={set("cached_input_per_million")} />}</Field>
@@ -310,7 +340,7 @@ export function PricesPage() {
                 <td>
                   {p.effective_to ? <Badge tone="neutral">closed</Badge> : closing === p.id ? (
                     <span className="actions">
-                      <input type="datetime-local" aria-label={`End time for ${p.model} price`} value={closeAt} onChange={(e) => setCloseAt(e.target.value)} />
+                      <input type="datetime-local" aria-label={`End time for ${p.model} price (SGT)`} value={closeAt} onChange={(e) => setCloseAt(e.target.value)} />
                       <button className="btn danger" onClick={() => void closePeriod(p)}>Confirm close</button>
                       <button className="btn" onClick={() => setClosing(undefined)}>Cancel</button>
                     </span>

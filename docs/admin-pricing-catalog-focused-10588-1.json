@@ -1,0 +1,12 @@
+{
+  "node": "v24.13.0",
+  "receipts": [
+    {
+      "check": "FOCUSED_VITEST",
+      "exit": 1,
+      "signal": null,
+      "stdout": "",
+      "stderr": "\u001b[31mfailed to load config from C:\\LocalWorkspace\\ai-flux-gateway-public\\vitest.config.ts\u001b[39m\n\n\u001b[31m⎯⎯⎯⎯⎯⎯⎯\u001b[39m\u001b[1m\u001b[41m Startup Error \u001b[49m\u001b[22m\u001b[31m⎯⎯⎯⎯⎯⎯⎯⎯\u001b[39m\nError: spawn UNKNOWN\n    at ChildProcess.spawn (node:internal/child_process:421:11)\n    at Object.spawn (node:child_process:796:9)\n    at ensureServiceIsRunning (C:\\LocalWorkspace\\ai-flux-gateway-public\\node_modules\\esbuild\\lib\\main.js:2272:29)\n    at build (C:\\LocalWorkspace\\ai-flux-gateway-public\\node_modules\\esbuild\\lib\\main.js:2170:26)\n    at bundleConfigFile (file:///C:/LocalWorkspace/ai-flux-gateway-public/node_modules/vite/dist/node/chunks/config.js:35895:23)\n    at bundleAndLoadConfigFile (file:///C:/LocalWorkspace/ai-flux-gateway-public/node_modules/vite/dist/node/chunks/config.js:35882:24)\n    at loadConfigFromFile (file:///C:/LocalWorkspace/ai-flux-gateway-public/node_modules/vite/dist/node/chunks/config.js:35851:179)\n    at resolveConfig (file:///C:/LocalWorkspace/ai-flux-gateway-public/node_modules/vite/dist/node/chunks/config.js:35500:28)\n    at _createServer (file:///C:/LocalWorkspace/ai-flux-gateway-public/node_modules/vite/dist/node/chunks/config.js:25441:73)\n    at createServer$2 (file:///C:/LocalWorkspace/ai-flux-gateway-public/node_modules/vite/dist/node/chunks/config.js:25438:9) {\n  errno: -4094,\n  code: 'UNKNOWN',\n  syscall: 'spawn'\n}\n\n\n\n"
+    }
+  ]
+}

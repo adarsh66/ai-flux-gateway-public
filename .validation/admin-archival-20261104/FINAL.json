@@ -1,0 +1,114 @@
+{
+  "at": "2026-11-04T01:05:09.036669+00:00",
+  "status": "source_implemented_release_gated",
+  "scope": "terminal archive and access revocation; history retained; no hard deletion",
+  "cloud_network_deployment_production_operations": 0,
+  "public_ip_needed": false,
+  "feature2_activation": false,
+  "backend": {
+    "tests": 145,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 5,
+    "passed": 140
+  },
+  "backend_by_file": {
+    "tests.unit.test_admin_archival": {
+      "passed": 47,
+      "skipped": 0,
+      "failed": 0
+    },
+    "tests.unit.test_admin_archival_postgres": {
+      "passed": 0,
+      "skipped": 5,
+      "failed": 0
+    },
+    "tests.unit.test_control_plane": {
+      "passed": 13,
+      "skipped": 0,
+      "failed": 0
+    },
+    "tests.unit.test_turnstile_exchange": {
+      "passed": 11,
+      "skipped": 0,
+      "failed": 0
+    },
+    "tests.unit.test_apim_and_watermarks": {
+      "passed": 5,
+      "skipped": 0,
+      "failed": 0
+    },
+    "tests.unit.test_monthly_budgets": {
+      "passed": 58,
+      "skipped": 0,
+      "failed": 0
+    },
+    "tests.unit.test_external_pricing_privacy": {
+      "passed": 6,
+      "skipped": 0,
+      "failed": 0
+    }
+  },
+  "typescript": [
+    {
+      "project": "packages/ui",
+      "exit": 0,
+      "error": null,
+      "output": ""
+    },
+    {
+      "project": "apps/admin-portal",
+      "exit": 0,
+      "error": null,
+      "output": ""
+    },
+    {
+      "project": "apps/customer-portal",
+      "exit": 0,
+      "error": null,
+      "output": ""
+    }
+  ],
+  "frontend_authored_tests": 13,
+  "frontend_runtime_tests_run": false,
+  "migration_target": "0007_admin_archival",
+  "migration_parent": "0006_monthly_advisory_budgets",
+  "paused_0005_in_migration_path": false,
+  "migration_applied_to_production": false,
+  "release_gates": [
+    "Approved Linux frontend runtime tests/accessibility acceptance; local esbuild/Vitest remain prohibited",
+    "Real PostgreSQL multisession lifecycle/concurrency, migration and runtime DML grants",
+    "Approved APIM suspend/readback/async operation behavior and existing least-privilege access; no new grants assumed",
+    "Unknown APIM write outcomes require operator reconciliation, never a state-only waiver",
+    "Separate clean-parent release approval excluding paused Feature2 and preserving monthly budgets/APIM4096",
+    "Separate selected disposable-entity approval before any real archive acceptance"
+  ],
+  "raw_source_sha256": {
+    "services/control-plane/src/aiflux/archival.py": "fd3129b50d76c67fed8b16c6fe558fd5099e13ae99091b81b9bcddcb8de8ac97",
+    "services/control-plane/src/aiflux/models.py": "94bb16d9612a7dfd8539319b3fbbeca5cbada58f0222d64b4289f7727fe45b6f",
+    "services/control-plane/src/aiflux/schemas.py": "f3624e61ac12b3c0b318100f55d36d7acc4e6fb51d0ef7db8d945bc87a424b1c",
+    "services/control-plane/src/aiflux/app.py": "8ca676c7a6c61d4f0465df838a5c0adc540e31b5689c7df8634cf384113c8eb4",
+    "services/control-plane/src/aiflux/apim.py": "33d22834a8a0c76767787cca4e517a754ba7fc054fe3ddd1f00b2200e550817d",
+    "services/control-plane/src/aiflux/subscriptions.py": "b62643ddebaa2e10cd27469b15753126c5d0352120737c18688e7d2843f8a1d5",
+    "services/control-plane/src/aiflux/auth.py": "6e74d13ff950b51c10b599aadfe82f3fc878ce1ffd2bc2bde110b6cb5e903930",
+    "services/control-plane/src/aiflux/turnstile_exchange.py": "e49dd67c78c74684592953e416ef6dcc6b10992c32376b1421419a6616923de7",
+    "services/control-plane/src/aiflux/gateway_settings.py": "737af7e3d821e6017ab50b4997e7701a6362a2205a267d72ae79401d38c9c794",
+    "services/control-plane/src/aiflux/managed_controls.py": "70c176de3b16c4bdd80886dc04ff50f4a5f3cd364e01ce5c65af5ce823b149f8",
+    "services/control-plane/src/aiflux/poc_controls.py": "0cbeea20be9774c123a34d7f1d5fc8bcbf1a068badb645340ddbb313b424e345",
+    "services/control-plane/src/aiflux/model_access.py": "d626a724d12bf80b32c93766aa614b97e2749d3377cb72abfd6a53353a6b68d9",
+    "services/control-plane/src/aiflux/model_access_publisher.py": "94fcd44bf987f197b1b05bd6f6d55b61d1daf1ce52671dd37417e6643641f467",
+    "services/control-plane/migrations/versions/0007_admin_archival.py": "cbcbaf5d57e14b8a9851200337b615d8ea7be1967a0445e5fdbae1be2be01fb8",
+    "packages/ui/src/components/DeletionDialog.tsx": "30ad3ff4be7aeb54085f4bbc1f55e76afa3d722caf47ab6ac60a78e77ad479d5",
+    "packages/ui/src/client.ts": "e6006fcb8aabc8da50ae8f017fff4dc91cd0671ff6d13828f1d1fbd27ad5f609",
+    "packages/ui/src/types.ts": "683fe9d53fbc73483ffbaaf9780fe83039da2ba7afb37a874fcbddb8a5159502",
+    "packages/ui/src/styles.css": "9c2f018d1849afde5a12dbf8f1dc475fee704eccc89d118918bebd6168b68c82",
+    "packages/ui/src/pages/SubscriptionsPage.tsx": "d7818023e62343d22862847bd3684b436f384e0a4d5c6fd05cba5689219ced72",
+    "packages/ui/src/pages/admin.tsx": "928922734384a3c16081d7f0c3ede8f4b26953b88f7cbd5810c61b743c246343",
+    "packages/ui/src/pages/TokenExchangePages.tsx": "fe946ce623330ad29c2daefcdc425a6ccfcb8f647dfe2515b50465578b7aac84",
+    "packages/ui/src/admin-deletion.test.tsx": "706dfdd48715bc072f190f61a410c519e4d03195477790b9c39e74e23d81070d",
+    "tests/unit/test_admin_archival.py": "5b496b9fd509f6be562c168ddfac0d6be4f9396a76dcb4d7fe039cb0e8d65692",
+    "tests/unit/test_admin_archival_postgres.py": "093ef81c9da62ba93cdd4371047382b833fffb49484075b90421644ba399aa94",
+    "scripts/validate_admin_archival.py": "49b1d9df121ac23954028483fc7466d149b462c617dc0d83c29e520914dddba0",
+    "scripts/validate_admin_archival_types.mjs": "769888a5bf8a4df42d5d2d35ff13057381d2502fd4239ed0e0d15be2e62cb8e7"
+  }
+}

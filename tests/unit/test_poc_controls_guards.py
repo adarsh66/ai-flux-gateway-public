@@ -11,6 +11,24 @@ from scripts.deployment.poc_controls_guards import guard_policy, guard_protected
 from scripts.deployment.poc_controls_preflight import ACTIONS, allowed_actions, selected_publisher
 
 
+def test_full_role_id_is_resolved_via_exact_arm_get_not_cli_name(monkeypatch):
+    from scripts.deployment.poc_controls_preflight import assignment_permissions
+    scope = "/subscriptions/example/resourceGroups/rg/providers/Microsoft.ApiManagement/service/apim/policyFragments/settings"
+    role = "/subscriptions/example/providers/Microsoft.Authorization/roleDefinitions/role-id"
+    calls = []
+    def cli(args):
+        calls.append(args)
+        return {"id": role, "properties": {"permissions": [{"actions": ACTIONS, "notActions": []}]}}
+    monkeypatch.setattr(rt, "cli", cli)
+    grants = assignment_permissions([{"scope": scope, "roleDefinitionId": role}], scope)
+    assert all(allowed_actions(grants).values())
+    assert calls[0][:4] == ["rest", "--method", "get", "--url"]
+    assert calls[0][4] == "https://management.azure.com" + role + "?api-version=2022-04-01"
+    assert assignment_permissions([{"scope": scope, "roleDefinitionId": role, "condition": "restricted"}], scope) == []
+    with pytest.raises(RuntimeError, match="nonapplicable_publisher_scope"):
+        assignment_permissions([{"scope": scope + "/other", "roleDefinitionId": role}], scope)
+
+
 @pytest.fixture(scope="module")
 def policies():
     args = [rt.TF, "-chdir=" + str(rt.ROOT / "infra/project-route"), "console", "-no-color",

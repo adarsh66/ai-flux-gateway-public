@@ -1,0 +1,6 @@
+{
+  "id": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/microsoft.insights/components/poc-ids-token-ex-insights",
+  "name": "poc-ids-token-ex-insights",
+  "retentionInDays": 90,
+  "workspaceResourceId": "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC/providers/Microsoft.OperationalInsights/workspaces/poc-ids-token-ex-logs"
+}

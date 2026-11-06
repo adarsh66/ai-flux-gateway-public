@@ -36,9 +36,9 @@ locals {
     "<rate-limit-by-key calls=\"${var.rpm_limit}\"",
     "<rate-limit-by-key calls=\"@(context.Variables.GetValueOrDefault&lt;int&gt;(&quot;aiflux-poc-rpm&quot;, 60))\""),
     "tokens-per-minute=\"${var.tpm_limit}\"",
-    "tokens-per-minute=\"@(context.Variables.GetValueOrDefault&lt;int&gt;(&quot;aiflux-poc-tpm&quot;, 2048))\""),
+    "tokens-per-minute=\"@(context.Variables.GetValueOrDefault&lt;int&gt;(&quot;aiflux-poc-tpm&quot;, 300000))\""),
     "token-quota=\"${var.daily_token_quota}\"",
-  "token-quota=\"@(context.Variables.GetValueOrDefault&lt;int&gt;(&quot;aiflux-poc-token-quota&quot;, 10000))\"")
+  "token-quota=\"@(context.Variables.GetValueOrDefault&lt;int&gt;(&quot;aiflux-poc-token-quota&quot;, 20000000))\"")
   poc_hate_policy = replace(local.poc_limits_policy, "name=\"Hate\" threshold=\"${var.safety_threshold}\"",
   "name=\"Hate\" threshold=\"@(context.Variables.GetValueOrDefault&lt;int&gt;(&quot;aiflux-hate-threshold&quot;, 1))\"")
   poc_violence_policy = replace(local.poc_hate_policy, "name=\"Violence\" threshold=\"${var.safety_threshold}\"",
@@ -55,7 +55,9 @@ resource "azapi_resource" "poc_settings" {
   parent_id = local.apim
   name      = local.poc_fragment_name
   body = { properties = {
-    description = "Runtime-owned bounded POC variables and literal-call quota; stable counter identity and envelope."
+    # Match the existing API publisher's description. Initialization already
+    # wrote this authorized metadata; activation must leave the fragment no-op.
+    description = "Runtime-owned bounded settings; invariant inspection and routing remain Terraform-owned."
     format      = "rawxml"
     value       = file("${path.module}/../../gateway/policies/poc-settings-defaults.xml")
   } }
@@ -63,6 +65,8 @@ resource "azapi_resource" "poc_settings" {
     prevent_destroy = true
     # ONLY runtime content ownership, not ignore-all. Publisher uses ETag/hash
     # guarded readback. A later plan may not overwrite published override data.
+    # Includes the last-good atomic Auto price envelope and pending controls;
+    # Terraform owns the fragment identity, not either runtime payload.
     ignore_changes = [body.properties.value]
   }
 }

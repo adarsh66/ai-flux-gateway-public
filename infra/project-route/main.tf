@@ -4,6 +4,10 @@
 terraform {
   required_version = "= 1.12.1"
   required_providers {
+    external = {
+      source  = "hashicorp/external"
+      version = "= 2.3.5"
+    }
     azurerm = {
       source  = "hashicorp/azurerm"
       version = "= 5.9.0"
@@ -98,10 +102,10 @@ variable "daily_token_quota" {
 variable "daily_call_allowance" {
   type        = number
   default     = 8
-  description = "Bounded valid POSTs per existing 86400-second counter. Only a separately guarded demo update authorizes 1000; never changes counter identity or epoch."
+  description = "Bounded valid POSTs per existing 86400-second counter. Retains legacy 8/1000 profiles and reviewed 50000 defaults without rekeying or resetting."
   validation {
-    condition     = contains([8, 1000], var.daily_call_allowance)
-    error_message = "Only the original eight-call profile or explicitly reviewed 1000-call demo is supported."
+    condition     = contains([8, 1000, 50000], var.daily_call_allowance)
+    error_message = "Only the original 8/1000 profiles or reviewed 50000-call defaults are supported."
   }
 }
 
@@ -109,8 +113,8 @@ variable "completion_token_limit" {
   type    = number
   default = 32
   validation {
-    condition     = var.completion_token_limit >= 1 && var.completion_token_limit <= 1024 && floor(var.completion_token_limit) == var.completion_token_limit
-    error_message = "Output stays bounded at 32 unless the explicit persistent POC authorizes up to 1024."
+    condition     = var.completion_token_limit >= 1 && var.completion_token_limit <= 4096 && floor(var.completion_token_limit) == var.completion_token_limit
+    error_message = "Output is bounded at 4096; release also requires verified provider and full-output safety compatibility."
   }
 }
 
@@ -179,11 +183,14 @@ variable "persistent_poc_authorized" {
   validation {
     condition = var.persistent_poc_authorized ? (
       var.demo_authorized && !var.acceptance_verified && !var.candidate_validation && var.demo_expires_at == "" &&
-      var.rpm_limit == 60 && var.tpm_limit == 2048 && var.daily_token_quota == 10000 &&
-      var.daily_call_allowance == 1000 && var.completion_token_limit == 1024 &&
+      var.rpm_limit == 60 && (
+        (var.tpm_limit == 2048 && var.daily_token_quota == 10000 && var.daily_call_allowance == 1000 && var.completion_token_limit == 1024) ||
+        (var.tpm_limit == 300000 && var.daily_token_quota == 20000000 && var.daily_call_allowance == 50000 && var.completion_token_limit == 1024) ||
+        (var.tpm_limit == 300000 && var.daily_token_quota == 20000000 && var.daily_call_allowance == 50000 && var.completion_token_limit == 4096)
+      ) &&
       var.backend_retries == 0 && var.safety_threshold == 1
     ) : var.completion_token_limit <= 32
-    error_message = "Persistent POC requires exactly output1024/TPM2048/RPM60/daily10000/calls1000, empty expiry, retry0, threshold1 and no acceptance."
+    error_message = "Persistent POC requires the exact legacy 60/2048/10000/1000/1024 or reviewed 60/300000/20000000/50000 profile with output1024 (live) or output4096 (separate compatibility-verified release), empty expiry, retry0, threshold1 and no acceptance."
   }
 }
 
@@ -198,17 +205,20 @@ variable "allow_product_subscriptions" {
 }
 
 locals {
-  rg                = "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC"
-  apim              = "${local.rg}/providers/Microsoft.ApiManagement/service/poc-ids-token-ex-apim"
-  account           = "${local.rg}/providers/Microsoft.CognitiveServices/accounts/poc-ids-token-ex-foundry"
-  project           = "${local.account}/projects/poc-ids-token-ex-foundry-project"
-  project_endpoint  = "https://poc-ids-token-ex-foundry.services.ai.azure.com/api/projects/poc-ids-token-ex-foundry-project"
-  subscriber        = "e9f2abb0-930b-598a-b210-0ab0b279127f"
-  gateway_client    = "5792b72e-1605-4dce-a594-4c430a5af619"
-  model             = "gpt-5.6-luna"
-  model_version     = "2026-07-09"
-  route_manifest    = var.route_manifest_path == "" ? null : jsondecode(file(var.route_manifest_path))
-  routes            = var.route_manifest_path == "" ? { (local.model) = { version = local.model_version, provider = "OpenAI", token_parameter = "max_completion_tokens" } } : { for alias, route in local.route_manifest.routes : alias => route if !contains(var.excluded_routes, alias) }
+  rg               = "/subscriptions/aa28274d-fea0-46d4-b9c8-30f3ef0a0e52/resourceGroups/IDS-TOKEN-EXCHANGE-POC"
+  apim             = "${local.rg}/providers/Microsoft.ApiManagement/service/poc-ids-token-ex-apim"
+  account          = "${local.rg}/providers/Microsoft.CognitiveServices/accounts/poc-ids-token-ex-foundry"
+  project          = "${local.account}/projects/poc-ids-token-ex-foundry-project"
+  project_endpoint = "https://poc-ids-token-ex-foundry.services.ai.azure.com/api/projects/poc-ids-token-ex-foundry-project"
+  subscriber       = "e9f2abb0-930b-598a-b210-0ab0b279127f"
+  gateway_client   = "5792b72e-1605-4dce-a594-4c430a5af619"
+  model            = "gpt-5.6-luna"
+  model_version    = "2026-07-09"
+  route_manifest   = var.route_manifest_path == "" ? null : jsondecode(file(var.route_manifest_path))
+  # Unify JSON strings, not heterogeneous route objects: Terraform otherwise
+  # coerces the new numeric capacity fields to strings to match the old routes.
+  # Decode only AFTER selection so exact manifest types survive unchanged.
+  routes            = jsondecode(var.route_manifest_path == "" ? jsonencode({ (local.model) = { version = local.model_version, provider = "OpenAI", token_parameter = "max_completion_tokens" } }) : jsonencode({ for alias, route in local.route_manifest.routes : alias => route if !contains(var.excluded_routes, alias) }))
   model_backend     = "aiflux-project-gpt-5-6-luna"
   fireworks_backend = "aiflux-project-fireworks"
   fireworks_url     = "https://poc-ids-token-ex-foundry.services.ai.azure.com/openai/v1"
@@ -217,7 +227,7 @@ locals {
     "FW-MiniMax-M3" = { version = "1", sku = "DataZoneStandard" }
   }
   fireworks_aliases   = sort(setintersection(toset(keys(local.routes)), toset(keys(local.fireworks_contracts))))
-  route_backends      = { for alias in keys(local.routes) : alias => contains(local.fireworks_aliases, alias) ? local.fireworks_backend : local.model_backend }
+  route_backends      = { for alias in keys(local.routes) : alias => contains(local.foundry_eight_anthropic_aliases, alias) ? local.foundry_eight_anthropic_backend : local.native_profile_enabled && (alias == "Mistral-Large-3" || local.successor22_enabled && alias == "mistral-medium-3-5") ? local.foundry_eight_mistral_backend : contains(local.fireworks_aliases, alias) ? local.fireworks_backend : local.model_backend }
   safety_backend      = "aiflux-project-safety"
   origins             = ["https://poc-ids-token-ex-customer.azurewebsites.net", "https://poc-ids-token-ex-admin.azurewebsites.net"]
   model_list          = jsonencode({ object = "list", data = [for alias in local.all_aliases : { id = alias, object = "model", owned_by = "aiflux" }] })
@@ -242,16 +252,16 @@ locals {
     cors_origins                 = local.origins
     model_list                   = local.model_list
     model_alias_conditions       = join(" || ", [for alias in local.all_aliases : "(string)model == \"${alias}\""])
-    model_completion_limits      = jsonencode({ for alias in keys(local.routes) : alias => var.completion_token_limit })
-    anthropic_alias_conditions   = "false"
-    model_limit_rules            = join(" ", [for alias in local.all_aliases : "if ((string)model == \"${alias}\") { modelMaximum = ${var.completion_token_limit}; }"])
-    openai_aliases               = sort(keys(local.routes))
+    model_completion_limits      = jsonencode({ for alias in keys(local.routes) : alias => local.effective_completion_limits[alias] })
+    anthropic_alias_conditions   = local.foundry_eight_alias_conditions
+    model_limit_rules            = join(" ", [for alias in local.all_aliases : "if ((string)model == \"${alias}\") { modelMaximum = ${local.effective_completion_limits[alias]}; }"])
+    openai_aliases               = sort(setsubtract(toset(keys(local.routes)), toset(local.foundry_eight_anthropic_aliases)))
     openai_pool_ids              = local.route_backends
     foundry_aliases              = []
     foundry_api_versions         = {}
-    anthropic_aliases            = []
-    anthropic_context_conditions = "false"
-    anthropic_backend_ids        = {}
+    anthropic_aliases            = local.foundry_eight_anthropic_aliases
+    anthropic_context_conditions = local.foundry_eight_context_conditions
+    anthropic_backend_ids        = { for alias in local.foundry_eight_anthropic_aliases : alias => local.foundry_eight_anthropic_backend }
   })
   # This API is created with explicit operations, not an imported OpenAPI schema.
   # validate-content's implicit schema is therefore absent. Keep the same byte
@@ -268,7 +278,7 @@ locals {
   XML
   # Public contract stays max_completion_tokens. Provider normalization occurs
   # only after input validation, safety and PII, on an exact allowlisted route.
-  provider_rules    = join(" ", [for alias, route in local.routes : route.token_parameter == "max_tokens" ? "if ((string)request[\"model\"] == \"${alias}\") { request[\"max_tokens\"] = request[\"max_completion_tokens\"]; request.Remove(\"max_completion_tokens\"); }" : ""])
+  provider_rules    = join(" ", [for alias, route in local.routes : route.token_parameter == "max_tokens" && !contains(local.foundry_eight_anthropic_aliases, alias) ? "if ((string)request[\"model\"] == \"${alias}\") { request[\"max_tokens\"] = request[\"max_completion_tokens\"]; request.Remove(\"max_completion_tokens\"); }" : ""])
   provider_policy   = replace(replace(local.shared_policy, "\r\n", "\n"), "return request.ToString();\n        }]]></set-body>", "${local.provider_rules} return request.ToString();\n        }]]></set-body>")
   validated_policy  = replace(local.provider_policy, "/(?s)<validate-content id=\"aiflux-request-validation\".*?</validate-content>/", local.request_validation)
   subscriber_policy = var.allow_product_subscriptions ? local.validated_policy : replace(local.validated_policy, local.subscription_clause, "${local.subscription_clause} || context.Subscription.Id != \"${local.subscriber}\"")
@@ -288,7 +298,7 @@ locals {
   # wrapper and its rebinding logic, not just its count. One forward only.
   # Outbound usage reads this int on successful POSTs. Initialize it after
   # inbound checks, before forwarding; backend permits exactly one policy.
-  attempt_policy = replace(var.poc_controls_enabled ? local.poc_policy : local.glm_policy, "</inbound>", "<set-variable name=\"aiflux-backend-attempt\" value=\"@(1)\" /></inbound>")
+  attempt_policy = replace(local.model_access_policy, "</inbound>", "<set-variable name=\"aiflux-backend-attempt\" value=\"@(1)\" /></inbound>")
   forward_policy = replace(local.attempt_policy, "/(?s)<backend>.*?</backend>/", "<backend><forward-request timeout=\"45\" buffer-request-body=\"true\" buffer-response=\"true\" fail-on-error-status-code=\"false\" /></backend>")
   # Bounded candidate/demo diagnostics expose a fixed stage only, never
   # LastError.Message, request/response text, tokens or backend traces.
@@ -384,6 +394,10 @@ resource "azapi_resource" "project_child" {
   schema_validation_enabled = false
   lifecycle {
     precondition {
+      condition     = local.native_manifest_valid
+      error_message = "The eight-model profile requires the explicit exact additive manifest, unchanged original twelve routes, verified model/version/SKU/capacity, and the existing automatic product POC profile. No partial or alternate-manifest activation is allowed."
+    }
+    precondition {
       condition = var.route_manifest_path == "" || (
         local.route_manifest.project_endpoint == local.project_endpoint &&
         local.route_manifest.upstream_url == "https://poc-ids-token-ex-foundry.openai.azure.com/openai/v1" &&
@@ -399,9 +413,17 @@ resource "azapi_resource" "project_child" {
             local.routes[alias].version == local.fireworks_contracts[alias].version &&
             try(local.routes[alias].upstream_url, "") == local.fireworks_url &&
             deployment.output.sku.name == local.fireworks_contracts[alias].sku
+            ) : local.native_profile_enabled && contains(keys(local.foundry_eight_contracts), alias) ? (
+            try(local.routes[alias].upstream_url, local.route_manifest.upstream_url) == local.foundry_eight_contracts[alias].upstream_url &&
+            deployment.output.sku.name == local.foundry_eight_contracts[alias].sku &&
+            deployment.output.sku.capacity == local.foundry_eight_contracts[alias].capacity &&
+            deployment.output.properties.currentCapacity == local.foundry_eight_contracts[alias].capacity &&
+            deployment.output.properties.raiPolicyName == "Microsoft.DefaultV2"
+            ) : local.successor22_enabled && alias == "mistral-medium-3-5" ? (
+            local.successor22_deployment_ready && local.routes[alias].upstream_url == local.foundry_eight_mistral_url
           ) : try(local.routes[alias].upstream_url, local.route_manifest.upstream_url) == local.route_manifest.upstream_url) &&
           deployment.output.properties.currentCapacity > 0 &&
-          deployment.output.properties.capabilities.chatCompletion == "true" &&
+          try(deployment.output.properties.capabilities.chatCompletion == "true", false) &&
           contains(["Active", "Succeeded"], coalesce(try(deployment.output.properties.deploymentState, null), "Active"))
         ])
       )
@@ -416,8 +438,8 @@ resource "azapi_resource" "project_child" {
           !strcontains(local.policy, "context.Subscription.Id != \"${local.subscriber}\"")
         ) : strcontains(local.policy, "context.Subscription.Id != \"${local.subscriber}\"")) &&
         (var.poc_controls_enabled ? strcontains(local.policy, "aiflux-poc-token-quota") && strcontains(local.policy, "token-quota-period=\"Daily\"") : strcontains(local.policy, "token-quota=\"${var.daily_token_quota}\" token-quota-period=\"Daily\"")) &&
-        length(regexall("<rate-limit-by-key", local.policy)) == 1 &&
-        length(regexall("<llm-token-limit", local.policy)) == 1 &&
+        length(regexall("<rate-limit-by-key", local.policy)) == (var.auto_routing_enabled ? 3 : 1) &&
+        length(regexall("<llm-token-limit", local.policy)) == (var.auto_routing_enabled ? 2 : 1) &&
         (var.poc_controls_enabled ? strcontains(local.policy, "aiflux-poc-rpm") && strcontains(local.policy, "renewal-period=\"60\"") : strcontains(local.policy, "calls=\"${var.rpm_limit}\" renewal-period=\"${var.rate_limit_window_seconds}\"")) &&
         length(regexall("<llm-content-safety", local.policy)) == 3 &&
         strcontains(local.policy, "pii_inspection_unavailable")
@@ -480,7 +502,13 @@ resource "azapi_resource" "project_policy" {
   parent_id  = "${local.apim}/apis/${local.api_name}"
   name       = "policy"
   body       = { properties = { format = "rawxml", value = local.policy } }
-  depends_on = [azapi_resource.project_operation, azurerm_api_management_product_api.project_binding, azapi_resource.glm_named_value, azapi_resource.glm_backend, azapi_resource.poc_settings, azapi_resource.fireworks_backend]
+  lifecycle {
+    precondition {
+      condition     = !var.model_access_enabled || try(data.external.model_access_receipt[0].result.valid == "true", false)
+      error_message = "Model access activation requires current source-bound bootstrap receipt validation; a hash assertion is insufficient."
+    }
+  }
+  depends_on = [azapi_resource.project_operation, azurerm_api_management_product_api.project_binding, azapi_resource.glm_named_value, azapi_resource.glm_backend, azapi_resource.poc_settings, azapi_resource.fireworks_backend, azapi_resource.foundry_eight_backend]
 }
 
 # Existing object: import, do not create over an unreviewed existing baseline.

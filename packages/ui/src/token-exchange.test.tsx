@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
 import { describe, expect, it, vi } from "vitest";
@@ -81,8 +81,8 @@ describe("Token Exchange Customer & Admin Portal Pages", () => {
     expect(screen.getAllByRole("link", { name: /Try in Playground/ })).toHaveLength(3);
   });
 
-  it("renders unknown pricing honestly and keeps the route simulator distinct from Decision-1 inference", async () => {
-    const { mount } = setup((url) => {
+  it("renders unknown pricing honestly without a customer route simulator or route-decision request", async () => {
+    const { mount, calls } = setup((url) => {
       if (url.pathname.endsWith("/model-garden")) {
         return {
           items: [
@@ -132,34 +132,57 @@ describe("Token Exchange Customer & Admin Portal Pages", () => {
           total: 2,
         };
       }
-      return {
-        requested_model: "auto",
-        selected_model: "DeepSeek-V3.2-Speciale",
-        display_name: "DeepSeek V3.2 Speciale",
-        provider: "deepseek",
-        vendor: "DeepSeek",
-        category: "coding_and_math",
-        strategy: "microsoft-decision-1",
-        decision_endpoint: "/providers/microsoft/v1/systemone",
-        confidence: 0.94,
-        reason: "Matched coding_and_math intent.",
-        estimated_input_per_million: "0.2700",
-        estimated_output_per_million: "1.1000",
-      };
+      throw new Error(`Unexpected catalog request: ${url.pathname}`);
     });
     mount(<ModelGardenPage />);
     expect(await screen.findByText("Microsoft Decision-1 Auto Router")).toBeInTheDocument();
     expect(screen.getByText("DeepSeek V3.2 Speciale")).toBeInTheDocument();
     expect(screen.getAllByText("Unknown — not free").length).toBeGreaterThan(0);
     expect(screen.queryByText("USD 0.2700")).not.toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: "Routing simulator — not Decision-1 inference" })).toBeInTheDocument();
-
-    await userEvent.click(screen.getByRole("button", { name: "Simulate Auto Route" }));
-    expect(await screen.findByText(/Selected model: DeepSeek V3.2 Speciale/)).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: /Routing simulator/ })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /Simulate Auto Route/ })).not.toBeInTheDocument();
+    expect(screen.queryByLabelText("Sample prompt")).not.toBeInTheDocument();
+    expect(screen.queryByLabelText("Routing strategy")).not.toBeInTheDocument();
+    expect(screen.queryByText(/Auto-routing is disabled until/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Selected model:/)).not.toBeInTheDocument();
+    expect(calls.every(({ url, init }) => url.pathname.endsWith("/model-garden") && (!init.method || init.method === "GET"))).toBe(true);
   });
 
-  it("renders CustomerCreditsPage with low-credit alert and 3-way breakdown", async () => {
-    const { mount } = setup(() => ({
+  it.each([true, false, null])("separates scoring availability %s from chat eligibility and never offers scorer Playground", async (available) => {
+    const { mount } = setup(() => ({ items: [
+      { id: "Decision-1", display_name: "Legacy Decision router", model_kind: "scoring", scoring_available: available,
+        vendor: "Microsoft", region: "eastus", capabilities: ["scoring", "chat"], enabled: false,
+        coming_soon: available !== true, context_window: available === true ? null : 32768, max_completion_tokens: 0,
+        display_price: { input: "0.042", model_kind: "scoring", billing_dimensions: ["input"],
+          currency: "USD", status: "public_list", source_url: "https://example.com/pricing", checked_at: "2026-10-31",
+          revision: "scoring-v1", source_model: "Microsoft-Decision-1", sku: "scoring", model_version: "1",
+          assumptions: "Output and cache tokens are N/A, not free.", basis: "Scoring input tokens only",
+          provenance: { pricing_table: { input: "$0.042", output: "N/A" } } } },
+      { id: "gpt-4o", display_name: "GPT-4o", vendor: "OpenAI", region: "eastus", capabilities: ["chat"],
+        enabled: true, coming_soon: false, max_completion_tokens: 1024 },
+    ], total: 2 }));
+    mount(<ModelGardenPage />);
+    const heading = await screen.findByRole("heading", { name: "Microsoft Decision-1" });
+    const scorer = within(heading.closest("li")!);
+    expect(scorer.getByText("Scoring-only · Used by Auto")).toBeInTheDocument();
+    expect(scorer.getByText(available === true ? "Scoring available" : available === false ? "Scoring unavailable" : "Scoring availability unverified")).toBeInTheDocument();
+    expect(scorer.queryByText("Coming soon")).not.toBeInTheDocument();
+    expect(scorer.queryByText("Active")).not.toBeInTheDocument();
+    expect(scorer.getByText("USD 0.042")).toBeInTheDocument();
+    expect(scorer.getAllByText("N/A")).toHaveLength(2);
+    expect(scorer.getByText("32,768")).toBeInTheDocument();
+    expect(scorer.queryByText("Context / Max output")).not.toBeInTheDocument();
+    expect(scorer.getByLabelText("Pricing provenance")).toHaveTextContent("$0.042");
+    expect(scorer.queryByRole("link", { name: /Try in Playground/ })).not.toBeInTheDocument();
+    expect(screen.getAllByRole("link", { name: /Try in Playground/ })).toHaveLength(1);
+    await userEvent.click(screen.getByRole("tab", { name: `Deployed & Active (${available === true ? 2 : 1})` }));
+    expect(Boolean(screen.queryByRole("heading", { name: "Microsoft Decision-1" }))).toBe(available === true);
+    await userEvent.click(screen.getByRole("tab", { name: `Available to Onboard (${available === true ? 0 : 1})` }));
+    expect(Boolean(screen.queryByRole("heading", { name: "Microsoft Decision-1" }))).toBe(available !== true);
+  });
+
+  it("renders CustomerCreditsPage with external estimates and 3-way breakdown, not internal credit signals", async () => {
+    const { mount } = setup((url) => url.pathname.endsWith("/budget/monthly") ? new Response(JSON.stringify({ detail: "Monthly budget unavailable" }), { status: 503 }) : ({
       organization_id: "org-1",
       organization_name: "Acme OpCo",
       currency: "USD",
@@ -170,6 +193,9 @@ describe("Token Exchange Customer & Admin Portal Pages", () => {
       alert_threshold_pct: 80,
       low_credit_alert: true,
       hard_stop_enabled: true,
+      estimated_cost_usd: "12.50",
+      estimated_requests: 120,
+      unestimated_requests: 0,
       total_requests: 120,
       total_tokens: 450000,
       by_model: [
@@ -208,10 +234,26 @@ describe("Token Exchange Customer & Admin Portal Pages", () => {
       ],
     }));
     mount(<CustomerCreditsPage />);
-    expect(await screen.findByRole("alert")).toHaveTextContent(/Low credit alert/i);
+    expect(await screen.findByText("External estimated cost (30d)")).toBeInTheDocument();
+    expect(screen.getByText("USD 12.50")).toBeInTheDocument();
+    expect(screen.queryByText(/Daily token volume by provider family|Total credit allocation|Monthly Cap/)).not.toBeInTheDocument();
+    expect(await screen.findByRole("alert")).toHaveTextContent("Monthly budget unavailable");
+    expect(screen.getByRole("heading", { name: "Token share by model" })).toBeInTheDocument();
+    expect(screen.queryByText(/Low credit alert|Credits used|Remaining credits|4250|750\.0000|2100\.0000/)).not.toBeInTheDocument();
     expect(screen.getAllByText("claude-sonnet-4-5").length).toBeGreaterThanOrEqual(1);
     expect(screen.getByText("Retail · Copilot Studio")).toBeInTheDocument();
     expect(screen.getByText("auto-router")).toBeInTheDocument();
+    const kpis = screen.getByLabelText("Usage summary");
+    expect(kpis.children).toHaveLength(3);
+    expect(within(kpis).getByText("Requests (30d)")).toBeInTheDocument();
+    expect(within(kpis).getByText("Tokens (30d)")).toBeInTheDocument();
+    expect(screen.getByText("Usage activity")).toBeInTheDocument();
+    const coverage = screen.getByText(/Selected-window estimate coverage/).closest("details")!;
+    expect(coverage).not.toHaveAttribute("open");
+    await userEvent.click(within(coverage).getByText(/Selected-window estimate coverage/));
+    expect(coverage).toHaveAttribute("open");
+    expect(within(coverage).getByText(/standard-input approximation/)).toBeVisible();
+    expect(screen.getByLabelText("Model share donut chart")).toBeVisible();
   });
 
   it("allows customer self-service key reveal and rotation on CustomerKeysPage", async () => {
@@ -237,78 +279,15 @@ describe("Token Exchange Customer & Admin Portal Pages", () => {
       if (url.pathname.endsWith("/model-deployments")) {
         return { items: [], total: 0, verified_at: "2026-01-01T00:00:00Z", auto_enabled: false };
       }
-      if (url.pathname.endsWith("/admin/budgets")) {
+      if (url.pathname.endsWith("/admin/monthly-budgets")) {
         return {
-          items: [
-            {
-              id: "b-1",
-              organization_id: "org-1",
-              organization_name: "Acme OpCo",
-              subscription_id: null,
-              subscription_name: null,
-              monthly_budget_usd: "5000.00",
-              credit_allocation: "5000.00",
-              used_credits: "120.0000",
-              remaining_credits: "4880.0000",
-              utilization_pct: 2.4,
-              low_credit_alert: false,
-              alert_threshold_pct: 80,
-              allowed_models: ["*"],
-              product_name: "Enterprise AI Token Exchange",
-              channel: "api-gateway",
-              hard_stop_enabled: true,
-              ledger_row_key: "org:org-1",
-              updated_at: "2026-01-01T00:00:00Z",
-            },
-          ],
-          total: 1,
+          items: [], total: 0,
         };
       }
-      if (url.pathname.endsWith("/admin/model-router")) {
+      if (url.pathname.endsWith("/admin/auto-routing")) {
         return {
-          enabled: true,
-          strategy: "microsoft-decision-1",
-          decision_endpoint: "/providers/microsoft/v1/systemone",
-          default_model: "gpt-5.4-mini",
-          candidate_models: ["gpt-5.4-mini", "DeepSeek-V3.2-Speciale"],
-          rules: [
-            {
-              category: "coding_and_math",
-              description: "Code and SQL",
-              keywords: ["python", "sql"],
-              preferred_model: "DeepSeek-V3.2-Speciale",
-              fallback_model: "gpt-5.4",
-            },
-          ],
-          updated_at: "2026-01-01T00:00:00Z",
-        };
-      }
-      if (url.pathname.endsWith("/admin/model-garden")) {
-        return {
-          items: [
-            {
-              id: "singtel-reai-70b",
-              display_name: "Singtel RE:AI Sovereign 70B",
-              provider: "singtel_reai",
-              vendor: "Singtel RE:AI",
-              region: "southeastasia",
-              backend_model: "reai-70b",
-              endpoint_url: "",
-              context_window: 128000,
-              max_completion_tokens: 8192,
-              input_per_million: "0.6500",
-              output_per_million: "2.2000",
-              cached_input_per_million: null,
-              currency: "USD",
-              capabilities: ["chat"],
-              description: "Sovereign GPU",
-              enabled: false,
-              coming_soon: true,
-              content_safety_enabled: true,
-              priority: 50,
-            },
-          ],
-          total: 1,
+          items: [], candidates: [], feature_enabled: false, gateway_ready: false, contract_verified: false,
+          descriptor_version: "descriptor-1", pricing_revision: "price-1",
         };
       }
       return {
@@ -326,13 +305,20 @@ describe("Token Exchange Customer & Admin Portal Pages", () => {
         <AdminModelRouterPage />
       </>,
     );
-    expect(await screen.findByText("org:org-1")).toBeInTheDocument();
-    expect(await screen.findByText("/providers/microsoft/v1/systemone")).toBeInTheDocument();
-    expect(await screen.findByText("Singtel RE:AI Sovereign 70B")).toBeInTheDocument();
-    expect(await screen.findByText(/<llm-content-safety \/>/)).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: "Monthly organization budgets" })).toBeInTheDocument();
+    expect(await screen.findByText("No organizations")).toBeInTheDocument();
+    expect(screen.queryByRole("checkbox")).not.toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: "Decision-1 Auto routing" })).toBeInTheDocument();
+    expect(await screen.findByText(/GET requests never seed configuration/)).toBeInTheDocument();
+    expect(await screen.findByText("Not live — release gates are off or unverified")).toBeInTheDocument();
+    expect(screen.queryByText("/providers/microsoft/v1/systemone")).not.toBeInTheDocument();
+    expect(screen.queryByText(/<llm-content-safety \/>/)).not.toBeInTheDocument();
   });
 
-  it("supports PostgreSQL local email/password login in AuthGate when VITE_AUTH_MODE=local", async () => {
+  it.each([
+    { portalName: "Customer portal", allowedRoles: ["customer", "ids_admin"] as const, user: customerMe, email: "developer@caldova.com" },
+    { portalName: "IDS Admin portal", allowedRoles: ["ids_admin"] as const, user: adminMe, email: "admin@tokenx-ids.com" },
+  ])("supports PostgreSQL local login without registration in $portalName when VITE_AUTH_MODE=local", async ({ portalName, allowedRoles, user, email }) => {
     const fetchSpy = vi.spyOn(globalThis, "fetch").mockResolvedValue(
       new Response(
         JSON.stringify({
@@ -340,7 +326,7 @@ describe("Token Exchange Customer & Admin Portal Pages", () => {
           token_type: "bearer",
           email: "customer@opco.local",
           display_name: "OpCo Developer",
-          user: customerMe,
+          user,
         }),
         { status: 200 },
       ),
@@ -348,19 +334,30 @@ describe("Token Exchange Customer & Admin Portal Pages", () => {
     try {
       render(
         <AuthGate
-          portalName="Customer portal"
-          allowedRoles={["customer", "ids_admin"]}
+          portalName={portalName}
+          allowedRoles={[...allowedRoles]}
           env={{ VITE_AUTH_MODE: "local", VITE_CONTROL_API_URL: "/api", VITE_GATEWAY_URL: "http://localhost:8000/v1" }}
         >
           <p>PORTAL READY VIA POSTGRESQL</p>
         </AuthGate>,
       );
       expect(screen.getByRole("heading", { name: /Sign in to Token Exchange/i })).toBeInTheDocument();
+      expect(screen.queryByRole("button", { name: /Create a new OpCo account/i })).not.toBeInTheDocument();
+      expect(screen.queryByRole("button", { name: /Create account/i })).not.toBeInTheDocument();
+      expect(screen.getByLabelText("Email")).toHaveValue(email);
+      expect(fetchSpy).not.toHaveBeenCalled();
       await userEvent.type(screen.getByLabelText("Password"), "turnstile-customer");
       await userEvent.click(screen.getByRole("button", { name: "Sign in" }));
       expect(await screen.findByText("PORTAL READY VIA POSTGRESQL")).toBeInTheDocument();
+      expect(fetchSpy).toHaveBeenCalledOnce();
+      expect(fetchSpy.mock.calls[0]?.[0]).toBe("/api/auth/login");
+      expect(fetchSpy.mock.calls[0]?.[1]).toMatchObject({
+        method: "POST",
+        body: JSON.stringify({ email, password: "turnstile-customer" }),
+      });
     } finally {
       fetchSpy.mockRestore();
+      sessionStorage.removeItem(`aiflux_local_pg_session:${portalName}`);
     }
   });
 });

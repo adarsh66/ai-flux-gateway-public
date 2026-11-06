@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { customerModelDescriptions, customerModelPresentation } from "./modelPresentation";
+import { customerModelDescriptions, customerModelPresentation, isCatalogDeployed } from "./modelPresentation";
 
 const model = {
   id: "unknown-model", display_name: "Future model", capabilities: ["chat"],
@@ -7,6 +7,20 @@ const model = {
 };
 
 describe("customer model presentation", () => {
+  it("labels Decision-1 scoring independently of disabled chat eligibility", () => {
+    const scoring = { ...model, id: "Decision-1", model_kind: "scoring" as const, enabled: false };
+    expect(customerModelPresentation(scoring).displayName).toBe("Microsoft Decision-1");
+    expect(customerModelPresentation(scoring).description).toContain("Scoring-only model used by Auto");
+    expect(customerModelPresentation(scoring).description).not.toContain("future availability");
+    expect(isCatalogDeployed({ ...scoring, scoring_available: true })).toBe(true);
+    for (const scoring_available of [false, null, undefined]) {
+      expect(isCatalogDeployed({ ...scoring, enabled: true, scoring_available })).toBe(false);
+    }
+    expect(isCatalogDeployed(model)).toBe(true);
+    expect(isCatalogDeployed({ ...model, enabled: false })).toBe(false);
+    expect(isCatalogDeployed({ ...model, coming_soon: true })).toBe(false);
+  });
+
   it("provides concise copy for every current chat model without operational details", () => {
     expect(Object.keys(customerModelDescriptions).sort()).toEqual([
       "gpt-5.6-luna", "gpt-6.1-sol", "gpt-5.4-mini", "gpt-4o",

@@ -11,7 +11,7 @@ const org = "11111111-1111-4111-8111-111111111111";
 const sub = "22222222-2222-4222-8222-222222222222";
 function mount(safetyPage = false, config: PocGatewayConfiguration = structuredClone(POC_DEFAULTS)) {
   const mutations: Record<string, unknown>[] = [];
-  const row: GatewaySettings = { scope: "dev-unified", max_rpm: 60, max_tpm: 2048,
+  const row: GatewaySettings = { scope: "dev-unified", max_rpm: 60, max_tpm: 300000,
     version: 1, published_version: 1, desired: { version: 1, configuration: config,
       reason: "Explicit bootstrap", object_id: "admin", occurred_at: "2026-10-27T14:00:00Z", state: "published", error: null } };
   const fetcher = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
@@ -49,7 +49,10 @@ describe("optional POC controls", () => {
     mount();
     expect(screen.getByText(/usable immediately with defaults/)).toBeInTheDocument();
     expect(screen.getByLabelText("Requests per minute per model")).toHaveValue(60);
-    expect(screen.getByLabelText("Tokens per minute per model")).toHaveValue(2048);
+    expect(screen.getByLabelText("Tokens per minute per model")).toHaveValue(300000);
+    expect(screen.getByLabelText("Daily tokens per model")).toHaveValue(20000000);
+    expect(screen.getByLabelText("Calls per subscription / 86400 seconds")).toHaveValue(50000);
+    expect(screen.getByText(/a length stop can still occur/)).toBeInTheDocument();
     expect(screen.getByText(/Concurrency and monthly quotas unavailable/)).toBeInTheDocument();
   });
   it("creates an org override without erasing subscription safety and removes it to inherit", async () => {
